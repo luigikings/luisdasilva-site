@@ -189,7 +189,7 @@ export function DoorScene({ onEnter }: DoorSceneProps) {
         <motion.div
           role="img"
           aria-label={t('door.intro')}
-          className="relative mx-auto h-52 w-44 rounded-pixel border-4 border-slate-800 bg-slate-950/60 shadow-[0_10px_0_0_rgba(8,12,22,0.65)]"
+          className="relative mx-auto h-52 w-44 rounded-pixel border-4 border-slate-600 bg-slate-800/85 shadow-[0_18px_0_0_rgba(8,12,22,0.75)] before:absolute before:-inset-6 before:-z-10 before:rounded-[28px] before:bg-highlight/15 before:blur-[32px] before:content-[''] before:transition-opacity before:duration-500 before:ease-out"
           initial={prefersReducedMotion ? undefined : { scale: 0.85, opacity: 0 }}
           animate={
             prefersReducedMotion
@@ -208,10 +208,10 @@ export function DoorScene({ onEnter }: DoorSceneProps) {
             aria-hidden
           />
           <div
-            className="absolute -inset-3 rounded-[22px] border-4 border-slate-950/80 bg-slate-900/80"
+            className="absolute -inset-3 rounded-[22px] border-4 border-slate-950/70 bg-slate-900/80"
             aria-hidden
           />
-          <div className="relative h-full w-full overflow-hidden rounded-[18px] border-[3px] border-slate-950 bg-gradient-to-b from-[#99a4c4] via-[#5f6b89] to-[#222b3c] shadow-[inset_0_10px_16px_rgba(15,23,42,0.45)]">
+          <div className="relative h-full w-full overflow-hidden rounded-[18px] border-[3px] border-slate-900/80 bg-gradient-to-b from-[#e7ecff]/95 via-[#9aa6d6]/95 to-[#394365]/95 shadow-[inset_0_12px_18px_rgba(15,23,42,0.45)]">
             <div className="absolute inset-x-8 top-6 h-6 rounded-[12px] border-2 border-slate-900/70 bg-slate-100/80 shadow-[inset_0_-2px_6px_rgba(51,65,85,0.35)]" />
             <div className="absolute inset-x-10 top-[38%] h-2 rounded-full bg-slate-900/35" />
             <div className="absolute inset-x-8 top-[44%] h-[38%] rounded-[14px] border-[3px] border-slate-900/60 bg-gradient-to-b from-[#465470]/85 via-[#374152]/90 to-[#111827] shadow-[inset_0_6px_8px_rgba(15,23,42,0.45)]" />
