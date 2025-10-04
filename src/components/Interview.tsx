@@ -5,11 +5,7 @@ import { track } from '../lib/analytics'
 import { useT } from '../hooks/useT'
 import type { QuestionKey } from '../i18n/dict'
 
-type InterviewProps = {
-  onBack: () => void
-}
-
-export function Interview({ onBack }: InterviewProps) {
+export function Interview() {
   const { t, lang } = useT()
   const prefersReducedMotion = useReducedMotion()
   const questions = t<
@@ -147,14 +143,6 @@ export function Interview({ onBack }: InterviewProps) {
 
   return (
     <section className="relative flex min-h-screen flex-col gap-8 px-4 py-10 md:px-12">
-      <button
-        type="button"
-        onClick={onBack}
-        className="self-start rounded-full border border-slate-700 bg-slate-900/80 px-4 py-2 text-xs uppercase tracking-wide text-slate-200 hover:bg-slate-800"
-      >
-        {t('common.back')}
-      </button>
-
       <div className="flex flex-col items-center gap-6 text-center">
         <div className="relative flex flex-col items-center">
           <motion.div
@@ -205,6 +193,24 @@ export function Interview({ onBack }: InterviewProps) {
               </motion.div>
             ) : null}
           </AnimatePresence>
+
+          <AnimatePresence mode="popLayout">
+            {playerLine ? (
+              <motion.div
+                key="player-line"
+                initial={prefersReducedMotion ? undefined : { opacity: 0, y: 12 }}
+                animate={prefersReducedMotion ? undefined : { opacity: 1, y: 0 }}
+                exit={prefersReducedMotion ? undefined : { opacity: 0, y: -8 }}
+                transition={{ duration: 0.3, ease: 'easeOut' }}
+                className="mt-6 w-full max-w-md rounded-2xl border border-highlight/60 bg-highlight/15 px-6 py-4 text-center text-sm text-highlight shadow-pixel"
+              >
+                <p className="mb-1 text-[11px] uppercase tracking-[0.3em] text-highlight/70">
+                  {conversation.youLabel}
+                </p>
+                <p>{playerLine}</p>
+              </motion.div>
+            ) : null}
+          </AnimatePresence>
         </div>
         <div className="space-y-3">
           <h1 className="font-pixel text-lg uppercase tracking-[0.5em] text-highlight">
@@ -225,40 +231,18 @@ export function Interview({ onBack }: InterviewProps) {
           >
             {!isConversationActive ? (
               <p className="text-center text-sm text-slate-300">{t('interview.selectPrompt')}</p>
-            ) : (
-              <div className="flex h-full w-full max-w-3xl flex-col items-center justify-end gap-6">
-                <AnimatePresence mode="popLayout">
-                  {playerLine ? (
-                    <motion.div
-                      key="player-line"
-                      initial={prefersReducedMotion ? undefined : { opacity: 0 }}
-                      animate={prefersReducedMotion ? undefined : { opacity: 1 }}
-                      exit={prefersReducedMotion ? undefined : { opacity: 0 }}
-                      transition={{ duration: 0.3, ease: 'easeOut' }}
-                      className="w-full max-w-md rounded-2xl border border-highlight/60 bg-highlight/15 px-6 py-4 text-center text-sm text-highlight shadow-pixel"
-                    >
-                      <p className="mb-1 text-[11px] uppercase tracking-[0.3em] text-highlight/70">
-                        {conversation.youLabel}
-                      </p>
-                      <p>{playerLine}</p>
-                    </motion.div>
-                  ) : null}
-                </AnimatePresence>
-
-                {showOk ? (
-                  <motion.button
-                    type="button"
-                    onClick={handleOk}
-                    className="rounded-pixel border border-highlight bg-highlight/10 px-6 py-2 font-pixel text-xs uppercase tracking-[0.4em] text-highlight shadow-pixel hover:bg-highlight/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-highlight focus-visible:ring-offset-2 focus-visible:ring-offset-charcoal"
-                    initial={prefersReducedMotion ? undefined : { opacity: 0, scale: 0.95 }}
-                    animate={prefersReducedMotion ? undefined : { opacity: 1, scale: 1 }}
-                    whileTap={prefersReducedMotion ? undefined : { scale: 0.97 }}
-                  >
-                    {conversation.okButton}
-                  </motion.button>
-                ) : null}
-              </div>
-            )}
+            ) : showOk ? (
+              <motion.button
+                type="button"
+                onClick={handleOk}
+                className="mx-auto rounded-pixel border border-highlight bg-highlight/10 px-6 py-2 font-pixel text-xs uppercase tracking-[0.4em] text-highlight shadow-pixel hover:bg-highlight/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-highlight focus-visible:ring-offset-2 focus-visible:ring-offset-charcoal"
+                initial={prefersReducedMotion ? undefined : { opacity: 0, scale: 0.95 }}
+                animate={prefersReducedMotion ? undefined : { opacity: 1, scale: 1 }}
+                whileTap={prefersReducedMotion ? undefined : { scale: 0.97 }}
+              >
+                {conversation.okButton}
+              </motion.button>
+            ) : null}
           </motion.div>
         </AnimatePresence>
 
