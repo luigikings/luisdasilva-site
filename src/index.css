@@ -1,0 +1,36 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+}
+
+body {
+  @apply bg-charcoal text-slate-100 font-sans antialiased;
+}
+
+a {
+  @apply underline decoration-highlight decoration-2 underline-offset-4 transition-colors duration-200;
+}
+
+a:hover,
+a:focus-visible {
+  @apply text-highlight;
+}
+
+.pixelated {
+  image-rendering: pixelated;
+}
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+textarea:focus-visible {
+  @apply outline-none ring-2 ring-highlight ring-offset-2 ring-offset-charcoal;
+}
+
+::selection {
+  background-color: #f5c249;
+  color: #1f1f2b;
+}
