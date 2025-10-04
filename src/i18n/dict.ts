@@ -1,11 +1,11 @@
 export type Language = 'es' | 'en'
 
 export type QuestionKey =
-  | 'portfolio'
-  | 'cv'
-  | 'who'
-  | 'stack'
-  | 'joke'
+  | 'introduction'
+  | 'motivation'
+  | 'learning'
+  | 'projects'
+  | 'contact'
 
 type DictSection = {
   common: {
@@ -25,7 +25,6 @@ type DictSection = {
   }
   door: {
     intro: string
-    impatienceLabel: string
     button: string
   }
   interview: {
@@ -33,31 +32,12 @@ type DictSection = {
     subtitle: string
     avatarAlt: string
     selectPrompt: string
-    questions: Record<QuestionKey, string>
-    responses: {
-      who: {
-        heading: string
-        body: string
-      }
-      stack: {
-        heading: string
-        intro: string
-        items: string[]
-      }
-      jokes: {
-        heading: string
-        intro: string
-        items: string[]
-      }
-      cv: {
-        heading: string
-        body: string
-      }
-      portfolio: {
-        heading: string
-        body: string
-        modalCta: string
-      }
+    questions: Record<QuestionKey, { label: string; playerLine: string }>
+    answers: Record<QuestionKey, string>
+    conversation: {
+      youLabel: string
+      characterLabel: string
+      okButton: string
     }
     contact: {
       heading: string
@@ -101,56 +81,51 @@ export const dict: Dict = {
     },
     door: {
       intro: 'Holaaa ¿se puede entrar??!!',
-      impatienceLabel: 'LK está impaciente:',
       button: 'Dejar entrar',
     },
     interview: {
       title: 'Entrevista a LK',
-      subtitle: 'Selecciona una pregunta para obtener una respuesta animada.',
+      subtitle: 'Selecciona una pregunta y charlemos como si estuviéramos frente a la puerta.',
       avatarAlt: 'Avatar pixelado de LK',
       selectPrompt: 'Pulsa un botón para comenzar la conversación.',
       questions: {
-        portfolio: 'Ver portafolio',
-        cv: 'Descargar CV',
-        who: '¿Quién eres tú, bro?',
-        stack: 'Stack y tecnologías',
-        joke: 'Dime un chiste',
+        introduction: {
+          label: 'Hola, preséntate, ¿quién eres?',
+          playerLine: 'Hola, preséntate, ¿quién eres?',
+        },
+        motivation: {
+          label: '¿Por qué te gusta la programación?',
+          playerLine: '¿Por qué te gusta la programación?',
+        },
+        learning: {
+          label: '¿Qué cosas has aprendido últimamente?',
+          playerLine: '¿Qué cosas has aprendido últimamente?',
+        },
+        projects: {
+          label: '¿Cuáles son los proyectos en los que has trabajado?',
+          playerLine: '¿En qué proyectos estuviste trabajando?',
+        },
+        contact: {
+          label: '¿Cómo puedo contactar contigo?',
+          playerLine: '¿Cómo puedo contactar contigo?',
+        },
       },
-      responses: {
-        who: {
-          heading: 'Quién es LK',
-          body:
-            'Soy Luis Ángel Jose Da Silva, desarrollador front-end y creador de experiencias digitales con sabor retro. Me apasiona traducir ideas complejas en interfaces amigables, accesibles y llenas de carácter.',
-        },
-        stack: {
-          heading: 'Stack favorito',
-          intro: 'Estas son las herramientas con las que construyo productos digitales robustos:',
-          items: [
-            'TypeScript + React para interfaces modulares y mantenibles',
-            'Node.js y edge functions para backend ligero',
-            'Tailwind CSS para diseñar a velocidad warp',
-            'Framer Motion para microinteracciones con alma',
-            'Vercel, Netlify y AWS para despliegues sin sustos',
-          ],
-        },
-        jokes: {
-          heading: 'Humor en 8 bits',
-          intro: 'Los píxeles también se ríen. Aquí van algunos chistes malos (pero con cariño):',
-          items: [
-            '¿Por qué el sprite fue a terapia? Porque tenía demasiados frames sin resolver.',
-            'Mi bug favorito es el que se convierte en feature cuando lo presento en 8 bits.',
-            'Pixel art rule #1: si queda raro, agrégale otra sombra y di que es “profundidad”.',
-          ],
-        },
-        cv: {
-          heading: 'Descarga el CV',
-          body: 'Haz clic en el botón para descargar mi CV en PDF y descubrir la versión formal de esta entrevista.',
-        },
-        portfolio: {
-          heading: 'Proyectos destacados',
-          body: 'Explora algunos proyectos seleccionados. Cada tarjeta tiene más detalles dentro.',
-          modalCta: 'Abrir proyecto',
-        },
+      answers: {
+        introduction:
+          'Soy Luis Ángel José Da Silva, pero todos me dicen LK. Soy desarrollador front-end y me encanta darle vida a ideas con estética retro y detallitos que cuentan historias.',
+        motivation:
+          'La programación me gusta porque mezcla lógica con creatividad. Es como armar un rompecabezas donde cada pieza cobra vida cuando todo encaja.',
+        learning:
+          'Últimamente estoy profundizando en animaciones con Framer Motion, accesibilidad aplicada y automatizaciones con IA para acelerar flujos creativos.',
+        projects:
+          'He trabajado en dashboards, experiencias interactivas para eventos y sitios personales con mucho cariño pixel-art. Siempre busco que cada proyecto se sienta único.',
+        contact:
+          'Puedes escribirme por correo a hola@lk.dev o mandarme un mensaje por LinkedIn; contesto rápido si mencionas que viniste por la puerta pixelada.',
+      },
+      conversation: {
+        youLabel: 'Tú',
+        characterLabel: 'LK responde',
+        okButton: 'Okey',
       },
       contact: {
         heading: '¿Quieres hablar?',
@@ -191,56 +166,51 @@ export const dict: Dict = {
     },
     door: {
       intro: 'Heeey! May I come in??!!',
-      impatienceLabel: 'LK is getting impatient:',
       button: 'Let in',
     },
     interview: {
       title: 'Interview LK',
-      subtitle: 'Pick a question to unlock an animated answer.',
+      subtitle: 'Pick a question and let’s role-play this hallway interrogation.',
       avatarAlt: 'LK pixel avatar',
-      selectPrompt: 'Choose any button to kick things off.',
+      selectPrompt: 'Tap a button to start the conversation.',
       questions: {
-        portfolio: 'See portfolio',
-        cv: 'Download CV',
-        who: 'Who are you, bro?',
-        stack: 'Stack & tech',
-        joke: 'Tell me a joke',
+        introduction: {
+          label: 'Hey, introduce yourself. Who are you?',
+          playerLine: 'Hey, introduce yourself. Who are you?',
+        },
+        motivation: {
+          label: 'Why do you enjoy programming?',
+          playerLine: 'Why do you enjoy programming?',
+        },
+        learning: {
+          label: 'What have you learned lately?',
+          playerLine: 'What have you learned lately?',
+        },
+        projects: {
+          label: 'Which projects have you worked on?',
+          playerLine: 'Which projects have you worked on recently?',
+        },
+        contact: {
+          label: 'How can I reach you?',
+          playerLine: 'How can I reach you?',
+        },
       },
-      responses: {
-        who: {
-          heading: 'Who is LK',
-          body:
-            "I'm Luis Ángel Jose Da Silva, a front-end developer crafting digital experiences with a retro heart. I love translating complex ideas into friendly, accessible, character-driven interfaces.",
-        },
-        stack: {
-          heading: 'Favorite stack',
-          intro: 'These are the tools I rely on to build robust digital products:',
-          items: [
-            'TypeScript + React for modular, maintainable interfaces',
-            'Node.js and edge functions for nimble backends',
-            'Tailwind CSS to design at warp speed',
-            'Framer Motion for soulful micro-interactions',
-            'Vercel, Netlify and AWS for stress-free deployments',
-          ],
-        },
-        jokes: {
-          heading: '8-bit humor',
-          intro: 'Pixels laugh too. Here are a few lovingly bad jokes:',
-          items: [
-            "Why did the sprite go to therapy? Too many unresolved frames.",
-            "My favorite bug is the one that becomes a feature once rendered in 8-bit.",
-            "Pixel art rule #1: if it looks weird, add another shadow and call it ‘depth’.",
-          ],
-        },
-        cv: {
-          heading: 'Download the CV',
-          body: 'Hit the button to download my PDF CV and discover the formal version of this chat.',
-        },
-        portfolio: {
-          heading: 'Featured projects',
-          body: 'Explore a handful of curated projects. Each card hides more details inside.',
-          modalCta: 'Open project',
-        },
+      answers: {
+        introduction:
+          'I’m Luis Ángel Jose Da Silva—most people call me LK. I’m a front-end developer obsessed with mixing retro vibes, storytelling and polished interactions.',
+        motivation:
+          'Programming hooks me because it blends creativity with systems thinking. Building an interface feels like composing music with pixels and logic.',
+        learning:
+          'I’ve been diving deeper into Framer Motion, inclusive design practices and little AI helpers that speed up ideation and prototyping.',
+        projects:
+          'Recent work includes interactive dashboards, playful landing pages and personal experiments that celebrate pixel aesthetics. Each project is a new playground.',
+        contact:
+          'Drop me an email at hello@lk.dev or ping me on LinkedIn—mention the mysterious door so I know it’s you.',
+      },
+      conversation: {
+        youLabel: 'You',
+        characterLabel: 'LK replies',
+        okButton: 'Okay',
       },
       contact: {
         heading: 'Want to chat?',
