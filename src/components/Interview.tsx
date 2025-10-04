@@ -35,6 +35,7 @@ export function Interview({ onBack }: InterviewProps) {
   const [showOk, setShowOk] = useState(false)
   const typingInterval = useRef<number | null>(null)
   const typingTimeout = useRef<number | null>(null)
+  const isConversationActive = selected !== null
 
   const clearTimers = () => {
     if (typingInterval.current !== null) {
@@ -54,6 +55,9 @@ export function Interview({ onBack }: InterviewProps) {
   }, [])
 
   const handleSelect = (key: QuestionKey) => {
+    if (isConversationActive) {
+      return
+    }
     setSelected(key)
     track('interview_question_selected', { key, lang })
   }
@@ -142,8 +146,6 @@ export function Interview({ onBack }: InterviewProps) {
     setShowOk(false)
   }
 
-  const isConversationActive = selected !== null
-
   return (
     <section className="relative flex min-h-screen flex-col gap-8 px-4 py-10 md:px-12">
       <button
@@ -194,48 +196,69 @@ export function Interview({ onBack }: InterviewProps) {
             {!isConversationActive ? (
               <p className="text-center text-sm text-slate-300">{t('interview.selectPrompt')}</p>
             ) : (
-              <div className="space-y-6">
-                <AnimatePresence mode="popLayout">
-                  {playerLine ? (
-                    <motion.div
-                      key={`player-${playerLine}`}
-                      initial={prefersReducedMotion ? undefined : { opacity: 0, x: 20 }}
-                      animate={prefersReducedMotion ? undefined : { opacity: 1, x: 0 }}
-                      exit={prefersReducedMotion ? undefined : { opacity: 0, x: 20 }}
-                      transition={{ duration: 0.3, ease: 'easeOut' }}
-                      className="ml-auto max-w-xs rounded-2xl border border-highlight/60 bg-highlight/15 p-4 text-left text-sm text-highlight shadow-pixel"
-                    >
-                      <p className="mb-1 text-[11px] uppercase tracking-[0.3em] text-highlight/70">
-                        {conversation.youLabel}
-                      </p>
-                      <p>{playerLine}</p>
-                    </motion.div>
-                  ) : null}
-                </AnimatePresence>
+              <div className="flex flex-col items-center gap-8">
+                <motion.div
+                  role="img"
+                  aria-label={conversation.characterLabel}
+                  className="relative h-32 w-32 rounded-pixel border-4 border-slate-700 bg-slate-900 shadow-pixel"
+                  initial={prefersReducedMotion ? undefined : { opacity: 0, scale: 0.9 }}
+                  animate={prefersReducedMotion ? undefined : { opacity: 1, scale: 1 }}
+                  transition={{ type: 'spring', stiffness: 140, damping: 12 }}
+                >
+                  <div className="absolute inset-[12%] rounded-[18px] border-4 border-slate-800 bg-gradient-to-br from-slate-700 via-slate-800 to-slate-950" />
+                  <div className="absolute inset-0 flex flex-col items-center justify-center gap-2">
+                    <div className="h-10 w-10 rounded-lg border-4 border-slate-900 bg-highlight" />
+                    <div className="flex gap-2">
+                      <span className="h-2.5 w-2.5 rounded-full bg-slate-200" />
+                      <span className="h-2.5 w-2.5 rounded-full bg-slate-200" />
+                    </div>
+                    <div className="h-1 w-12 rounded-full bg-slate-300" />
+                  </div>
+                </motion.div>
 
-                <AnimatePresence mode="popLayout">
-                  {answerLine || stage === 'answerTyping' || stage === 'complete' ? (
-                    <motion.div
-                      key={`answer-${answerLine}`}
-                      initial={prefersReducedMotion ? undefined : { opacity: 0, x: -20 }}
-                      animate={prefersReducedMotion ? undefined : { opacity: 1, x: 0 }}
-                      exit={prefersReducedMotion ? undefined : { opacity: 0, x: -20 }}
-                      transition={{ duration: 0.3, ease: 'easeOut' }}
-                      className="max-w-xl rounded-2xl border border-slate-700/70 bg-slate-800/80 p-4 text-left text-sm text-slate-100 shadow-inner"
-                    >
-                      <p className="mb-1 text-[11px] uppercase tracking-[0.3em] text-slate-400">
-                        {conversation.characterLabel}
-                      </p>
-                      <p>{answerLine}</p>
-                    </motion.div>
-                  ) : null}
-                </AnimatePresence>
+                <div className="relative flex w-full max-w-3xl flex-col items-center">
+                  <AnimatePresence mode="popLayout">
+                    {playerLine ? (
+                      <motion.div
+                        key={`player-${playerLine}`}
+                        initial={prefersReducedMotion ? undefined : { opacity: 0, y: 12 }}
+                        animate={prefersReducedMotion ? undefined : { opacity: 1, y: 0 }}
+                        exit={prefersReducedMotion ? undefined : { opacity: 0, y: 12 }}
+                        transition={{ duration: 0.3, ease: 'easeOut' }}
+                        className="w-full max-w-md rounded-2xl border border-highlight/60 bg-highlight/15 px-6 py-4 text-center text-sm text-highlight shadow-pixel"
+                      >
+                        <p className="mb-1 text-[11px] uppercase tracking-[0.3em] text-highlight/70">
+                          {conversation.youLabel}
+                        </p>
+                        <p>{playerLine}</p>
+                      </motion.div>
+                    ) : null}
+                  </AnimatePresence>
+
+                  <AnimatePresence mode="popLayout">
+                    {answerLine || stage === 'answerTyping' || stage === 'complete' ? (
+                      <motion.div
+                        key={`answer-${answerLine}`}
+                        initial={prefersReducedMotion ? undefined : { opacity: 0, x: 20 }}
+                        animate={prefersReducedMotion ? undefined : { opacity: 1, x: 0 }}
+                        exit={prefersReducedMotion ? undefined : { opacity: 0, x: 20 }}
+                        transition={{ duration: 0.3, ease: 'easeOut' }}
+                        className="mt-6 w-full max-w-sm rounded-2xl border border-slate-700/70 bg-slate-800/80 p-4 text-left text-sm text-slate-100 shadow-inner md:absolute md:left-full md:top-1/2 md:mt-0 md:-translate-y-1/2 md:transform md:shadow-xl"
+                      >
+                        <p className="mb-1 text-[11px] uppercase tracking-[0.3em] text-slate-400">
+                          {conversation.characterLabel}
+                        </p>
+                        <p>{answerLine}</p>
+                      </motion.div>
+                    ) : null}
+                  </AnimatePresence>
+                </div>
 
                 {showOk ? (
                   <motion.button
                     type="button"
                     onClick={handleOk}
-                    className="mx-auto mt-2 rounded-pixel border border-highlight bg-highlight/10 px-6 py-2 font-pixel text-xs uppercase tracking-[0.4em] text-highlight shadow-pixel hover:bg-highlight/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-highlight focus-visible:ring-offset-2 focus-visible:ring-offset-charcoal"
+                    className="rounded-pixel border border-highlight bg-highlight/10 px-6 py-2 font-pixel text-xs uppercase tracking-[0.4em] text-highlight shadow-pixel hover:bg-highlight/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-highlight focus-visible:ring-offset-2 focus-visible:ring-offset-charcoal"
                     initial={prefersReducedMotion ? undefined : { opacity: 0, scale: 0.95 }}
                     animate={prefersReducedMotion ? undefined : { opacity: 1, scale: 1 }}
                     whileTap={prefersReducedMotion ? undefined : { scale: 0.97 }}
@@ -248,29 +271,37 @@ export function Interview({ onBack }: InterviewProps) {
           </motion.div>
         </AnimatePresence>
 
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {questionEntries.map(([key, value], index) => (
-            <motion.button
-              key={key}
-              type="button"
-              onClick={() => handleSelect(key)}
-              className={`rounded-pixel border px-4 py-4 text-left text-sm uppercase tracking-[0.2em] transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-highlight focus-visible:ring-offset-2 focus-visible:ring-offset-charcoal ${
-                selected === key
-                  ? 'border-highlight bg-highlight/25 text-highlight'
-                  : isConversationActive
-                    ? 'cursor-not-allowed border-slate-700/60 bg-slate-900/40 text-slate-500'
-                    : 'border-slate-700 bg-slate-900/70 text-slate-200 hover:bg-slate-800/70'
-              }`}
+        <AnimatePresence>
+          {!isConversationActive ? (
+            <motion.div
+              key="questions"
+              className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3"
               initial={prefersReducedMotion ? undefined : { opacity: 0, y: 15 }}
               animate={prefersReducedMotion ? undefined : { opacity: 1, y: 0 }}
-              transition={{ duration: 0.3, delay: prefersReducedMotion ? 0 : 0.05 * index }}
-              aria-pressed={selected === key}
-              disabled={isConversationActive}
+              exit={prefersReducedMotion ? undefined : { opacity: 0, y: -10 }}
+              transition={{ duration: 0.3, ease: 'easeOut' }}
             >
-              {value.label}
-            </motion.button>
-          ))}
-        </div>
+              {questionEntries.map(([key, value], index) => (
+                <motion.button
+                  key={key}
+                  type="button"
+                  onClick={() => handleSelect(key)}
+                  className={`rounded-pixel border px-4 py-4 text-left text-sm uppercase tracking-[0.2em] transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-highlight focus-visible:ring-offset-2 focus-visible:ring-offset-charcoal ${
+                    selected === key
+                      ? 'border-highlight bg-highlight/25 text-highlight'
+                      : 'border-slate-700 bg-slate-900/70 text-slate-200 hover:bg-slate-800/70'
+                  }`}
+                  initial={prefersReducedMotion ? undefined : { opacity: 0, y: 15 }}
+                  animate={prefersReducedMotion ? undefined : { opacity: 1, y: 0 }}
+                  transition={{ duration: 0.3, delay: prefersReducedMotion ? 0 : 0.05 * index }}
+                  aria-pressed={selected === key}
+                >
+                  {value.label}
+                </motion.button>
+              ))}
+            </motion.div>
+          ) : null}
+        </AnimatePresence>
       </div>
 
       <ContactForm />
