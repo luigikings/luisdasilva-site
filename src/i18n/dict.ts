@@ -39,21 +39,6 @@ type DictSection = {
       characterLabel: string
       okButton: string
     }
-    contact: {
-      heading: string
-      description: string
-      nameLabel: string
-      emailLabel: string
-      messageLabel: string
-      submit: string
-      helper: string
-      errors: {
-        name: string
-        email: string
-        message: string
-        success: string
-      }
-    }
   }
   footer: {
     text: string
@@ -127,22 +112,6 @@ export const dict: Dict = {
         characterLabel: 'LK responde',
         okButton: 'Okey',
       },
-      contact: {
-        heading: '¿Quieres hablar?',
-        description:
-          'Envíame un mensaje rápido con este formulario. Llega directo a mi bandeja si configuras tu servicio favorito.',
-        nameLabel: 'Nombre',
-        emailLabel: 'Email',
-        messageLabel: 'Mensaje',
-        submit: 'Enviar mensaje',
-        helper: 'Este formulario usa Formspree. Sustituye la URL de acción por la tuya para activarlo.',
-        errors: {
-          name: 'Ingresa tu nombre.',
-          email: 'Necesito un email válido.',
-          message: 'Cuéntame un poco más, mínimo 10 caracteres.',
-          success: '¡Listo! Reemplaza la acción de Formspree para enviar de verdad.',
-        },
-      },
     },
     footer: {
       text: 'Built with React + Tailwind + Framer Motion',
@@ -211,22 +180,6 @@ export const dict: Dict = {
         youLabel: 'You',
         characterLabel: 'LK replies',
         okButton: 'Okay',
-      },
-      contact: {
-        heading: 'Want to chat?',
-        description:
-          'Send me a quick note with this form. Point it to your favourite service and it will reach me instantly.',
-        nameLabel: 'Name',
-        emailLabel: 'Email',
-        messageLabel: 'Message',
-        submit: 'Send message',
-        helper: 'This form uses Formspree. Replace the action URL with yours to make it live.',
-        errors: {
-          name: 'Please enter your name.',
-          email: 'Please enter a valid email.',
-          message: 'Please share a bit more, at least 10 characters.',
-          success: 'All set! Replace the Formspree action URL to actually send.',
-        },
       },
     },
     footer: {

@@ -1,6 +1,6 @@
 # 🎮 Pixel Interrogatorio — Portfolio de LK
 
-> Portal interactivo en pixel art para conocer el trabajo de **Luis Ángel Jose Da Silva (LK)**. Incluye flujo de entrevista, portafolio editable, descarga de CV y formulario de contacto preparado para servicios sin backend.
+> Portal interactivo en pixel art para conocer el trabajo de **Luis Ángel Jose Da Silva (LK)**. Incluye flujo de entrevista, portafolio editable y descarga de CV.
 
 ## 📦 Stack principal
 - [Vite](https://vitejs.dev/) + [React](https://react.dev/) + [TypeScript](https://www.typescriptlang.org/)
@@ -50,11 +50,6 @@ src/
 - Ajusta los mensajes de impaciencia en [`src/data/dialogs.ts`](src/data/dialogs.ts).
 - Cada entrada tiene `es` y `en` para mantener el tono en ambos idiomas.
 
-## ✉️ Formulario de contacto (sin backend)
-- El componente [`ContactForm`](src/components/ContactForm.tsx) está listo para Formspree.
-- Reemplaza el atributo `action="#"` con tu endpoint `https://formspree.io/f/XXXXXX`.
-- Validación mínima en frontend (nombre, email y mensaje de al menos 10 caracteres).
-
 ## 🖼️ Personalizar imágenes
 - El proyecto usa elementos vectoriales generados con CSS para la puerta y el avatar.
 - Si deseas sprites pixel art reales, añade tus propios archivos a `public/` y actualiza los componentes.
@@ -75,7 +70,6 @@ src/
 - Recuerda configurar dominios personalizados (`luis-dasilva.com`) y HTTPS.
 
 ## 🧭 Roadmap sugerido
-- [ ] Integrar backend ligero para guardar mensajes del formulario.
 - [ ] Añadir vista de timeline/experiencia profesional.
 - [ ] Conectar analytics reales (Plausible) usando `lib/analytics.ts`.
 - [ ] Incluir modo “entrevista rápida” con preguntas aleatorias.
