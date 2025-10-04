@@ -152,8 +152,10 @@ export function DoorScene({ onEnter }: DoorSceneProps) {
   }, [messageIndex, prefersReducedMotion])
 
   const doorVariants: Variants = {
-    rest: { rotate: 0, x: 0, boxShadow: '0 14px 0 0 rgba(8, 12, 22, 0.65)' },
+    rest: { rotate: 0, x: 0, scale: 1, opacity: 1, boxShadow: '0 14px 0 0 rgba(8, 12, 22, 0.65)' },
     knock: {
+      scale: 1,
+      opacity: 1,
       rotate: [0, -1.2, 1.5, -1, 0.6, 0],
       x: [0, -4, 4, -3, 2, 0],
       transition: {
@@ -168,6 +170,7 @@ export function DoorScene({ onEnter }: DoorSceneProps) {
       rotate: 0,
       x: [0, -2, 2, -1, 0],
       scale: [1, 1.06, 0.97, 1],
+      opacity: 1,
       boxShadow: [
         '0 14px 0 0 rgba(8, 12, 22, 0.65)',
         '0 22px 0 0 rgba(8, 12, 22, 0.75)',
