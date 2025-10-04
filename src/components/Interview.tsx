@@ -184,17 +184,17 @@ export function Interview({ onBack }: InterviewProps) {
                 initial={
                   prefersReducedMotion
                     ? undefined
-                    : { opacity: 0, y: 12, scale: 0.98 }
+                    : { opacity: 0, y: 12 }
                 }
                 animate={
                   prefersReducedMotion
                     ? undefined
-                    : { opacity: 1, y: 0, scale: 1 }
+                    : { opacity: 1, y: 0 }
                 }
                 exit={
                   prefersReducedMotion
                     ? undefined
-                    : { opacity: 0, y: 12, scale: 0.98 }
+                    : { opacity: 0, y: 12 }
                 }
                 transition={{ duration: 0.25, ease: 'easeOut' }}
                 className="mt-4 w-full max-w-xs rounded-2xl border border-slate-700/70 bg-slate-800/90 p-4 text-left text-sm text-slate-100 shadow-inner md:absolute md:left-full md:top-1/2 md:mt-0 md:ml-6 md:w-72 md:-translate-y-1/2 md:transform md:shadow-xl"
