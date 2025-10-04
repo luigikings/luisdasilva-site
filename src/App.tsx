@@ -1,5 +1,5 @@
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 import { DoorScene } from './components/DoorScene'
 import { Interview } from './components/Interview'
@@ -8,9 +8,43 @@ import { LoadingScreen } from './components/LoadingScreen'
 
 type ViewKey = 'loading' | 'door' | 'interview'
 
+const LOADING_TITLES = ['loading.', 'loading..', 'loading...']
+
 export function App() {
   const prefersReducedMotion = useReducedMotion()
   const [view, setView] = useState<ViewKey>('loading')
+  const [loadingTitleIndex, setLoadingTitleIndex] = useState(0)
+
+  useEffect(() => {
+    if (view === 'loading') {
+      document.title = LOADING_TITLES[loadingTitleIndex]
+      return
+    }
+
+    if (view === 'door') {
+      document.title = 'Luis quiere entrar!'
+      return
+    }
+
+    if (view === 'interview') {
+      document.title = 'Entrevista con Luis Angel Da Silva'
+    }
+  }, [view, loadingTitleIndex])
+
+  useEffect(() => {
+    if (view !== 'loading') {
+      setLoadingTitleIndex(0)
+      return
+    }
+
+    const intervalId = window.setInterval(() => {
+      setLoadingTitleIndex((prev) => (prev + 1) % LOADING_TITLES.length)
+    }, 2000)
+
+    return () => {
+      window.clearInterval(intervalId)
+    }
+  }, [view])
 
   const handleStart = () => setView('door')
   const handleEnter = () => setView('interview')
