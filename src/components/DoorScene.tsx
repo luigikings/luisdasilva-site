@@ -140,19 +140,16 @@ export function DoorScene({ onEnter }: DoorSceneProps) {
       return
     }
 
-    if (
-      previousMessageIndex.current === 0 &&
-      messageIndex > 0 &&
-      !doorImpact
-    ) {
+    if (messageIndex >= 0 && messageIndex !== previousMessageIndex.current) {
       setDoorImpact(true)
       const timer = window.setTimeout(() => {
         setDoorImpact(false)
       }, 360)
       timers.current.push(timer)
     }
+
     previousMessageIndex.current = messageIndex
-  }, [doorImpact, messageIndex, prefersReducedMotion])
+  }, [messageIndex, prefersReducedMotion])
 
   const doorVariants: Variants = {
     rest: { rotate: 0, x: 0, boxShadow: '0 14px 0 0 rgba(8, 12, 22, 0.65)' },
