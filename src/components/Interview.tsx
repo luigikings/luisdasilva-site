@@ -156,12 +156,12 @@ export function Interview({ onBack }: InterviewProps) {
         {t('common.back')}
       </button>
 
-      <div className="flex flex-col items-center gap-8 md:flex-row md:items-start">
+      <div className="flex flex-col items-center gap-6 text-center">
         <div className="relative flex flex-col items-center">
           <motion.div
             role="img"
             aria-label={t('interview.avatarAlt')}
-            className="relative h-48 w-48 rounded-pixel border-4 border-slate-700 bg-slate-900 shadow-pixel"
+            className="relative h-56 w-56 rounded-pixel border-4 border-slate-700 bg-slate-900 shadow-pixel md:h-64 md:w-64"
             initial={prefersReducedMotion ? undefined : { opacity: 0, scale: 0.9 }}
             animate={prefersReducedMotion ? undefined : { opacity: 1, scale: 1 }}
             transition={{ type: 'spring', stiffness: 120, damping: 14 }}
@@ -197,7 +197,7 @@ export function Interview({ onBack }: InterviewProps) {
                     : { opacity: 0 }
                 }
                 transition={{ duration: 0.25, ease: 'easeOut' }}
-                className="mt-4 w-full max-w-xs rounded-2xl border border-slate-700/70 bg-slate-800/90 p-4 text-left text-sm text-slate-100 shadow-inner md:absolute md:left-full md:top-1/2 md:mt-0 md:ml-6 md:w-72 md:-translate-y-1/2 md:transform md:shadow-xl"
+                className="mt-4 w-full max-w-xs rounded-2xl border border-slate-700/70 bg-slate-800/90 p-4 text-left text-sm text-slate-100 shadow-inner md:absolute md:left-full md:top-1/2 md:mt-0 md:ml-6 md:w-72 md:-translate-y-1/2 md:transform md:text-left md:shadow-xl"
               >
                 <p className="mb-1 text-[11px] uppercase tracking-[0.3em] text-slate-400">
                   {conversation.characterLabel}
@@ -207,11 +207,11 @@ export function Interview({ onBack }: InterviewProps) {
             ) : null}
           </AnimatePresence>
         </div>
-        <div className="space-y-3 text-center md:text-left">
+        <div className="space-y-3">
           <h1 className="font-pixel text-lg uppercase tracking-[0.5em] text-highlight">
             {t('interview.title')}
           </h1>
-          <p className="max-w-xl text-sm text-slate-300">{t('interview.subtitle')}</p>
+          <p className="mx-auto max-w-xl text-sm text-slate-300">{t('interview.subtitle')}</p>
         </div>
       </div>
 

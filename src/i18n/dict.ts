@@ -84,8 +84,8 @@ export const dict: Dict = {
       button: 'Dejar entrar',
     },
     interview: {
-      title: 'Entrevista a LK',
-      subtitle: 'Selecciona una pregunta y charlemos como si estuviéramos frente a la puerta.',
+      title: 'Entrevista a Luis Da Silva',
+      subtitle: 'Conoce a Luis en profundidad.',
       avatarAlt: 'Avatar pixelado de LK',
       selectPrompt: 'Pulsa un botón para comenzar la conversación.',
       questions: {
@@ -169,8 +169,8 @@ export const dict: Dict = {
       button: 'Let in',
     },
     interview: {
-      title: 'Interview LK',
-      subtitle: 'Pick a question and let’s role-play this hallway interrogation.',
+      title: 'Interview Luis Da Silva',
+      subtitle: 'Get to know Luis in depth.',
       avatarAlt: 'LK pixel avatar',
       selectPrompt: 'Tap a button to start the conversation.',
       questions: {
