@@ -189,7 +189,7 @@ export function DoorScene({ onEnter }: DoorSceneProps) {
         <motion.div
           role="img"
           aria-label={t('door.intro')}
-          className="relative mx-auto h-52 w-44 rounded-pixel border-4 border-slate-700 bg-slate-900 shadow-pixel"
+          className="relative mx-auto h-52 w-44 rounded-pixel border-4 border-slate-800 bg-slate-950/60 shadow-[0_10px_0_0_rgba(8,12,22,0.65)]"
           initial={prefersReducedMotion ? undefined : { scale: 0.85, opacity: 0 }}
           animate={
             prefersReducedMotion
@@ -203,22 +203,21 @@ export function DoorScene({ onEnter }: DoorSceneProps) {
           variants={prefersReducedMotion ? undefined : doorVariants}
           transition={{ type: 'spring', stiffness: 130, damping: 14 }}
         >
-          <div className="relative h-full w-full overflow-hidden rounded-[18px] border-4 border-slate-800 bg-gradient-to-b from-slate-600 via-slate-700 to-slate-900">
-            <div className="absolute inset-x-6 top-5 h-4 rounded-full border-2 border-slate-900 bg-slate-200/80" />
-            <div className="absolute inset-x-6 top-12 h-[60%] rounded-lg border-4 border-slate-800 bg-slate-900/70" />
+          <div
+            className="absolute inset-x-6 -bottom-4 h-4 rounded-b-[18px] bg-slate-900/70 blur-[2px]"
+            aria-hidden
+          />
+          <div
+            className="absolute -inset-3 rounded-[22px] border-4 border-slate-950/80 bg-slate-900/80"
+            aria-hidden
+          />
+          <div className="relative h-full w-full overflow-hidden rounded-[18px] border-[3px] border-slate-950 bg-gradient-to-b from-[#99a4c4] via-[#5f6b89] to-[#222b3c] shadow-[inset_0_10px_16px_rgba(15,23,42,0.45)]">
+            <div className="absolute inset-x-8 top-6 h-6 rounded-[12px] border-2 border-slate-900/70 bg-slate-100/80 shadow-[inset_0_-2px_6px_rgba(51,65,85,0.35)]" />
+            <div className="absolute inset-x-10 top-[38%] h-2 rounded-full bg-slate-900/35" />
+            <div className="absolute inset-x-8 top-[44%] h-[38%] rounded-[14px] border-[3px] border-slate-900/60 bg-gradient-to-b from-[#465470]/85 via-[#374152]/90 to-[#111827] shadow-[inset_0_6px_8px_rgba(15,23,42,0.45)]" />
+            <div className="absolute inset-x-10 bottom-8 h-12 rounded-[10px] border-[3px] border-slate-900/60 bg-gradient-to-b from-[#71809f]/85 via-[#55617d]/90 to-[#1f2637] shadow-[inset_0_6px_10px_rgba(15,23,42,0.5)]" />
             <motion.div
-              className="absolute inset-0"
-              animate={
-                prefersReducedMotion
-                  ? undefined
-                  : stage === 'knocking'
-                    ? { boxShadow: ['0 0 0 rgba(148, 163, 184, 0)', '0 0 30px rgba(148, 163, 184, 0.25)', '0 0 0 rgba(148, 163, 184, 0)'] }
-                    : { boxShadow: '0 0 0 rgba(148, 163, 184, 0)' }
-              }
-              transition={{ duration: 0.9, ease: 'easeInOut', repeat: stage === 'knocking' ? 2 : 0, repeatDelay: 0.2 }}
-            />
-            <motion.div
-              className="absolute right-6 top-1/2 h-3 w-3 -translate-y-1/2 rounded-full bg-highlight shadow-[0_0_0_2px_rgba(17,17,26,0.7)]"
+              className="absolute right-8 top-1/2 h-4 w-4 -translate-y-1/2 rounded-full bg-highlight shadow-[0_0_0_3px_rgba(17,17,26,0.55)]"
               animate={
                 prefersReducedMotion
                   ? undefined
@@ -227,6 +226,18 @@ export function DoorScene({ onEnter }: DoorSceneProps) {
                     : { scale: 1 }
               }
               transition={{ duration: 0.6, ease: 'easeInOut', repeat: stage === 'knocking' ? 2 : 0, repeatDelay: 0.15 }}
+            />
+            <div className="absolute right-8 top-[54%] h-1 w-6 rounded-full bg-highlight/35" aria-hidden />
+            <motion.div
+              className="absolute inset-0"
+              animate={
+                prefersReducedMotion
+                  ? undefined
+                  : stage === 'knocking'
+                    ? { boxShadow: ['0 0 0 rgba(148, 163, 184, 0)', '0 0 32px rgba(148, 163, 184, 0.3)', '0 0 0 rgba(148, 163, 184, 0)'] }
+                    : { boxShadow: '0 0 0 rgba(148, 163, 184, 0)' }
+              }
+              transition={{ duration: 0.9, ease: 'easeInOut', repeat: stage === 'knocking' ? 2 : 0, repeatDelay: 0.2 }}
             />
           </div>
         </motion.div>
