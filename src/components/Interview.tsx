@@ -2,7 +2,6 @@ import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
 import { useEffect, useMemo, useRef, useState } from 'react'
 
 import { track } from '../lib/analytics'
-import { ContactForm } from './ContactForm'
 import { useT } from '../hooks/useT'
 import type { QuestionKey } from '../i18n/dict'
 
@@ -295,8 +294,6 @@ export function Interview({ onBack }: InterviewProps) {
           ) : null}
         </AnimatePresence>
       </div>
-
-      <ContactForm />
 
       <footer className="mt-auto text-center text-xs text-slate-500">
         {t('footer.text')}
