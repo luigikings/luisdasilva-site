@@ -219,7 +219,6 @@ export function Interview({ onBack }: InterviewProps) {
         <AnimatePresence mode="wait">
           <motion.div
             key={selected ?? 'idle'}
-            className="relative min-h-[260px] rounded-3xl border border-slate-700/70 bg-slate-900/70 p-6 shadow-inner"
             initial={prefersReducedMotion ? undefined : { opacity: 0, y: 15 }}
             animate={prefersReducedMotion ? undefined : { opacity: 1, y: 0 }}
             exit={prefersReducedMotion ? undefined : { opacity: 0, y: -10 }}
