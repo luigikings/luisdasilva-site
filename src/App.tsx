@@ -48,7 +48,6 @@ export function App() {
 
   const handleStart = () => setView('door')
   const handleEnter = () => setView('interview')
-  const handleBack = () => setView('door')
 
   return (
     <div className="relative min-h-screen overflow-hidden">
@@ -86,7 +85,7 @@ export function App() {
             exit={prefersReducedMotion ? undefined : { opacity: 0, y: -10 }}
             transition={{ duration: 0.4, ease: 'easeOut' }}
           >
-            <Interview onBack={handleBack} />
+            <Interview />
           </motion.main>
         ) : null}
       </AnimatePresence>
