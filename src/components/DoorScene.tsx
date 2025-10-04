@@ -14,8 +14,10 @@ export function DoorScene({ onEnter }: DoorSceneProps) {
   const [stage, setStage] = useState<'idle' | 'knocking' | 'dialog'>('idle')
   const [messageIndex, setMessageIndex] = useState(-1)
   const [typedMessage, setTypedMessage] = useState('')
+  const [doorImpact, setDoorImpact] = useState(false)
   const timers = useRef<number[]>([])
   const typeInterval = useRef<number | null>(null)
+  const previousMessageIndex = useRef(-1)
 
   const dialogs = useMemo<string[]>(
     () => doorDialogs.map((item) => (lang === 'es' ? item.es : item.en)),
@@ -132,6 +134,26 @@ export function DoorScene({ onEnter }: DoorSceneProps) {
     }
   }, [messageIndex, prefersReducedMotion, sequence])
 
+  useEffect(() => {
+    if (prefersReducedMotion) {
+      previousMessageIndex.current = messageIndex
+      return
+    }
+
+    if (
+      previousMessageIndex.current === 0 &&
+      messageIndex > 0 &&
+      !doorImpact
+    ) {
+      setDoorImpact(true)
+      const timer = window.setTimeout(() => {
+        setDoorImpact(false)
+      }, 360)
+      timers.current.push(timer)
+    }
+    previousMessageIndex.current = messageIndex
+  }, [doorImpact, messageIndex, prefersReducedMotion])
+
   const doorVariants: Variants = {
     rest: { rotate: 0, x: 0, boxShadow: '0 14px 0 0 rgba(8, 12, 22, 0.65)' },
     knock: {
@@ -144,6 +166,18 @@ export function DoorScene({ onEnter }: DoorSceneProps) {
         repeatDelay: 0.1,
       },
       boxShadow: '0 18px 0 0 rgba(8, 12, 22, 0.85)',
+    },
+    impact: {
+      rotate: 0,
+      x: [0, -2, 2, -1, 0],
+      scale: [1, 1.06, 0.97, 1],
+      boxShadow: [
+        '0 14px 0 0 rgba(8, 12, 22, 0.65)',
+        '0 22px 0 0 rgba(8, 12, 22, 0.75)',
+        '0 12px 0 0 rgba(8, 12, 22, 0.6)',
+        '0 14px 0 0 rgba(8, 12, 22, 0.65)',
+      ],
+      transition: { duration: 0.42, ease: 'easeOut' },
     },
   }
 
@@ -165,7 +199,9 @@ export function DoorScene({ onEnter }: DoorSceneProps) {
               ? undefined
               : stage === 'knocking'
                 ? 'knock'
-                : 'rest'
+                : doorImpact
+                  ? 'impact'
+                  : 'rest'
           }
           variants={prefersReducedMotion ? undefined : doorVariants}
           transition={{ type: 'spring', stiffness: 130, damping: 14 }}
@@ -210,7 +246,7 @@ export function DoorScene({ onEnter }: DoorSceneProps) {
             initial={prefersReducedMotion ? undefined : { opacity: 0, y: 10 }}
             animate={prefersReducedMotion ? undefined : { opacity: 1, y: 0 }}
             transition={{ duration: 0.4, ease: 'easeOut' }}
-            className="font-mono text-base text-slate-100"
+            className="font-pixel text-lg uppercase tracking-[0.5em] text-highlight"
           >
             {typedMessage}
           </motion.p>
