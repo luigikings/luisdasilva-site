@@ -6,23 +6,18 @@ export type DoorDialog = {
 
 export const doorDialogs: DoorDialog[] = [
   {
-    id: 'patience-1',
-    es: 'Hola... prometo no pisar la alfombra si me dejas pasar.',
-    en: 'Hello... I promise not to step on the rug if you let me in.',
+    id: 'follow-1',
+    es: '¡Holaaa! ¿Hay alguien ahí dentro?',
+    en: 'Hellooo! Is anyone in there?',
   },
   {
-    id: 'patience-2',
-    es: 'Traje galletas digitales. Solo pesan 4kb cada una.',
-    en: 'I brought digital cookies. They only weigh 4kb each.',
+    id: 'follow-2',
+    es: 'Me estoy congelando aquí afuera, ¡por favor!',
+    en: 'I am freezing out here, pretty please!',
   },
   {
-    id: 'patience-3',
-    es: 'Mis píxeles se están congelando aquí fuera...',
-    en: 'My pixels are freezing out here...',
-  },
-  {
-    id: 'patience-4',
-    es: 'Tengo un chiste buenísimo pero solo si abres la puerta.',
-    en: 'I’ve got a killer joke but it requires an open door.',
+    id: 'follow-3',
+    es: 'Si golpeo tres veces es la señal secreta, ¿cierto?',
+    en: 'If I knock three times that is the secret signal, right?',
   },
 ]

@@ -1,9 +1,8 @@
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
-import { useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 
 import { track } from '../lib/analytics'
 import { ContactForm } from './ContactForm'
-import { PortfolioGrid } from './PortfolioGrid'
 import { useT } from '../hooks/useT'
 import type { QuestionKey } from '../i18n/dict'
 
@@ -14,105 +13,136 @@ type InterviewProps = {
 export function Interview({ onBack }: InterviewProps) {
   const { t, lang } = useT()
   const prefersReducedMotion = useReducedMotion()
-  const questionEntries = Object.entries(
-    t<Record<QuestionKey, string>>('interview.questions'),
-  ) as [QuestionKey, string][]
-  const responses = t<{
-    who: { heading: string; body: string }
-    stack: { heading: string; intro: string; items: string[] }
-    jokes: { heading: string; intro: string; items: string[] }
-    cv: { heading: string; body: string }
-    portfolio: { heading: string; body: string; modalCta: string }
-  }>('interview.responses')
+  const questions = t<
+    Record<QuestionKey, { label: string; playerLine: string }>
+  >('interview.questions')
+  const answers = t<Record<QuestionKey, string>>('interview.answers')
+  const conversation = t<{
+    youLabel: string
+    characterLabel: string
+    okButton: string
+  }>('interview.conversation')
+  const questionEntries = useMemo(
+    () => Object.entries(questions) as [QuestionKey, { label: string; playerLine: string }][],
+    [questions],
+  )
   const [selected, setSelected] = useState<QuestionKey | null>(null)
+  const [stage, setStage] = useState<'idle' | 'playerTyping' | 'answerTyping' | 'complete'>(
+    'idle',
+  )
+  const [playerLine, setPlayerLine] = useState('')
+  const [answerLine, setAnswerLine] = useState('')
+  const [showOk, setShowOk] = useState(false)
+  const typingInterval = useRef<number | null>(null)
+  const typingTimeout = useRef<number | null>(null)
+
+  const clearTimers = () => {
+    if (typingInterval.current !== null) {
+      window.clearInterval(typingInterval.current)
+      typingInterval.current = null
+    }
+    if (typingTimeout.current !== null) {
+      window.clearTimeout(typingTimeout.current)
+      typingTimeout.current = null
+    }
+  }
+
+  useEffect(() => {
+    return () => {
+      clearTimers()
+    }
+  }, [])
 
   const handleSelect = (key: QuestionKey) => {
     setSelected(key)
     track('interview_question_selected', { key, lang })
   }
 
-  const renderResponse = () => {
+  useEffect(() => {
     if (!selected) {
-      return (
-        <p className="text-sm text-slate-300">{t('interview.selectPrompt')}</p>
-      )
+      clearTimers()
+      setStage('idle')
+      setPlayerLine('')
+      setAnswerLine('')
+      setShowOk(false)
+      return
     }
 
-    switch (selected) {
-      case 'who':
-        return (
-          <div className="space-y-4 text-left">
-            <h3 className="font-pixel text-sm uppercase tracking-[0.4em] text-highlight">
-              {responses.who.heading}
-            </h3>
-            <p className="text-sm leading-relaxed text-slate-100">{responses.who.body}</p>
-          </div>
-        )
-      case 'stack':
-        return (
-          <div className="space-y-4 text-left">
-            <h3 className="font-pixel text-sm uppercase tracking-[0.4em] text-highlight">
-              {responses.stack.heading}
-            </h3>
-            <p className="text-sm text-slate-200/90">{responses.stack.intro}</p>
-            <ul className="space-y-2 text-sm text-slate-100">
-              {responses.stack.items.map((item: string) => (
-                <li key={item} className="flex items-start gap-3">
-                  <span aria-hidden="true" className="mt-1 h-2 w-2 rounded-full bg-highlight" />
-                  <span>{item}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-        )
-      case 'joke':
-        return (
-          <div className="space-y-4 text-left">
-            <h3 className="font-pixel text-sm uppercase tracking-[0.4em] text-highlight">
-              {responses.jokes.heading}
-            </h3>
-            <p className="text-sm text-slate-200/90">{responses.jokes.intro}</p>
-            <ul className="space-y-2 text-sm text-slate-100">
-              {responses.jokes.items.map((item: string) => (
-                <li key={item} className="rounded-xl border border-slate-700/60 bg-slate-800/60 p-3">
-                  {item}
-                </li>
-              ))}
-            </ul>
-          </div>
-        )
-      case 'cv':
-        return (
-          <div className="space-y-4 text-left">
-            <h3 className="font-pixel text-sm uppercase tracking-[0.4em] text-highlight">
-              {responses.cv.heading}
-            </h3>
-            <p className="text-sm text-slate-200/90">{responses.cv.body}</p>
-            <a
-              href="/LK_CV.pdf"
-              download
-              className="inline-flex items-center gap-2 self-start rounded-pixel border border-highlight bg-highlight/10 px-5 py-2 font-pixel text-xs uppercase tracking-[0.3em] text-highlight shadow-pixel hover:bg-highlight/20"
-            >
-              {t('common.download')}
-            </a>
-          </div>
-        )
-      case 'portfolio':
-        return (
-          <div className="space-y-6 text-left">
-            <div className="space-y-3">
-              <h3 className="font-pixel text-sm uppercase tracking-[0.4em] text-highlight">
-                {responses.portfolio.heading}
-              </h3>
-              <p className="text-sm text-slate-200/90">{responses.portfolio.body}</p>
-            </div>
-            <PortfolioGrid onProjectOpen={(id) => track('portfolio_open', { id, lang })} />
-          </div>
-        )
-      default:
-        return null
+    const playerMessage = questions[selected].playerLine
+    const answerMessage = answers[selected]
+
+    clearTimers()
+    setStage('playerTyping')
+    setPlayerLine('')
+    setAnswerLine('')
+    setShowOk(false)
+
+    if (prefersReducedMotion) {
+      setPlayerLine(playerMessage)
+      setAnswerLine(answerMessage)
+      setStage('complete')
+      setShowOk(true)
+      return
     }
+
+    let playerIndex = 0
+    typingInterval.current = window.setInterval(() => {
+      playerIndex += 1
+      setPlayerLine(playerMessage.slice(0, playerIndex))
+
+      if (playerIndex >= playerMessage.length && typingInterval.current !== null) {
+        window.clearInterval(typingInterval.current)
+        typingInterval.current = null
+
+        typingTimeout.current = window.setTimeout(() => {
+          setStage('answerTyping')
+        }, 280)
+      }
+    }, 32)
+
+    return () => {
+      clearTimers()
+    }
+  }, [answers, prefersReducedMotion, questions, selected])
+
+  useEffect(() => {
+    if (stage !== 'answerTyping' || !selected) {
+      return
+    }
+
+    const answerMessage = answers[selected]
+    let answerIndex = 0
+
+    typingInterval.current = window.setInterval(() => {
+      answerIndex += 1
+      setAnswerLine(answerMessage.slice(0, answerIndex))
+
+      if (answerIndex >= answerMessage.length && typingInterval.current !== null) {
+        window.clearInterval(typingInterval.current)
+        typingInterval.current = null
+
+        typingTimeout.current = window.setTimeout(() => {
+          setStage('complete')
+          setShowOk(true)
+        }, 180)
+      }
+    }, 26)
+
+    return () => {
+      clearTimers()
+    }
+  }, [answers, selected, stage])
+
+  const handleOk = () => {
+    clearTimers()
+    setSelected(null)
+    setStage('idle')
+    setPlayerLine('')
+    setAnswerLine('')
+    setShowOk(false)
   }
+
+  const isConversationActive = selected !== null
 
   return (
     <section className="relative flex min-h-screen flex-col gap-8 px-4 py-10 md:px-12">
@@ -151,40 +181,96 @@ export function Interview({ onBack }: InterviewProps) {
         </div>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-[minmax(0,280px)_1fr]">
-        <div className="flex flex-col gap-3">
-          {questionEntries.map(([key, label], index) => (
-            <motion.button
-              key={key}
-              type="button"
-              onClick={() => handleSelect(key)}
-              className={`rounded-pixel border px-4 py-3 text-left text-sm uppercase tracking-[0.2em] transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-highlight focus-visible:ring-offset-2 focus-visible:ring-offset-charcoal ${
-                selected === key
-                  ? 'border-highlight bg-highlight/20 text-highlight'
-                  : 'border-slate-700 bg-slate-900/70 text-slate-200 hover:bg-slate-800/70'
-              }`}
-              initial={prefersReducedMotion ? undefined : { opacity: 0, x: -10 }}
-              animate={prefersReducedMotion ? undefined : { opacity: 1, x: 0 }}
-              transition={{ duration: 0.3, delay: prefersReducedMotion ? 0 : 0.05 * index }}
-              aria-pressed={selected === key}
-            >
-              {label}
-            </motion.button>
-          ))}
-        </div>
-
+      <div className="flex flex-col gap-8">
         <AnimatePresence mode="wait">
           <motion.div
             key={selected ?? 'idle'}
-            className="min-h-[260px] rounded-pixel border border-slate-700/70 bg-slate-900/70 p-6 shadow-inner"
+            className="relative min-h-[260px] rounded-3xl border border-slate-700/70 bg-slate-900/70 p-6 shadow-inner"
             initial={prefersReducedMotion ? undefined : { opacity: 0, y: 15 }}
             animate={prefersReducedMotion ? undefined : { opacity: 1, y: 0 }}
             exit={prefersReducedMotion ? undefined : { opacity: 0, y: -10 }}
             transition={{ duration: 0.35, ease: 'easeOut' }}
           >
-            {renderResponse()}
+            {!isConversationActive ? (
+              <p className="text-center text-sm text-slate-300">{t('interview.selectPrompt')}</p>
+            ) : (
+              <div className="space-y-6">
+                <AnimatePresence mode="popLayout">
+                  {playerLine ? (
+                    <motion.div
+                      key={`player-${playerLine}`}
+                      initial={prefersReducedMotion ? undefined : { opacity: 0, x: 20 }}
+                      animate={prefersReducedMotion ? undefined : { opacity: 1, x: 0 }}
+                      exit={prefersReducedMotion ? undefined : { opacity: 0, x: 20 }}
+                      transition={{ duration: 0.3, ease: 'easeOut' }}
+                      className="ml-auto max-w-xs rounded-2xl border border-highlight/60 bg-highlight/15 p-4 text-left text-sm text-highlight shadow-pixel"
+                    >
+                      <p className="mb-1 text-[11px] uppercase tracking-[0.3em] text-highlight/70">
+                        {conversation.youLabel}
+                      </p>
+                      <p>{playerLine}</p>
+                    </motion.div>
+                  ) : null}
+                </AnimatePresence>
+
+                <AnimatePresence mode="popLayout">
+                  {answerLine || stage === 'answerTyping' || stage === 'complete' ? (
+                    <motion.div
+                      key={`answer-${answerLine}`}
+                      initial={prefersReducedMotion ? undefined : { opacity: 0, x: -20 }}
+                      animate={prefersReducedMotion ? undefined : { opacity: 1, x: 0 }}
+                      exit={prefersReducedMotion ? undefined : { opacity: 0, x: -20 }}
+                      transition={{ duration: 0.3, ease: 'easeOut' }}
+                      className="max-w-xl rounded-2xl border border-slate-700/70 bg-slate-800/80 p-4 text-left text-sm text-slate-100 shadow-inner"
+                    >
+                      <p className="mb-1 text-[11px] uppercase tracking-[0.3em] text-slate-400">
+                        {conversation.characterLabel}
+                      </p>
+                      <p>{answerLine}</p>
+                    </motion.div>
+                  ) : null}
+                </AnimatePresence>
+
+                {showOk ? (
+                  <motion.button
+                    type="button"
+                    onClick={handleOk}
+                    className="mx-auto mt-2 rounded-pixel border border-highlight bg-highlight/10 px-6 py-2 font-pixel text-xs uppercase tracking-[0.4em] text-highlight shadow-pixel hover:bg-highlight/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-highlight focus-visible:ring-offset-2 focus-visible:ring-offset-charcoal"
+                    initial={prefersReducedMotion ? undefined : { opacity: 0, scale: 0.95 }}
+                    animate={prefersReducedMotion ? undefined : { opacity: 1, scale: 1 }}
+                    whileTap={prefersReducedMotion ? undefined : { scale: 0.97 }}
+                  >
+                    {conversation.okButton}
+                  </motion.button>
+                ) : null}
+              </div>
+            )}
           </motion.div>
         </AnimatePresence>
+
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {questionEntries.map(([key, value], index) => (
+            <motion.button
+              key={key}
+              type="button"
+              onClick={() => handleSelect(key)}
+              className={`rounded-pixel border px-4 py-4 text-left text-sm uppercase tracking-[0.2em] transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-highlight focus-visible:ring-offset-2 focus-visible:ring-offset-charcoal ${
+                selected === key
+                  ? 'border-highlight bg-highlight/25 text-highlight'
+                  : isConversationActive
+                    ? 'cursor-not-allowed border-slate-700/60 bg-slate-900/40 text-slate-500'
+                    : 'border-slate-700 bg-slate-900/70 text-slate-200 hover:bg-slate-800/70'
+              }`}
+              initial={prefersReducedMotion ? undefined : { opacity: 0, y: 15 }}
+              animate={prefersReducedMotion ? undefined : { opacity: 1, y: 0 }}
+              transition={{ duration: 0.3, delay: prefersReducedMotion ? 0 : 0.05 * index }}
+              aria-pressed={selected === key}
+              disabled={isConversationActive}
+            >
+              {value.label}
+            </motion.button>
+          ))}
+        </div>
       </div>
 
       <ContactForm />
