@@ -184,12 +184,27 @@ export function Interview() {
                     : { opacity: 0 }
                 }
                 transition={{ duration: 0.25, ease: 'easeOut' }}
-                className="mt-4 w-full max-w-xs rounded-2xl border border-slate-700/70 bg-slate-800/90 p-4 text-left text-sm text-slate-100 shadow-inner md:absolute md:left-full md:top-1/2 md:mt-0 md:ml-6 md:w-72 md:-translate-y-1/2 md:transform md:text-left md:shadow-xl"
+                className="mt-4 flex w-full max-w-xs flex-col gap-3 rounded-2xl border border-slate-700/70 bg-slate-800/90 p-4 text-left text-sm text-slate-100 shadow-inner md:absolute md:left-full md:top-1/2 md:mt-0 md:ml-6 md:w-72 md:-translate-y-1/2 md:transform md:text-left md:shadow-xl"
               >
-                <p className="mb-1 text-[11px] uppercase tracking-[0.3em] text-slate-400">
+                <p className="text-[11px] uppercase tracking-[0.3em] text-slate-400">
                   {conversation.characterLabel}
                 </p>
-                <p>{answerLine}</p>
+                <p className="leading-relaxed">{answerLine}</p>
+                <AnimatePresence>
+                  {showOk ? (
+                    <motion.button
+                      type="button"
+                      onClick={handleOk}
+                      className="self-end rounded-full bg-white px-4 py-1 font-pixel text-[10px] uppercase tracking-[0.35em] text-slate-900 shadow-sm transition-colors hover:bg-white/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-highlight focus-visible:ring-offset-2 focus-visible:ring-offset-slate-800"
+                      initial={prefersReducedMotion ? undefined : { opacity: 0, scale: 0.95 }}
+                      animate={prefersReducedMotion ? undefined : { opacity: 1, scale: 1 }}
+                      exit={prefersReducedMotion ? undefined : { opacity: 0, scale: 0.95 }}
+                      whileTap={prefersReducedMotion ? undefined : { scale: 0.97 }}
+                    >
+                      {conversation.okButton}
+                    </motion.button>
+                  ) : null}
+                </AnimatePresence>
               </motion.div>
             ) : null}
           </AnimatePresence>
@@ -222,28 +237,17 @@ export function Interview() {
 
       <div className="flex flex-col gap-8">
         <AnimatePresence mode="wait">
-          <motion.div
-            key={selected ?? 'idle'}
-            initial={prefersReducedMotion ? undefined : { opacity: 0, y: 15 }}
-            animate={prefersReducedMotion ? undefined : { opacity: 1, y: 0 }}
-            exit={prefersReducedMotion ? undefined : { opacity: 0, y: -10 }}
-            transition={{ duration: 0.35, ease: 'easeOut' }}
-          >
-            {!isConversationActive ? (
+          {!isConversationActive ? (
+            <motion.div
+              key="select-prompt"
+              initial={prefersReducedMotion ? undefined : { opacity: 0, y: 15 }}
+              animate={prefersReducedMotion ? undefined : { opacity: 1, y: 0 }}
+              exit={prefersReducedMotion ? undefined : { opacity: 0, y: -10 }}
+              transition={{ duration: 0.35, ease: 'easeOut' }}
+            >
               <p className="text-center text-sm text-slate-300">{t('interview.selectPrompt')}</p>
-            ) : showOk ? (
-              <motion.button
-                type="button"
-                onClick={handleOk}
-                className="mx-auto rounded-pixel border border-highlight bg-highlight/10 px-6 py-2 font-pixel text-xs uppercase tracking-[0.4em] text-highlight shadow-pixel hover:bg-highlight/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-highlight focus-visible:ring-offset-2 focus-visible:ring-offset-charcoal"
-                initial={prefersReducedMotion ? undefined : { opacity: 0, scale: 0.95 }}
-                animate={prefersReducedMotion ? undefined : { opacity: 1, scale: 1 }}
-                whileTap={prefersReducedMotion ? undefined : { scale: 0.97 }}
-              >
-                {conversation.okButton}
-              </motion.button>
-            ) : null}
-          </motion.div>
+            </motion.div>
+          ) : null}
         </AnimatePresence>
 
         <AnimatePresence>
