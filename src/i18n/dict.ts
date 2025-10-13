@@ -18,6 +18,10 @@ type DictSection = {
     demo: string
     download: string
   }
+  languageIntro: {
+    title: string
+    confirm: string
+  }
   loading: {
     title: string
     description: string
@@ -43,6 +47,12 @@ type DictSection = {
   footer: {
     text: string
   }
+  meta: {
+    languageTitle: string
+    loadingTitles: string[]
+    doorTitle: string
+    interviewTitle: string
+  }
 }
 
 type Dict = Record<Language, DictSection>
@@ -58,6 +68,10 @@ export const dict: Dict = {
       github: 'GitHub',
       demo: 'Demo',
       download: 'Descargar',
+    },
+    languageIntro: {
+      title: 'Selecciona tu idioma',
+      confirm: 'Confirmar',
     },
     loading: {
       title: 'Cargando interrogatorio pixelado...',
@@ -116,6 +130,12 @@ export const dict: Dict = {
     footer: {
       text: 'Built with React + Tailwind + Framer Motion',
     },
+    meta: {
+      languageTitle: 'Preparando la entrevista',
+      loadingTitles: ['cargando.', 'cargando..', 'cargando...'],
+      doorTitle: '¡Luis quiere entrar!',
+      interviewTitle: 'Entrevista con Luis Ángel Da Silva',
+    },
   },
   en: {
     common: {
@@ -127,6 +147,10 @@ export const dict: Dict = {
       github: 'GitHub',
       demo: 'Demo',
       download: 'Download',
+    },
+    languageIntro: {
+      title: 'Select your language',
+      confirm: 'Confirm',
     },
     loading: {
       title: 'Loading pixel interrogation...',
@@ -184,6 +208,12 @@ export const dict: Dict = {
     },
     footer: {
       text: 'Built with React + Tailwind + Framer Motion',
+    },
+    meta: {
+      languageTitle: 'Prepare for the interview',
+      loadingTitles: ['loading.', 'loading..', 'loading...'],
+      doorTitle: 'Luis wants to come in!',
+      interviewTitle: 'Interview with Luis Ángel Da Silva',
     },
   },
 }

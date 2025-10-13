@@ -16,10 +16,10 @@ const STORAGE_KEY = 'pixel-interrogatorio-lang'
 export function LanguageProvider({ children }: { children: ReactNode }) {
   const [lang, setLangState] = useState<Language>(() => {
     if (typeof window === 'undefined') {
-      return 'es'
+      return 'en'
     }
     const stored = window.localStorage.getItem(STORAGE_KEY)
-    return stored === 'en' || stored === 'es' ? stored : 'es'
+    return stored === 'en' || stored === 'es' ? stored : 'en'
   })
 
   const setLang = (value: Language) => {
