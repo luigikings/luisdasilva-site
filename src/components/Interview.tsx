@@ -28,9 +28,18 @@ export function Interview() {
   const [playerLine, setPlayerLine] = useState('')
   const [answerLine, setAnswerLine] = useState('')
   const [showOk, setShowOk] = useState(false)
+  const [isTalkingFrame, setIsTalkingFrame] = useState(false)
   const typingInterval = useRef<number | null>(null)
   const typingTimeout = useRef<number | null>(null)
+  const talkingInterval = useRef<number | null>(null)
   const isConversationActive = selected !== null
+
+  const clearTalkingInterval = () => {
+    if (talkingInterval.current !== null) {
+      window.clearInterval(talkingInterval.current)
+      talkingInterval.current = null
+    }
+  }
 
   const clearTimers = () => {
     if (typingInterval.current !== null) {
@@ -41,6 +50,7 @@ export function Interview() {
       window.clearTimeout(typingTimeout.current)
       typingTimeout.current = null
     }
+    clearTalkingInterval()
   }
 
   useEffect(() => {
@@ -132,6 +142,29 @@ export function Interview() {
     }
   }, [answers, selected, stage])
 
+  useEffect(() => {
+    if (prefersReducedMotion) {
+      clearTalkingInterval()
+      setIsTalkingFrame(false)
+      return
+    }
+
+    if (stage === 'answerTyping') {
+      clearTalkingInterval()
+      setIsTalkingFrame(true)
+      talkingInterval.current = window.setInterval(() => {
+        setIsTalkingFrame((prev) => !prev)
+      }, 220)
+    } else {
+      clearTalkingInterval()
+      setIsTalkingFrame(false)
+    }
+
+    return () => {
+      clearTalkingInterval()
+    }
+  }, [prefersReducedMotion, stage])
+
   const handleOk = () => {
     clearTimers()
     setSelected(null)
@@ -146,21 +179,21 @@ export function Interview() {
       <div className="flex flex-col items-center gap-6 text-center">
         <div className="relative flex flex-col items-center">
           <motion.div
-            role="img"
-            aria-label={t('interview.avatarAlt')}
-            className="relative h-56 w-56 rounded-pixel border-4 border-slate-700 bg-slate-900 shadow-pixel md:h-64 md:w-64"
+            className="relative flex h-56 w-56 items-center justify-center rounded-pixel border-4 border-slate-700 bg-slate-900 shadow-pixel md:h-64 md:w-64"
             initial={prefersReducedMotion ? undefined : { opacity: 0, scale: 0.9 }}
             animate={prefersReducedMotion ? undefined : { opacity: 1, scale: 1 }}
             transition={{ type: 'spring', stiffness: 120, damping: 14 }}
           >
-            <div className="absolute inset-[10%] rounded-[22px] border-4 border-slate-800 bg-gradient-to-br from-slate-700 via-slate-800 to-slate-950" />
-            <div className="absolute inset-0 flex flex-col items-center justify-center gap-2">
-              <div className="h-12 w-12 rounded-lg border-4 border-slate-900 bg-highlight" />
-              <div className="flex gap-2">
-                <span className="h-3 w-3 rounded-full bg-slate-200" />
-                <span className="h-3 w-3 rounded-full bg-slate-200" />
-              </div>
-              <div className="h-1.5 w-16 rounded-full bg-slate-300" />
+            <div className="absolute inset-[8%] flex items-center justify-center overflow-hidden rounded-[22px] border-4 border-slate-800 bg-gradient-to-br from-slate-700 via-slate-800 to-slate-950">
+              <img
+                src={
+                  stage === 'answerTyping' && !prefersReducedMotion && isTalkingFrame
+                    ? '/imgs/main_caracter/LK_hablando1.png'
+                    : '/imgs/main_caracter/LK_defrente.png'
+                }
+                alt={t('interview.avatarAlt')}
+                className="h-full w-full object-contain"
+              />
             </div>
           </motion.div>
 

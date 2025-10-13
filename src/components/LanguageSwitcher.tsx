@@ -26,13 +26,19 @@ export function LanguageSwitcher() {
             type="button"
             onClick={() => setLang(code)}
             aria-pressed={lang === code}
-            className={`rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-wide transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-highlight focus-visible:ring-offset-2 focus-visible:ring-offset-charcoal ${
+            aria-label={dict[code].common.languageName}
+            className={`flex h-9 w-9 items-center justify-center rounded-full transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-highlight focus-visible:ring-offset-2 focus-visible:ring-offset-charcoal ${
               lang === code
-                ? 'bg-highlight text-charcoal shadow-pixel'
-                : 'bg-slate-800/80 text-slate-200 hover:bg-slate-700/80'
+                ? 'bg-highlight shadow-pixel'
+                : 'bg-slate-800/80 hover:bg-slate-700/80'
             }`}
           >
-            {dict[code].common.languageName}
+            <img
+              src={`/imgs/languages/lang_${code}.png`}
+              alt={dict[code].common.languageName}
+              className="h-6 w-6"
+            />
+            <span className="sr-only">{dict[code].common.languageName}</span>
           </button>
         ))}
       </div>
