@@ -17,6 +17,7 @@ export type QuestionKey =
   | 'dailyMotivation'
   | 'videogame'
   | 'advicePast'
+  | 'github'
 
 type DictSection = {
   common: {
@@ -54,6 +55,7 @@ type DictSection = {
       youLabel: string
       characterLabel: string
       okButton: string
+      githubButton: string
     }
   }
   footer: {
@@ -165,6 +167,10 @@ export const dict: Dict = {
           label: 'Si pudieras dar un consejo a tu yo del pasado, ¿cuál sería?',
           playerLine: 'Si pudieras dar un consejo a tu yo del pasado, ¿cuál sería?',
         },
+        github: {
+          label: '¿Podrías mostrarme tu GitHub?',
+          playerLine: '¿Podrías mostrarme tu GitHub?',
+        },
       },
       answers: {
         introduction:
@@ -199,11 +205,13 @@ export const dict: Dict = {
           'Probablemente sería Stardew Valley: calmado, creativo, siempre cultivando algo y lleno de easter eggs para quien tenga curiosidad.',
         advicePast:
           'Le diría a mi yo del pasado que confíe más en sus ideas raras, que aprenda a descansar y que compartir temprano siempre trae feedback valioso.',
+        github: 'Claro, aquí tienes.',
       },
       conversation: {
         youLabel: 'Tú',
         characterLabel: 'LK responde',
         okButton: 'Okey',
+        githubButton: 'Ir a GitHub',
       },
     },
     footer: {
@@ -311,6 +319,10 @@ export const dict: Dict = {
           label: 'If you could advise your past self, what would you say?',
           playerLine: 'If you could advise your past self, what would you say?',
         },
+        github: {
+          label: 'Could you show me your GitHub?',
+          playerLine: 'Could you show me your GitHub?',
+        },
       },
       answers: {
         introduction:
@@ -345,11 +357,13 @@ export const dict: Dict = {
           'Probably Stardew Valley: cozy, creative, always cultivating something and full of easter eggs for the curious.',
         advicePast:
           'I’d tell past-me to trust the weird ideas, rest more often and share work early; feedback is fuel.',
+        github: 'Sure—here it is.',
       },
       conversation: {
         youLabel: 'You',
         characterLabel: 'LK replies',
         okButton: 'Okay',
+        githubButton: 'Go to GitHub',
       },
     },
     footer: {

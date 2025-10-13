@@ -5,6 +5,28 @@ import { track } from '../lib/analytics'
 import { useT } from '../hooks/useT'
 import type { QuestionKey } from '../i18n/dict'
 
+const questionEmojis: Record<QuestionKey, string> = {
+  introduction: '🙋‍♂️',
+  motivation: '💡',
+  learning: '📚',
+  projects: '🛠️',
+  contact: '📬',
+  hobbies: '🎨',
+  superpower: '🦸‍♂️',
+  languageIdentity: '💻',
+  aiWork: '🤖',
+  futureProjects: '🚀',
+  teamwork: '🤝',
+  workValues: '🎯',
+  problemSolving: '🧩',
+  dailyMotivation: '🌅',
+  videogame: '🎮',
+  advicePast: '🕰️',
+  github: '🐙',
+}
+
+const GITHUB_URL = 'https://github.com/luigikings'
+
 export function Interview() {
   const { t, lang } = useT()
   const prefersReducedMotion = useReducedMotion()
@@ -17,6 +39,7 @@ export function Interview() {
     youLabel: string
     characterLabel: string
     okButton: string
+    githubButton: string
   }>('interview.conversation')
   const questionEntries = useMemo(
     () => Object.entries(questions) as [QuestionKey, { label: string; playerLine: string }][],
@@ -80,6 +103,8 @@ export function Interview() {
     }
 
     const playerMessage = questions[selected].playerLine
+    const emoji = questionEmojis[selected]
+    const playerMessageWithEmoji = emoji ? `${emoji} ${playerMessage}` : playerMessage
     const answerMessage = answers[selected]
 
     clearTimers()
@@ -89,7 +114,7 @@ export function Interview() {
     setShowOk(false)
 
     if (prefersReducedMotion) {
-      setPlayerLine(playerMessage)
+      setPlayerLine(playerMessageWithEmoji)
       setAnswerLine(answerMessage)
       setStage('complete')
       setShowOk(true)
@@ -97,11 +122,12 @@ export function Interview() {
     }
 
     let playerIndex = 0
+    const messageToType = playerMessageWithEmoji
     typingInterval.current = window.setInterval(() => {
       playerIndex += 1
-      setPlayerLine(playerMessage.slice(0, playerIndex))
+      setPlayerLine(messageToType.slice(0, playerIndex))
 
-      if (playerIndex >= playerMessage.length && typingInterval.current !== null) {
+      if (playerIndex >= messageToType.length && typingInterval.current !== null) {
         window.clearInterval(typingInterval.current)
         typingInterval.current = null
 
@@ -181,6 +207,13 @@ export function Interview() {
     setShowOk(false)
   }
 
+  const handleGithubRedirect = () => {
+    if (typeof window !== 'undefined') {
+      window.open(GITHUB_URL, '_blank', 'noopener,noreferrer')
+    }
+    handleOk()
+  }
+
   return (
     <section className="relative flex min-h-screen flex-col gap-8 px-4 py-10 md:px-12">
       <div className="flex flex-col items-center gap-6 text-center">
@@ -232,17 +265,32 @@ export function Interview() {
                 <p className="leading-relaxed">{answerLine}</p>
                 <AnimatePresence>
                   {showOk ? (
-                    <motion.button
-                      type="button"
-                      onClick={handleOk}
-                      className="self-end rounded-full bg-white px-4 py-1 font-pixel text-[10px] uppercase tracking-[0.35em] text-slate-900 shadow-sm transition-colors hover:bg-white/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-highlight focus-visible:ring-offset-2 focus-visible:ring-offset-slate-800"
+                    <motion.div
+                      key="answer-actions"
                       initial={prefersReducedMotion ? undefined : { opacity: 0, scale: 0.95 }}
                       animate={prefersReducedMotion ? undefined : { opacity: 1, scale: 1 }}
                       exit={prefersReducedMotion ? undefined : { opacity: 0, scale: 0.95 }}
-                      whileTap={prefersReducedMotion ? undefined : { scale: 0.97 }}
+                      className="flex flex-wrap justify-end gap-2"
                     >
-                      {conversation.okButton}
-                    </motion.button>
+                      {selected === 'github' ? (
+                        <motion.button
+                          type="button"
+                          onClick={handleGithubRedirect}
+                          className="rounded-full bg-highlight px-4 py-1 font-pixel text-[10px] uppercase tracking-[0.35em] text-charcoal shadow-sm transition-colors hover:bg-highlight/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-highlight focus-visible:ring-offset-2 focus-visible:ring-offset-slate-800"
+                          whileTap={prefersReducedMotion ? undefined : { scale: 0.97 }}
+                        >
+                          {conversation.githubButton}
+                        </motion.button>
+                      ) : null}
+                      <motion.button
+                        type="button"
+                        onClick={handleOk}
+                        className="rounded-full bg-white px-4 py-1 font-pixel text-[10px] uppercase tracking-[0.35em] text-slate-900 shadow-sm transition-colors hover:bg-white/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-highlight focus-visible:ring-offset-2 focus-visible:ring-offset-slate-800"
+                        whileTap={prefersReducedMotion ? undefined : { scale: 0.97 }}
+                      >
+                        {conversation.okButton}
+                      </motion.button>
+                    </motion.div>
                   ) : null}
                 </AnimatePresence>
               </motion.div>
@@ -303,18 +351,22 @@ export function Interview() {
               {questionEntries.map(([key, value], index) => {
                 const isAnswered = answeredQuestions.includes(key)
                 const isActive = selected === key
+                const emoji = questionEmojis[key]
+                const labelWithEmoji = emoji ? `${emoji} ${value.label}` : value.label
+                const baseClasses =
+                  'group relative overflow-hidden rounded-pixel border px-4 py-4 text-left text-sm uppercase tracking-[0.2em] transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-highlight focus-visible:ring-offset-2 focus-visible:ring-offset-charcoal'
+                const stateClasses = isActive
+                  ? 'border-highlight bg-highlight/25 text-highlight shadow-pixel'
+                  : isAnswered
+                    ? 'border-slate-800 bg-slate-900/40 text-slate-500 opacity-60 hover:border-highlight/40 hover:bg-slate-800/60 hover:text-slate-300 hover:opacity-90'
+                    : 'border-slate-700 bg-slate-900/70 text-slate-200 hover:bg-slate-800/70'
+
                 return (
                   <motion.button
                     key={key}
                     type="button"
                     onClick={() => handleSelect(key)}
-                    className={`group relative overflow-hidden rounded-pixel border px-4 py-4 text-left text-sm uppercase tracking-[0.2em] transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-highlight focus-visible:ring-offset-2 focus-visible:ring-offset-charcoal ${
-                      isActive
-                        ? 'border-highlight bg-highlight/25 text-highlight shadow-pixel'
-                        : isAnswered
-                          ? 'border-slate-700/80 bg-slate-900/50 text-slate-300 hover:border-highlight/40'
-                          : 'border-slate-700 bg-slate-900/70 text-slate-200 hover:bg-slate-800/70'
-                    } ${isAnswered ? 'opacity-80 hover:opacity-100' : ''}`}
+                    className={`${baseClasses} ${stateClasses}`}
                     initial={prefersReducedMotion ? undefined : { opacity: 0, y: 15 }}
                     animate={prefersReducedMotion ? undefined : { opacity: 1, y: 0 }}
                     transition={{ duration: 0.3, delay: prefersReducedMotion ? 0 : 0.05 * index }}
@@ -325,7 +377,7 @@ export function Interview() {
                         isAnswered ? 'group-hover:opacity-0' : ''
                       }`}
                     >
-                      {value.label}
+                      {labelWithEmoji}
                     </span>
                     {isAnswered ? (
                       <span className="pointer-events-none absolute inset-0 flex items-center justify-center font-pixel text-[10px] uppercase tracking-[0.3em] text-slate-400 opacity-0 transition-opacity duration-200 group-hover:opacity-100">
