@@ -1,35 +1,44 @@
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 
 import { DoorScene } from './components/DoorScene'
 import { Interview } from './components/Interview'
 import { LanguageSwitcher } from './components/LanguageSwitcher'
+import { LanguageIntroScreen } from './components/LanguageIntroScreen'
 import { LoadingScreen } from './components/LoadingScreen'
+import { dict } from './i18n/dict'
+import { useT } from './hooks/useT'
 
-type ViewKey = 'loading' | 'door' | 'interview'
-
-const LOADING_TITLES = ['loading.', 'loading..', 'loading...']
+type ViewKey = 'language' | 'loading' | 'door' | 'interview'
 
 export function App() {
   const prefersReducedMotion = useReducedMotion()
-  const [view, setView] = useState<ViewKey>('loading')
+  const { lang } = useT()
+  const [view, setView] = useState<ViewKey>('language')
   const [loadingTitleIndex, setLoadingTitleIndex] = useState(0)
 
+  const loadingTitles = useMemo(() => dict[lang].meta.loadingTitles, [lang])
+
   useEffect(() => {
+    if (view === 'language') {
+      document.title = dict[lang].meta.languageTitle
+      return
+    }
+
     if (view === 'loading') {
-      document.title = LOADING_TITLES[loadingTitleIndex]
+      document.title = loadingTitles[loadingTitleIndex % loadingTitles.length]
       return
     }
 
     if (view === 'door') {
-      document.title = 'Luis quiere entrar!'
+      document.title = dict[lang].meta.doorTitle
       return
     }
 
     if (view === 'interview') {
-      document.title = 'Entrevista con Luis Angel Da Silva'
+      document.title = dict[lang].meta.interviewTitle
     }
-  }, [view, loadingTitleIndex])
+  }, [lang, loadingTitleIndex, loadingTitles, view])
 
   useEffect(() => {
     if (view !== 'loading') {
@@ -38,21 +47,33 @@ export function App() {
     }
 
     const intervalId = window.setInterval(() => {
-      setLoadingTitleIndex((prev) => (prev + 1) % LOADING_TITLES.length)
+      setLoadingTitleIndex((prev) => (prev + 1) % loadingTitles.length)
     }, 2000)
 
     return () => {
       window.clearInterval(intervalId)
     }
-  }, [view])
+  }, [loadingTitles, view])
 
+  const handleConfirmLanguage = () => setView('loading')
   const handleStart = () => setView('door')
   const handleEnter = () => setView('interview')
 
   return (
     <div className="relative min-h-screen overflow-hidden">
-      <LanguageSwitcher />
+      {view !== 'language' ? <LanguageSwitcher /> : null}
       <AnimatePresence mode="wait">
+        {view === 'language' ? (
+          <motion.main
+            key="language"
+            className="min-h-screen"
+            initial={prefersReducedMotion ? undefined : { opacity: 0 }}
+            animate={prefersReducedMotion ? undefined : { opacity: 1 }}
+            exit={prefersReducedMotion ? undefined : { opacity: 0 }}
+          >
+            <LanguageIntroScreen onConfirm={handleConfirmLanguage} />
+          </motion.main>
+        ) : null}
         {view === 'loading' ? (
           <motion.main
             key="loading"
