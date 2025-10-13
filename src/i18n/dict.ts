@@ -6,6 +6,17 @@ export type QuestionKey =
   | 'learning'
   | 'projects'
   | 'contact'
+  | 'hobbies'
+  | 'superpower'
+  | 'languageIdentity'
+  | 'aiWork'
+  | 'futureProjects'
+  | 'teamwork'
+  | 'workValues'
+  | 'problemSolving'
+  | 'dailyMotivation'
+  | 'videogame'
+  | 'advicePast'
 
 type DictSection = {
   common: {
@@ -36,6 +47,7 @@ type DictSection = {
     subtitle: string
     avatarAlt: string
     selectPrompt: string
+    repeatPrompt: string
     questions: Record<QuestionKey, { label: string; playerLine: string }>
     answers: Record<QuestionKey, string>
     conversation: {
@@ -86,7 +98,8 @@ export const dict: Dict = {
       title: 'Entrevista a Luis Da Silva',
       subtitle: 'Conoce a Luis en profundidad.',
       avatarAlt: 'Avatar pixelado de LK',
-      selectPrompt: 'Pulsa un botón para comenzar la conversación.',
+      selectPrompt: 'Elige un diálogo para conversar.',
+      repeatPrompt: 'Repetir pregunta',
       questions: {
         introduction: {
           label: 'Hola, preséntate, ¿quién eres?',
@@ -108,6 +121,50 @@ export const dict: Dict = {
           label: '¿Cómo puedo contactar contigo?',
           playerLine: '¿Cómo puedo contactar contigo?',
         },
+        hobbies: {
+          label: '¿Cuáles son tus hobbies?',
+          playerLine: '¿Cuáles son tus hobbies?',
+        },
+        superpower: {
+          label: 'Si tuvieras un superpoder, ¿cuál sería?',
+          playerLine: 'Si tuvieras un superpoder, ¿cuál sería?',
+        },
+        languageIdentity: {
+          label: 'Si fueras un lenguaje de programación, ¿cuál serías?',
+          playerLine: 'Si fueras un lenguaje de programación, ¿cuál serías?',
+        },
+        aiWork: {
+          label: '¿Trabajas con Inteligencia Artificial?',
+          playerLine: '¿Trabajas con Inteligencia Artificial?',
+        },
+        futureProjects: {
+          label: '¿Qué tipos de proyectos te gustaría construir en el futuro?',
+          playerLine: '¿Qué tipos de proyectos te gustaría construir en el futuro?',
+        },
+        teamwork: {
+          label: '¿Cómo sueles trabajar en equipo?',
+          playerLine: '¿Cómo sueles trabajar en equipo?',
+        },
+        workValues: {
+          label: '¿Qué es lo que más valoras en un trabajo?',
+          playerLine: '¿Qué es lo que más valoras en un trabajo?',
+        },
+        problemSolving: {
+          label: '¿Cómo enfrentas los retos o problemas cuando no sabes algo?',
+          playerLine: '¿Cómo enfrentas los retos o problemas cuando no sabes algo?',
+        },
+        dailyMotivation: {
+          label: '¿Qué te motiva a aprender cada día?',
+          playerLine: '¿Qué te motiva a aprender cada día?',
+        },
+        videogame: {
+          label: '¿Qué videojuego crees que eres?',
+          playerLine: '¿Qué videojuego crees que eres?',
+        },
+        advicePast: {
+          label: 'Si pudieras dar un consejo a tu yo del pasado, ¿cuál sería?',
+          playerLine: 'Si pudieras dar un consejo a tu yo del pasado, ¿cuál sería?',
+        },
       },
       answers: {
         introduction:
@@ -120,6 +177,28 @@ export const dict: Dict = {
           'He trabajado en dashboards, experiencias interactivas para eventos y sitios personales con mucho cariño pixel-art. Siempre busco que cada proyecto se sienta único.',
         contact:
           'Puedes escribirme por correo a hola@lk.dev o mandarme un mensaje por LinkedIn; contesto rápido si mencionas que viniste por la puerta pixelada.',
+        hobbies:
+          'Cuando desconecto me gusta dibujar pixel art, tocar sintetizadores y salir a caminar con cámara en mano buscando texturas para futuros proyectos.',
+        superpower:
+          'Elegiría detener el tiempo unos minutos. Así podría pulir detalles infinitos sin romper deadlines y regalarme más siestas.',
+        languageIdentity:
+          'Sería TypeScript: estructurado, amigable con el equipo y siempre tratando de anticipar errores antes de que aparezcan.',
+        aiWork:
+          'Sí, la IA es parte de mi flujo. La uso para generar ideas, validar copys y prototipar, pero siempre con criterio humano y brújula ética.',
+        futureProjects:
+          'Quiero crear experiencias web inmersivas para contar historias interactivas, herramientas creativas colaborativas y dashboards que se sientan como juegos indie.',
+        teamwork:
+          'Me gusta trabajar en equipo con mucha comunicación. Soy de documentar, compartir avances y facilitar que cada persona sume su superpoder.',
+        workValues:
+          'Valoro la transparencia, el aprendizaje continuo y la posibilidad de experimentar sin miedo a equivocarse.',
+        problemSolving:
+          'Cuando no sé algo, lo desarmo en piezas pequeñas, busco recursos confiables y pregunto sin miedo; el objetivo es desbloquear rápido al equipo.',
+        dailyMotivation:
+          'Me motiva imaginar a alguien sonriendo al usar algo que construí y la idea de que cada día puedo aprender un truco nuevo.',
+        videogame:
+          'Probablemente sería Stardew Valley: calmado, creativo, siempre cultivando algo y lleno de easter eggs para quien tenga curiosidad.',
+        advicePast:
+          'Le diría a mi yo del pasado que confíe más en sus ideas raras, que aprenda a descansar y que compartir temprano siempre trae feedback valioso.',
       },
       conversation: {
         youLabel: 'Tú',
@@ -165,7 +244,8 @@ export const dict: Dict = {
       title: 'Interview Luis Da Silva',
       subtitle: 'Get to know Luis in depth.',
       avatarAlt: 'LK pixel avatar',
-      selectPrompt: 'Tap a button to start the conversation.',
+      selectPrompt: 'Choose a dialogue to start chatting.',
+      repeatPrompt: 'Repeat question',
       questions: {
         introduction: {
           label: 'Hey, introduce yourself. Who are you?',
@@ -187,6 +267,50 @@ export const dict: Dict = {
           label: 'How can I reach you?',
           playerLine: 'How can I reach you?',
         },
+        hobbies: {
+          label: 'What are your hobbies?',
+          playerLine: 'What are your hobbies?',
+        },
+        superpower: {
+          label: 'If you had a superpower, what would it be?',
+          playerLine: 'If you had a superpower, what would it be?',
+        },
+        languageIdentity: {
+          label: 'If you were a programming language, which one would you be?',
+          playerLine: 'If you were a programming language, which one would you be?',
+        },
+        aiWork: {
+          label: 'Do you work with Artificial Intelligence?',
+          playerLine: 'Do you work with Artificial Intelligence?',
+        },
+        futureProjects: {
+          label: 'What kinds of projects would you like to build in the future?',
+          playerLine: 'What kinds of projects would you like to build in the future?',
+        },
+        teamwork: {
+          label: 'How do you usually collaborate with a team?',
+          playerLine: 'How do you usually collaborate with a team?',
+        },
+        workValues: {
+          label: 'What do you value most in a job?',
+          playerLine: 'What do you value most in a job?',
+        },
+        problemSolving: {
+          label: 'How do you tackle challenges when you don’t know something?',
+          playerLine: 'How do you tackle challenges when you don’t know something?',
+        },
+        dailyMotivation: {
+          label: 'What motivates you to keep learning every day?',
+          playerLine: 'What motivates you to keep learning every day?',
+        },
+        videogame: {
+          label: 'Which video game do you think you are?',
+          playerLine: 'Which video game do you think you are?',
+        },
+        advicePast: {
+          label: 'If you could advise your past self, what would you say?',
+          playerLine: 'If you could advise your past self, what would you say?',
+        },
       },
       answers: {
         introduction:
@@ -199,6 +323,28 @@ export const dict: Dict = {
           'Recent work includes interactive dashboards, playful landing pages and personal experiments that celebrate pixel aesthetics. Each project is a new playground.',
         contact:
           'Drop me an email at hello@lk.dev or ping me on LinkedIn—mention the mysterious door so I know it’s you.',
+        hobbies:
+          'I recharge by sketching pixel art, noodling on synths and wandering with my camera hunting textures for future interfaces.',
+        superpower:
+          'I’d freeze time for a couple of minutes. Perfect for polishing micro-interactions without breaking deadlines—and for bonus naps.',
+        languageIdentity:
+          'I’d be TypeScript: collaborative, strongly typed and always trying to catch bugs before they reach production.',
+        aiWork:
+          'Yep! AI helps me ideate, sanity-check copy and prototype faster, but human criteria and ethics always steer the ship.',
+        futureProjects:
+          'I dream about building immersive narrative sites, collaborative creative tools and dashboards that feel like cozy indie games.',
+        teamwork:
+          'Teamwork for me means over-communicating, documenting as I go and creating space so everyone can bring their superpower.',
+        workValues:
+          'I value transparency, a learning mindset and the freedom to experiment without fear of failing forward.',
+        problemSolving:
+          'When I’m stuck, I break the problem down, research reliable sources and ask for help early so the team keeps moving.',
+        dailyMotivation:
+          'Knowing someone might smile while using something I built—and that every day holds a fresh trick to learn—keeps me going.',
+        videogame:
+          'Probably Stardew Valley: cozy, creative, always cultivating something and full of easter eggs for the curious.',
+        advicePast:
+          'I’d tell past-me to trust the weird ideas, rest more often and share work early; feedback is fuel.',
       },
       conversation: {
         youLabel: 'You',

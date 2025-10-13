@@ -267,7 +267,7 @@ export function DoorScene({ onEnter }: DoorSceneProps) {
       <motion.button
         type="button"
         onClick={onEnter}
-        className="rounded-pixel bg-highlight px-8 py-3 font-pixel text-base uppercase tracking-[0.4em] text-charcoal shadow-pixel transition-transform duration-200 hover:-translate-y-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-highlight focus-visible:ring-offset-2 focus-visible:ring-offset-charcoal"
+        className="rounded-pixel bg-highlight px-8 py-3 font-pixel text-base uppercase tracking-[0.4em] text-charcoal shadow-pixel transition-all duration-200 hover:-translate-y-1 hover:bg-highlight/90 hover:shadow-[0_0_18px_rgba(255,241,208,0.35)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-highlight focus-visible:ring-offset-2 focus-visible:ring-offset-charcoal"
         initial={prefersReducedMotion ? undefined : { opacity: 0, scale: 0.95 }}
         animate={prefersReducedMotion ? undefined : { opacity: 1, scale: 1 }}
         whileTap={prefersReducedMotion ? undefined : { scale: 0.97 }}

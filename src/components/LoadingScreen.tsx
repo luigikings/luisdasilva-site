@@ -79,7 +79,7 @@ export function LoadingScreen({ onStart }: { onStart: () => void }) {
         onClick={onStart}
         disabled={!done}
         aria-disabled={!done}
-        className="rounded-pixel bg-highlight px-6 py-3 font-pixel text-sm uppercase tracking-widest text-charcoal shadow-pixel transition-transform duration-200 hover:-translate-y-1 disabled:cursor-not-allowed disabled:opacity-60"
+        className="rounded-pixel bg-highlight px-6 py-3 font-pixel text-sm uppercase tracking-widest text-charcoal shadow-pixel transition-all duration-200 enabled:hover:-translate-y-1 enabled:hover:bg-highlight/90 enabled:hover:shadow-[0_0_18px_rgba(255,241,208,0.35)] disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-highlight focus-visible:ring-offset-2 focus-visible:ring-offset-charcoal"
         initial={prefersReducedMotion ? undefined : { opacity: 0, scale: 0.95 }}
         animate={
           done
