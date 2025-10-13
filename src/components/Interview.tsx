@@ -12,6 +12,7 @@ export function Interview() {
     Record<QuestionKey, { label: string; playerLine: string }>
   >('interview.questions')
   const answers = t<Record<QuestionKey, string>>('interview.answers')
+  const repeatPrompt = t<string>('interview.repeatPrompt')
   const conversation = t<{
     youLabel: string
     characterLabel: string
@@ -28,6 +29,7 @@ export function Interview() {
   const [playerLine, setPlayerLine] = useState('')
   const [answerLine, setAnswerLine] = useState('')
   const [showOk, setShowOk] = useState(false)
+  const [answeredQuestions, setAnsweredQuestions] = useState<QuestionKey[]>([])
   const [isTalkingFrame, setIsTalkingFrame] = useState(false)
   const typingInterval = useRef<number | null>(null)
   const typingTimeout = useRef<number | null>(null)
@@ -166,6 +168,11 @@ export function Interview() {
   }, [prefersReducedMotion, stage])
 
   const handleOk = () => {
+    if (selected) {
+      setAnsweredQuestions((prev) =>
+        prev.includes(selected) ? prev : [...prev, selected],
+      )
+    }
     clearTimers()
     setSelected(null)
     setStage('idle')
@@ -293,24 +300,41 @@ export function Interview() {
               exit={prefersReducedMotion ? undefined : { opacity: 0, y: -10 }}
               transition={{ duration: 0.3, ease: 'easeOut' }}
             >
-              {questionEntries.map(([key, value], index) => (
-                <motion.button
-                  key={key}
-                  type="button"
-                  onClick={() => handleSelect(key)}
-                  className={`rounded-pixel border px-4 py-4 text-left text-sm uppercase tracking-[0.2em] transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-highlight focus-visible:ring-offset-2 focus-visible:ring-offset-charcoal ${
-                    selected === key
-                      ? 'border-highlight bg-highlight/25 text-highlight'
-                      : 'border-slate-700 bg-slate-900/70 text-slate-200 hover:bg-slate-800/70'
-                  }`}
-                  initial={prefersReducedMotion ? undefined : { opacity: 0, y: 15 }}
-                  animate={prefersReducedMotion ? undefined : { opacity: 1, y: 0 }}
-                  transition={{ duration: 0.3, delay: prefersReducedMotion ? 0 : 0.05 * index }}
-                  aria-pressed={selected === key}
-                >
-                  {value.label}
-                </motion.button>
-              ))}
+              {questionEntries.map(([key, value], index) => {
+                const isAnswered = answeredQuestions.includes(key)
+                const isActive = selected === key
+                return (
+                  <motion.button
+                    key={key}
+                    type="button"
+                    onClick={() => handleSelect(key)}
+                    className={`group relative overflow-hidden rounded-pixel border px-4 py-4 text-left text-sm uppercase tracking-[0.2em] transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-highlight focus-visible:ring-offset-2 focus-visible:ring-offset-charcoal ${
+                      isActive
+                        ? 'border-highlight bg-highlight/25 text-highlight shadow-pixel'
+                        : isAnswered
+                          ? 'border-slate-700/80 bg-slate-900/50 text-slate-300 hover:border-highlight/40'
+                          : 'border-slate-700 bg-slate-900/70 text-slate-200 hover:bg-slate-800/70'
+                    } ${isAnswered ? 'opacity-80 hover:opacity-100' : ''}`}
+                    initial={prefersReducedMotion ? undefined : { opacity: 0, y: 15 }}
+                    animate={prefersReducedMotion ? undefined : { opacity: 1, y: 0 }}
+                    transition={{ duration: 0.3, delay: prefersReducedMotion ? 0 : 0.05 * index }}
+                    aria-pressed={isActive}
+                  >
+                    <span
+                      className={`block transition-opacity duration-200 ${
+                        isAnswered ? 'group-hover:opacity-0' : ''
+                      }`}
+                    >
+                      {value.label}
+                    </span>
+                    {isAnswered ? (
+                      <span className="pointer-events-none absolute inset-0 flex items-center justify-center font-pixel text-[10px] uppercase tracking-[0.3em] text-slate-400 opacity-0 transition-opacity duration-200 group-hover:opacity-100">
+                        {repeatPrompt}
+                      </span>
+                    ) : null}
+                  </motion.button>
+                )
+              })}
             </motion.div>
           ) : null}
         </AnimatePresence>
