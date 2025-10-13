@@ -23,9 +23,12 @@ const questionEmojis: Record<QuestionKey, string> = {
   videogame: '🎮',
   advicePast: '🕰️',
   github: '🐙',
+  cv: '📄',
 }
 
 const GITHUB_URL = 'https://github.com/luigikings'
+const CV_URL = '/CV%20Luis%20Angel%20Da%20Silva%20English.pdf'
+const CV_DOWNLOAD_NAME = 'CV Luis Angel Da Silva English.pdf'
 
 export function Interview() {
   const { t, lang } = useT()
@@ -40,6 +43,7 @@ export function Interview() {
     characterLabel: string
     okButton: string
     githubButton: string
+    cvButton: string
   }>('interview.conversation')
   const questionEntries = useMemo(
     () => Object.entries(questions) as [QuestionKey, { label: string; playerLine: string }][],
@@ -214,6 +218,18 @@ export function Interview() {
     handleOk()
   }
 
+  const handleCvDownload = () => {
+    if (typeof document !== 'undefined') {
+      const link = document.createElement('a')
+      link.href = CV_URL
+      link.download = CV_DOWNLOAD_NAME
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+    }
+    handleOk()
+  }
+
   return (
     <section className="relative flex min-h-screen flex-col gap-8 px-4 py-10 md:px-12">
       <div className="flex flex-col items-center gap-6 text-center">
@@ -280,6 +296,16 @@ export function Interview() {
                           whileTap={prefersReducedMotion ? undefined : { scale: 0.97 }}
                         >
                           {conversation.githubButton}
+                        </motion.button>
+                      ) : null}
+                      {selected === 'cv' ? (
+                        <motion.button
+                          type="button"
+                          onClick={handleCvDownload}
+                          className="rounded-full bg-highlight px-4 py-1 font-pixel text-[10px] uppercase tracking-[0.35em] text-charcoal shadow-sm transition-colors hover:bg-highlight/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-highlight focus-visible:ring-offset-2 focus-visible:ring-offset-slate-800"
+                          whileTap={prefersReducedMotion ? undefined : { scale: 0.97 }}
+                        >
+                          {conversation.cvButton}
                         </motion.button>
                       ) : null}
                       <motion.button

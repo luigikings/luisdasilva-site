@@ -18,6 +18,7 @@ export type QuestionKey =
   | 'videogame'
   | 'advicePast'
   | 'github'
+  | 'cv'
 
 type DictSection = {
   common: {
@@ -56,6 +57,7 @@ type DictSection = {
       characterLabel: string
       okButton: string
       githubButton: string
+      cvButton: string
     }
   }
   footer: {
@@ -171,6 +173,10 @@ export const dict: Dict = {
           label: '¿Podrías mostrarme tu GitHub?',
           playerLine: '¿Podrías mostrarme tu GitHub?',
         },
+        cv: {
+          label: '¿Podrías mostrarme tu CV?',
+          playerLine: '¿Podrías mostrarme tu CV?',
+        },
       },
       answers: {
         introduction:
@@ -182,7 +188,7 @@ export const dict: Dict = {
         projects:
           'He trabajado en dashboards, experiencias interactivas para eventos y sitios personales con mucho cariño pixel-art. Siempre busco que cada proyecto se sienta único.',
         contact:
-          'Puedes escribirme por correo a hola@lk.dev o mandarme un mensaje por LinkedIn; contesto rápido si mencionas que viniste por la puerta pixelada.',
+          'Puedes escribirme por correo a luigidasilv@gmail.com o mandarme un mensaje por LinkedIn; contesto rápido si mencionas que viniste por la puerta pixelada!',
         hobbies:
           'Cuando desconecto me gusta dibujar pixel art, tocar sintetizadores y salir a caminar con cámara en mano buscando texturas para futuros proyectos.',
         superpower:
@@ -206,12 +212,14 @@ export const dict: Dict = {
         advicePast:
           'Le diría a mi yo del pasado que confíe más en sus ideas raras, que aprenda a descansar y que compartir temprano siempre trae feedback valioso.',
         github: 'Claro, aquí tienes.',
+        cv: 'Claro, aquí tienes.',
       },
       conversation: {
         youLabel: 'Tú',
         characterLabel: 'LK responde',
         okButton: 'Okey',
         githubButton: 'Ir a GitHub',
+        cvButton: 'Descargar CV',
       },
     },
     footer: {
@@ -323,6 +331,10 @@ export const dict: Dict = {
           label: 'Could you show me your GitHub?',
           playerLine: 'Could you show me your GitHub?',
         },
+        cv: {
+          label: 'Could you share your résumé?',
+          playerLine: 'Could you share your résumé?',
+        },
       },
       answers: {
         introduction:
@@ -334,7 +346,7 @@ export const dict: Dict = {
         projects:
           'Recent work includes interactive dashboards, playful landing pages and personal experiments that celebrate pixel aesthetics. Each project is a new playground.',
         contact:
-          'Drop me an email at hello@lk.dev or ping me on LinkedIn—mention the mysterious door so I know it’s you.',
+          'Email me at luigidasilv@gmail.com or drop a message on LinkedIn—bonus points if you mention the pixelated door!',
         hobbies:
           'I recharge by sketching pixel art, noodling on synths and wandering with my camera hunting textures for future interfaces.',
         superpower:
@@ -358,12 +370,14 @@ export const dict: Dict = {
         advicePast:
           'I’d tell past-me to trust the weird ideas, rest more often and share work early; feedback is fuel.',
         github: 'Sure—here it is.',
+        cv: 'Absolutely—here you go.',
       },
       conversation: {
         youLabel: 'You',
         characterLabel: 'LK replies',
         okButton: 'Okay',
         githubButton: 'Go to GitHub',
+        cvButton: 'Download CV',
       },
     },
     footer: {
