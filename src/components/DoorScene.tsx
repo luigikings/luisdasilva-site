@@ -1,4 +1,4 @@
-import { motion, useReducedMotion, type Variants } from 'framer-motion'
+import { AnimatePresence, motion, useReducedMotion, type Variants } from 'framer-motion'
 import { useEffect, useMemo, useRef, useState } from 'react'
 
 import { doorDialogs } from '../data/dialogs'
@@ -15,6 +15,7 @@ export function DoorScene({ onEnter }: DoorSceneProps) {
   const [messageIndex, setMessageIndex] = useState(-1)
   const [typedMessage, setTypedMessage] = useState('')
   const [doorImpact, setDoorImpact] = useState(false)
+  const [showEnterButton, setShowEnterButton] = useState(false)
   const timers = useRef<number[]>([])
   const typeInterval = useRef<number | null>(null)
   const previousMessageIndex = useRef(-1)
@@ -51,6 +52,7 @@ export function DoorScene({ onEnter }: DoorSceneProps) {
     setStage(prefersReducedMotion ? 'dialog' : 'idle')
     setMessageIndex(prefersReducedMotion ? 0 : -1)
     setTypedMessage(prefersReducedMotion ? sequence[0] ?? '' : '')
+    setShowEnterButton(false)
 
     if (prefersReducedMotion) {
       return
@@ -98,6 +100,13 @@ export function DoorScene({ onEnter }: DoorSceneProps) {
         timers.current.push(timer)
       }
 
+      if (messageIndex === 0) {
+        const buttonTimer = window.setTimeout(() => {
+          setShowEnterButton(true)
+        }, 1000)
+        timers.current.push(buttonTimer)
+      }
+
       return
     }
 
@@ -116,6 +125,13 @@ export function DoorScene({ onEnter }: DoorSceneProps) {
       if (index >= message.length && typeInterval.current !== null) {
         window.clearInterval(typeInterval.current)
         typeInterval.current = null
+
+        if (messageIndex === 0) {
+          const buttonTimer = window.setTimeout(() => {
+            setShowEnterButton(true)
+          }, 1000)
+          timers.current.push(buttonTimer)
+        }
 
         if (messageIndex < sequence.length - 1) {
           const timer = window.setTimeout(() => {
@@ -264,17 +280,23 @@ export function DoorScene({ onEnter }: DoorSceneProps) {
         </motion.div>
       </motion.div>
 
-      <motion.button
-        type="button"
-        onClick={onEnter}
-        className="rounded-pixel bg-highlight px-8 py-3 font-pixel text-base uppercase tracking-[0.4em] text-charcoal shadow-pixel transition-all duration-200 hover:-translate-y-1 hover:bg-highlight/90 hover:shadow-[0_0_18px_rgba(255,241,208,0.35)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-highlight focus-visible:ring-offset-2 focus-visible:ring-offset-charcoal"
-        initial={prefersReducedMotion ? undefined : { opacity: 0, scale: 0.95 }}
-        animate={prefersReducedMotion ? undefined : { opacity: 1, scale: 1 }}
-        whileTap={prefersReducedMotion ? undefined : { scale: 0.97 }}
-        aria-label={t('door.button')}
-      >
-        {t('door.button')}
-      </motion.button>
+      <AnimatePresence>
+        {showEnterButton ? (
+          <motion.button
+            key="enter-door-button"
+            type="button"
+            onClick={onEnter}
+            className="rounded-pixel bg-highlight px-8 py-3 font-pixel text-base uppercase tracking-[0.4em] text-charcoal shadow-pixel transition-all duration-200 hover:-translate-y-1 hover:bg-highlight/90 hover:shadow-[0_0_18px_rgba(255,241,208,0.35)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-highlight focus-visible:ring-offset-2 focus-visible:ring-offset-charcoal"
+            initial={prefersReducedMotion ? undefined : { opacity: 0, scale: 0.95 }}
+            animate={prefersReducedMotion ? undefined : { opacity: 1, scale: 1 }}
+            exit={prefersReducedMotion ? undefined : { opacity: 0, scale: 0.95 }}
+            whileTap={prefersReducedMotion ? undefined : { scale: 0.97 }}
+            aria-label={t('door.button')}
+          >
+            {t('door.button')}
+          </motion.button>
+        ) : null}
+      </AnimatePresence>
     </div>
   )
 }
