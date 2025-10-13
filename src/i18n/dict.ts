@@ -20,6 +20,13 @@ export type QuestionKey =
   | 'github'
   | 'cv'
 
+export type QuestionGroupKey =
+  | 'aboutYou'
+  | 'motivations'
+  | 'experience'
+  | 'workStyle'
+  | 'contactPortfolio'
+
 type DictSection = {
   common: {
     languageLabel: string
@@ -48,8 +55,11 @@ type DictSection = {
     title: string
     subtitle: string
     avatarAlt: string
+    groupPrompt: string
     selectPrompt: string
     repeatPrompt: string
+    backToCategories: string
+    categories: Record<QuestionGroupKey, string>
     questions: Record<QuestionKey, { label: string; playerLine: string }>
     answers: Record<QuestionKey, string>
     conversation: {
@@ -102,8 +112,17 @@ export const dict: Dict = {
       title: 'Entrevista a Luis Da Silva',
       subtitle: 'Conoce a Luis en profundidad.',
       avatarAlt: 'Avatar pixelado de LK',
-      selectPrompt: 'Elige un diálogo para conversar.',
+      groupPrompt: 'Elige un grupo de preguntas para comenzar.',
+      selectPrompt: 'Selecciona una pregunta dentro del grupo.',
       repeatPrompt: 'Repetir pregunta',
+      backToCategories: 'Volver a categorías',
+      categories: {
+        aboutYou: 'Sobre ti',
+        motivations: 'Motivaciones y gustos personales',
+        experience: 'Experiencia y proyectos',
+        workStyle: 'Trabajo y forma de actuar',
+        contactPortfolio: 'Contacto y portfolio',
+      },
       questions: {
         introduction: {
           label: 'Hola, preséntate, ¿quién eres?',
@@ -260,8 +279,17 @@ export const dict: Dict = {
       title: 'Interview Luis Da Silva',
       subtitle: 'Get to know Luis in depth.',
       avatarAlt: 'LK pixel avatar',
-      selectPrompt: 'Choose a dialogue to start chatting.',
+      groupPrompt: 'Pick a question group to begin.',
+      selectPrompt: 'Pick a question within the group.',
       repeatPrompt: 'Repeat question',
+      backToCategories: 'Back to categories',
+      categories: {
+        aboutYou: 'About you',
+        motivations: 'Motivations & personal tastes',
+        experience: 'Experience & projects',
+        workStyle: 'Work style & collaboration',
+        contactPortfolio: 'Contact & portfolio',
+      },
       questions: {
         introduction: {
           label: 'Hey, introduce yourself. Who are you?',

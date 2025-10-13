@@ -1,9 +1,32 @@
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import { track } from '../lib/analytics'
 import { useT } from '../hooks/useT'
-import type { QuestionKey } from '../i18n/dict'
+import type { QuestionGroupKey, QuestionKey } from '../i18n/dict'
+
+const questionGroupConfig: Record<QuestionGroupKey, { emoji: string; questions: QuestionKey[] }> = {
+  aboutYou: {
+    emoji: '🧑',
+    questions: ['introduction', 'languageIdentity', 'videogame'],
+  },
+  motivations: {
+    emoji: '🎉',
+    questions: ['motivation', 'hobbies', 'superpower', 'dailyMotivation', 'advicePast'],
+  },
+  experience: {
+    emoji: '🛠️',
+    questions: ['learning', 'projects', 'futureProjects', 'aiWork'],
+  },
+  workStyle: {
+    emoji: '🤝',
+    questions: ['teamwork', 'workValues', 'problemSolving'],
+  },
+  contactPortfolio: {
+    emoji: '📬',
+    questions: ['contact', 'github', 'cv'],
+  },
+}
 
 const questionEmojis: Record<QuestionKey, string> = {
   introduction: '🙋‍♂️',
@@ -36,6 +59,7 @@ export function Interview() {
   const questions = t<
     Record<QuestionKey, { label: string; playerLine: string }>
   >('interview.questions')
+  const categories = t<Record<QuestionGroupKey, string>>('interview.categories')
   const answers = t<Record<QuestionKey, string>>('interview.answers')
   const repeatPrompt = t<string>('interview.repeatPrompt')
   const conversation = t<{
@@ -45,10 +69,23 @@ export function Interview() {
     githubButton: string
     cvButton: string
   }>('interview.conversation')
-  const questionEntries = useMemo(
-    () => Object.entries(questions) as [QuestionKey, { label: string; playerLine: string }][],
-    [questions],
+  const groupPrompt = t<string>('interview.groupPrompt')
+  const selectPrompt = t<string>('interview.selectPrompt')
+  const backToCategories = t<string>('interview.backToCategories')
+  const groupEntries = useMemo(
+    () =>
+      (Object.entries(questionGroupConfig) as [
+        QuestionGroupKey,
+        { emoji: string; questions: QuestionKey[] },
+      ][]).map(([key, value]) => ({
+        key,
+        emoji: value.emoji,
+        label: categories[key],
+        questionKeys: value.questions,
+      })),
+    [categories],
   )
+  const [selectedGroup, setSelectedGroup] = useState<QuestionGroupKey | null>(null)
   const [selected, setSelected] = useState<QuestionKey | null>(null)
   const [stage, setStage] = useState<'idle' | 'playerTyping' | 'answerTyping' | 'complete'>(
     'idle',
@@ -63,14 +100,14 @@ export function Interview() {
   const talkingInterval = useRef<number | null>(null)
   const isConversationActive = selected !== null
 
-  const clearTalkingInterval = () => {
+  const clearTalkingInterval = useCallback(() => {
     if (talkingInterval.current !== null) {
       window.clearInterval(talkingInterval.current)
       talkingInterval.current = null
     }
-  }
+  }, [])
 
-  const clearTimers = () => {
+  const clearTimers = useCallback(() => {
     if (typingInterval.current !== null) {
       window.clearInterval(typingInterval.current)
       typingInterval.current = null
@@ -80,13 +117,21 @@ export function Interview() {
       typingTimeout.current = null
     }
     clearTalkingInterval()
-  }
+  }, [clearTalkingInterval])
 
   useEffect(() => {
     return () => {
       clearTimers()
     }
-  }, [])
+  }, [clearTimers])
+
+  const handleGroupSelect = (group: QuestionGroupKey) => {
+    if (isConversationActive) {
+      return
+    }
+    setSelectedGroup(group)
+    track('interview_group_selected', { group, lang })
+  }
 
   const handleSelect = (key: QuestionKey) => {
     if (isConversationActive) {
@@ -94,6 +139,13 @@ export function Interview() {
     }
     setSelected(key)
     track('interview_question_selected', { key, lang })
+  }
+
+  const handleBackToGroups = () => {
+    if (isConversationActive) {
+      return
+    }
+    setSelectedGroup(null)
   }
 
   useEffect(() => {
@@ -144,7 +196,7 @@ export function Interview() {
     return () => {
       clearTimers()
     }
-  }, [answers, prefersReducedMotion, questions, selected])
+  }, [answers, clearTimers, prefersReducedMotion, questions, selected])
 
   useEffect(() => {
     if (stage !== 'answerTyping' || !selected) {
@@ -172,7 +224,7 @@ export function Interview() {
     return () => {
       clearTimers()
     }
-  }, [answers, selected, stage])
+  }, [answers, clearTimers, selected, stage])
 
   useEffect(() => {
     if (prefersReducedMotion) {
@@ -195,7 +247,7 @@ export function Interview() {
     return () => {
       clearTalkingInterval()
     }
-  }, [prefersReducedMotion, stage])
+  }, [clearTalkingInterval, prefersReducedMotion, stage])
 
   const handleOk = () => {
     if (selected) {
@@ -229,6 +281,17 @@ export function Interview() {
     }
     handleOk()
   }
+
+  const selectedGroupData = useMemo(
+    () =>
+      selectedGroup
+        ? groupEntries.find((group) => group.key === selectedGroup) ?? null
+        : null,
+    [groupEntries, selectedGroup],
+  )
+
+  const isShowingCategories = !isConversationActive && selectedGroup === null
+  const isShowingQuestions = !isConversationActive && selectedGroupData !== null
 
   return (
     <section className="relative flex min-h-screen flex-col gap-8 px-4 py-10 md:px-12">
@@ -351,21 +414,94 @@ export function Interview() {
 
       <div className="flex flex-col gap-8">
         <AnimatePresence mode="wait">
-          {!isConversationActive ? (
+          {isShowingCategories ? (
             <motion.div
-              key="select-prompt"
+              key="group-prompt"
               initial={prefersReducedMotion ? undefined : { opacity: 0, y: 15 }}
               animate={prefersReducedMotion ? undefined : { opacity: 1, y: 0 }}
               exit={prefersReducedMotion ? undefined : { opacity: 0, y: -10 }}
               transition={{ duration: 0.35, ease: 'easeOut' }}
             >
-              <p className="text-center text-sm text-slate-300">{t('interview.selectPrompt')}</p>
+              <p className="text-center text-sm text-slate-300">{groupPrompt}</p>
+            </motion.div>
+          ) : null}
+        </AnimatePresence>
+
+        <AnimatePresence mode="wait">
+          {isShowingQuestions ? (
+            <motion.div
+              key="question-prompt"
+              initial={prefersReducedMotion ? undefined : { opacity: 0, y: 15 }}
+              animate={prefersReducedMotion ? undefined : { opacity: 1, y: 0 }}
+              exit={prefersReducedMotion ? undefined : { opacity: 0, y: -10 }}
+              transition={{ duration: 0.35, ease: 'easeOut' }}
+              className="flex flex-col items-center gap-4 text-center"
+            >
+              <p className="text-sm text-slate-300">{selectPrompt}</p>
+              {selectedGroupData ? (
+                <div className="flex flex-wrap items-center justify-center gap-3 text-xs uppercase tracking-[0.3em] text-slate-400">
+                  <span className="rounded-full border border-slate-700/60 bg-slate-900/60 px-3 py-1 font-pixel text-[10px] text-slate-300">
+                    {`${selectedGroupData.emoji} ${selectedGroupData.label}`}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={handleBackToGroups}
+                    className="rounded-full border border-slate-700/60 bg-slate-900/40 px-3 py-1 font-pixel text-[10px] uppercase tracking-[0.3em] text-slate-400 transition-colors hover:border-highlight/40 hover:text-highlight focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-highlight focus-visible:ring-offset-2 focus-visible:ring-offset-charcoal"
+                  >
+                    {backToCategories}
+                  </button>
+                </div>
+              ) : null}
             </motion.div>
           ) : null}
         </AnimatePresence>
 
         <AnimatePresence>
-          {!isConversationActive ? (
+          {isShowingCategories ? (
+            <motion.div
+              key="groups"
+              className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3"
+              initial={prefersReducedMotion ? undefined : { opacity: 0, y: 15 }}
+              animate={prefersReducedMotion ? undefined : { opacity: 1, y: 0 }}
+              exit={prefersReducedMotion ? undefined : { opacity: 0, y: -10 }}
+              transition={{ duration: 0.35, ease: 'easeOut' }}
+            >
+              {groupEntries.map((group, index) => {
+                const groupQuestions = group.questionKeys
+                const answeredCount = groupQuestions.filter((key) =>
+                  answeredQuestions.includes(key),
+                ).length
+                const allAnswered = answeredCount === groupQuestions.length
+                const baseClasses =
+                  'group relative flex flex-col gap-3 overflow-hidden rounded-pixel border px-5 py-5 text-left text-sm uppercase tracking-[0.2em] transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-highlight focus-visible:ring-offset-2 focus-visible:ring-offset-charcoal'
+                const stateClasses = allAnswered
+                  ? 'border-slate-800 bg-slate-900/40 text-slate-500 opacity-80 hover:border-highlight/40 hover:text-highlight'
+                  : 'border-slate-700 bg-slate-900/70 text-slate-200 hover:bg-slate-800/70'
+
+                return (
+                  <motion.button
+                    key={group.key}
+                    type="button"
+                    onClick={() => handleGroupSelect(group.key)}
+                    className={`${baseClasses} ${stateClasses}`}
+                    initial={prefersReducedMotion ? undefined : { opacity: 0, y: 15 }}
+                    animate={prefersReducedMotion ? undefined : { opacity: 1, y: 0 }}
+                    transition={{ duration: 0.3, delay: prefersReducedMotion ? 0 : 0.05 * index }}
+                    aria-pressed={selectedGroup === group.key}
+                  >
+                    <span className="text-lg text-highlight">{`${group.emoji} ${group.label}`}</span>
+                    <span className="text-[10px] font-pixel uppercase tracking-[0.35em] text-slate-400">
+                      {`${answeredCount}/${groupQuestions.length}`}
+                    </span>
+                  </motion.button>
+                )
+              })}
+            </motion.div>
+          ) : null}
+        </AnimatePresence>
+
+        <AnimatePresence>
+          {isShowingQuestions && selectedGroupData ? (
             <motion.div
               key="questions"
               className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3"
@@ -374,11 +510,12 @@ export function Interview() {
               exit={prefersReducedMotion ? undefined : { opacity: 0, y: -10 }}
               transition={{ duration: 0.3, ease: 'easeOut' }}
             >
-              {questionEntries.map(([key, value], index) => {
+              {selectedGroupData.questionKeys.map((key, index) => {
+                const question = questions[key]
                 const isAnswered = answeredQuestions.includes(key)
                 const isActive = selected === key
                 const emoji = questionEmojis[key]
-                const labelWithEmoji = emoji ? `${emoji} ${value.label}` : value.label
+                const labelWithEmoji = emoji ? `${emoji} ${question.label}` : question.label
                 const baseClasses =
                   'group relative overflow-hidden rounded-pixel border px-4 py-4 text-left text-sm uppercase tracking-[0.2em] transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-highlight focus-visible:ring-offset-2 focus-visible:ring-offset-charcoal'
                 const stateClasses = isActive
