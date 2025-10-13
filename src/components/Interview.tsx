@@ -460,7 +460,7 @@ export function Interview() {
           {isShowingCategories ? (
             <motion.div
               key="groups"
-              className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3"
+              className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 lg:flex lg:flex-wrap lg:justify-center"
               initial={prefersReducedMotion ? undefined : { opacity: 0, y: 15 }}
               animate={prefersReducedMotion ? undefined : { opacity: 1, y: 0 }}
               exit={prefersReducedMotion ? undefined : { opacity: 0, y: -10 }}
@@ -483,7 +483,7 @@ export function Interview() {
                     key={group.key}
                     type="button"
                     onClick={() => handleGroupSelect(group.key)}
-                    className={`${baseClasses} ${stateClasses}`}
+                    className={`${baseClasses} ${stateClasses} lg:basis-[calc(33.333%_-_12px)] lg:max-w-[calc(33.333%_-_12px)] lg:flex-none`}
                     initial={prefersReducedMotion ? undefined : { opacity: 0, y: 15 }}
                     animate={prefersReducedMotion ? undefined : { opacity: 1, y: 0 }}
                     transition={{ duration: 0.3, delay: prefersReducedMotion ? 0 : 0.05 * index }}
