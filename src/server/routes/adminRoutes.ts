@@ -5,7 +5,8 @@ import { getAllQuestions, getTopQuestions } from '../services/questionService.js
 import {
   listSuggestions,
   approveSuggestion,
-  rejectSuggestion
+  rejectSuggestion,
+  deleteSuggestion
 } from '../services/suggestionService.js';
 import { authenticate } from '../services/authService.js';
 
@@ -65,6 +66,20 @@ router.post('/suggestions/:id/reject', (req, res, next) => {
   try {
     const suggestion = rejectSuggestion(suggestionId);
     return res.json({ data: suggestion });
+  } catch (error) {
+    return next(error);
+  }
+});
+
+router.delete('/suggestions/:id', (req, res, next) => {
+  const suggestionId = Number.parseInt(req.params.id, 10);
+  if (Number.isNaN(suggestionId)) {
+    return res.status(400).json({ error: 'Invalid suggestion id' });
+  }
+
+  try {
+    deleteSuggestion(suggestionId);
+    return res.status(204).send();
   } catch (error) {
     return next(error);
   }

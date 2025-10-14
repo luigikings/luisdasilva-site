@@ -1,7 +1,7 @@
 import { db } from '../db.js';
 import { createQuestion } from './questionService.js';
 import { NotFoundError, AppError } from '../utils/errors.js';
-import { Suggestion } from '../types/index.js';
+import type { Suggestion } from '../types/index.js';
 
 type SuggestionRow = {
   id: number;
@@ -121,4 +121,19 @@ export function rejectSuggestion(suggestionId: number) {
 
   updateStatement.run(suggestionId);
   return getSuggestionById(suggestionId);
+}
+
+export function deleteSuggestion(suggestionId: number) {
+  const suggestion = getSuggestionById(suggestionId);
+
+  if (suggestion.status !== 'pending') {
+    throw new AppError('Only pending suggestions can be deleted', 409);
+  }
+
+  const deleteStatement = db.prepare(
+    `DELETE FROM suggestions
+     WHERE id = ?`
+  );
+
+  deleteStatement.run(suggestionId);
 }
