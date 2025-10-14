@@ -1,14 +1,25 @@
 import { Router } from 'express';
 import { authenticateRequest } from '../middleware/auth.js';
-import { approveSuggestionSchema } from '../utils/validators.js';
+import { approveSuggestionSchema, loginSchema } from '../utils/validators.js';
 import { getAllQuestions, getTopQuestions } from '../services/questionService.js';
 import {
   listSuggestions,
   approveSuggestion,
   rejectSuggestion
 } from '../services/suggestionService.js';
+import { authenticate } from '../services/authService.js';
 
 const router = Router();
+
+router.post('/login', (req, res, next) => {
+  try {
+    const credentials = loginSchema.parse(req.body);
+    const result = authenticate(credentials);
+    res.json({ data: result });
+  } catch (error) {
+    next(error);
+  }
+});
 
 router.use(authenticateRequest);
 
