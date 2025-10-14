@@ -70,6 +70,21 @@ type DictSection = {
       cvButton: string
     }
   }
+  suggestions: {
+    buttonLabel: string
+    modalTitle: string
+    modalDescription: string
+    questionLabel: string
+    questionPlaceholder: string
+    categoryLabel: string
+    categoryPlaceholder: string
+    cancel: string
+    submit: string
+    successTitle: string
+    successMessage: string
+    errorMessage: string
+    validationMessage: string
+  }
   footer: {
     text: string
   }
@@ -241,6 +256,21 @@ export const dict: Dict = {
         cvButton: 'Descargar CV',
       },
     },
+    suggestions: {
+      buttonLabel: 'Pide una pregunta',
+      modalTitle: 'Sugiere una nueva pregunta',
+      modalDescription: '¿Crees que falta algo? Envíame tu pregunta propuesta y la revisaré.',
+      questionLabel: 'Pregunta sugerida',
+      questionPlaceholder: 'Escribe la pregunta que te gustaría ver en la entrevista...',
+      categoryLabel: 'Categoría (opcional)',
+      categoryPlaceholder: 'Ej. experiencia, motivación, cultura...',
+      cancel: 'Cancelar',
+      submit: 'Enviar sugerencia',
+      successTitle: '¡Gracias!',
+      successMessage: 'Tu propuesta fue enviada. La revisaré pronto.',
+      errorMessage: 'No se pudo enviar la sugerencia. Intenta nuevamente.',
+      validationMessage: 'Por favor escribe una pregunta con al menos 8 caracteres.',
+    },
     footer: {
       text: 'Built with React + Tailwind + Framer Motion',
     },
@@ -400,13 +430,28 @@ export const dict: Dict = {
         github: 'Sure—here it is.',
         cv: 'Absolutely—here you go.',
       },
-      conversation: {
-        youLabel: 'You',
-        characterLabel: 'LK replies',
-        okButton: 'Okay',
-        githubButton: 'Go to GitHub',
-        cvButton: 'Download CV',
-      },
+    conversation: {
+      youLabel: 'You',
+      characterLabel: 'LK replies',
+      okButton: 'Okay',
+      githubButton: 'Go to GitHub',
+      cvButton: 'Download CV',
+    },
+  },
+    suggestions: {
+      buttonLabel: 'Suggest a question',
+      modalTitle: 'Suggest a new question',
+      modalDescription: 'Think we are missing something? Share your proposed question and I will review it.',
+      questionLabel: 'Suggested question',
+      questionPlaceholder: 'Write the question you would like to see in the interview...',
+      categoryLabel: 'Category (optional)',
+      categoryPlaceholder: 'e.g. experience, motivation, culture...',
+      cancel: 'Cancel',
+      submit: 'Send suggestion',
+      successTitle: 'Thank you!',
+      successMessage: 'Your suggestion was sent. I will review it soon.',
+      errorMessage: 'Could not send the suggestion. Please try again.',
+      validationMessage: 'Please write a question with at least 8 characters.',
     },
     footer: {
       text: 'Built with React + Tailwind + Framer Motion',
