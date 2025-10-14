@@ -1,6 +1,10 @@
 import { Router } from 'express';
-import { suggestionSchema } from '../utils/validators.js';
-import { getActiveQuestions, incrementQuestionClick } from '../services/questionService.js';
+import { questionUsageSchema, suggestionSchema } from '../utils/validators.js';
+import {
+  getActiveQuestions,
+  incrementQuestionClick,
+  trackQuestionUsage
+} from '../services/questionService.js';
 import { createSuggestion } from '../services/suggestionService.js';
 import { getMetrics } from '../services/metricsService.js';
 import { suggestionLimiter } from '../middleware/rateLimiters.js';
@@ -21,6 +25,19 @@ router.post('/questions/:id/click', (req, res, next) => {
   try {
     const question = incrementQuestionClick(questionId);
     return res.json({ data: question });
+  } catch (error) {
+    return next(error);
+  }
+});
+
+router.post('/questions/track', (req, res, next) => {
+  try {
+    const payload = questionUsageSchema.parse(req.body);
+    const question = trackQuestionUsage({
+      text: payload.text,
+      category: payload.category
+    });
+    return res.status(201).json({ data: question });
   } catch (error) {
     return next(error);
   }

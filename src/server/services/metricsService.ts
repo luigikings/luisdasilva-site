@@ -1,5 +1,5 @@
 import { db } from '../db.js';
-import { MetricsSummary } from '../types/index.js';
+import type { MetricsSummary } from '../types/index.js';
 import { getTopQuestions } from './questionService.js';
 
 export function getMetrics(): MetricsSummary {

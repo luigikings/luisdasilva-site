@@ -15,6 +15,20 @@ export const suggestionSchema = z.object({
     .or(z.literal('').transform(() => undefined))
 });
 
+export const questionUsageSchema = z.object({
+  key: z.string().trim().min(1),
+  text: z
+    .string()
+    .trim()
+    .min(1, 'La pregunta no puede estar vacía')
+    .max(220, 'La pregunta debe tener máximo 220 caracteres'),
+  category: z
+    .string()
+    .trim()
+    .min(1, 'La categoría es obligatoria')
+    .max(60)
+});
+
 export const loginSchema = z.object({
   email: z.string().email('Email inválido'),
   password: z.string().min(1, 'La contraseña es obligatoria')
