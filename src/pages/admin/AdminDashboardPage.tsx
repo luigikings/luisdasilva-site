@@ -44,7 +44,7 @@ export function AdminDashboardPage() {
         await Promise.all([
           getMetrics(),
           getAdminQuestions(token),
-          getAdminSuggestions(token, 'pending'),
+          getAdminSuggestions(token),
         ])
       setMetrics(metricsResponse)
       setQuestions(questionsResponse)
@@ -89,6 +89,11 @@ export function AdminDashboardPage() {
       return
     }
 
+    const suggestion = suggestions.find((item) => item.id === id)
+    if (!suggestion || suggestion.status !== 'pending') {
+      return
+    }
+
     setDeletingSuggestionIds((prev) => {
       const next = new Set(prev)
       next.add(id)
@@ -127,6 +132,12 @@ export function AdminDashboardPage() {
           new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
       )
   }, [questions])
+
+  const recentSuggestions = useMemo(() => {
+    return [...suggestions].sort(
+      (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+    )
+  }, [suggestions])
 
   const clicksByCategoryEntries = useMemo(() => {
     if (!metrics) {
@@ -171,7 +182,7 @@ export function AdminDashboardPage() {
         </div>
       ) : null}
 
-      <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+      <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
         <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-6 shadow-lg">
           <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Clicks totales</p>
           <p className="mt-3 text-3xl font-semibold text-slate-100">
@@ -181,21 +192,15 @@ export function AdminDashboardPage() {
         <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-6 shadow-lg">
           <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Preguntas activas</p>
           <p className="mt-3 text-3xl font-semibold text-slate-100">
-            {metrics
-              ? numberFormatter.format(metrics.activeQuestions)
-              : '—'}
+            {isLoading
+              ? '—'
+              : numberFormatter.format(activeQuestions.length)}
           </p>
         </div>
         <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-6 shadow-lg">
           <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Sugerencias pendientes</p>
           <p className="mt-3 text-3xl font-semibold text-slate-100">
             {metrics ? numberFormatter.format(metrics.pendingSuggestions) : '—'}
-          </p>
-        </div>
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-6 shadow-lg">
-          <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Sugerencias aprobadas</p>
-          <p className="mt-3 text-3xl font-semibold text-slate-100">
-            {metrics ? numberFormatter.format(metrics.approvedSuggestions) : '—'}
           </p>
         </div>
       </section>
@@ -274,29 +279,32 @@ export function AdminDashboardPage() {
                   <tr>
                     <th className="px-3 py-2">Pregunta sugerida</th>
                     <th className="px-3 py-2">Categoría</th>
+                    <th className="px-3 py-2">Estado</th>
+                    <th className="px-3 py-2">Fecha</th>
                     <th className="px-3 py-2 text-right">Acciones</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-800/80 text-slate-300">
                   {isLoading ? (
                     <tr>
-                      <td className="px-3 py-6" colSpan={3}>
+                      <td className="px-3 py-6" colSpan={5}>
                         <p className="text-center text-sm text-slate-500">
                           Cargando sugerencias…
                         </p>
                       </td>
                     </tr>
-                  ) : suggestions.length === 0 ? (
+                  ) : recentSuggestions.length === 0 ? (
                     <tr>
-                      <td className="px-3 py-6" colSpan={3}>
+                      <td className="px-3 py-6" colSpan={5}>
                         <p className="text-center text-sm text-slate-500">
-                          No hay sugerencias pendientes.
+                          No hay sugerencias registradas.
                         </p>
                       </td>
                     </tr>
                   ) : (
-                    suggestions.map((suggestion) => {
+                    recentSuggestions.map((suggestion) => {
                       const isDeleting = deletingSuggestionIds.has(suggestion.id)
+                      const isPending = suggestion.status === 'pending'
                       return (
                         <tr key={suggestion.id}>
                           <td className="px-3 py-3 text-slate-100">
@@ -305,12 +313,32 @@ export function AdminDashboardPage() {
                           <td className="px-3 py-3 text-xs uppercase tracking-[0.2em] text-slate-400">
                             {suggestion.category ?? '—'}
                           </td>
+                          <td className="px-3 py-3 text-xs uppercase tracking-[0.2em]">
+                            <span
+                              className={
+                                suggestion.status === 'approved'
+                                  ? 'text-emerald-400'
+                                  : suggestion.status === 'rejected'
+                                    ? 'text-red-400'
+                                    : 'text-amber-300'
+                              }
+                            >
+                              {suggestion.status === 'approved'
+                                ? 'Aprobada'
+                                : suggestion.status === 'rejected'
+                                  ? 'Rechazada'
+                                  : 'Pendiente'}
+                            </span>
+                          </td>
+                          <td className="px-3 py-3 text-xs text-slate-400">
+                            {dateFormatter.format(new Date(suggestion.createdAt))}
+                          </td>
                           <td className="px-3 py-3 text-right">
                             <button
                               type="button"
                               onClick={() => handleDeleteSuggestion(suggestion.id)}
                               className="rounded-full border border-red-500/60 px-3 py-1 text-xs font-pixel uppercase tracking-[0.3em] text-red-300 transition-colors hover:bg-red-500/10 disabled:cursor-not-allowed disabled:opacity-60"
-                              disabled={isDeleting}
+                              disabled={isDeleting || !isPending}
                             >
                               {isDeleting ? 'Eliminando…' : 'Eliminar'}
                             </button>
