@@ -1,5 +1,9 @@
 import { Router } from 'express';
-import { questionUsageSchema, suggestionSchema } from '../utils/validators.js';
+import {
+  analyticsEventSchema,
+  questionUsageSchema,
+  suggestionSchema
+} from '../utils/validators.js';
 import {
   getActiveQuestions,
   incrementQuestionClick,
@@ -8,6 +12,7 @@ import {
 import { createSuggestion } from '../services/suggestionService.js';
 import { getMetrics } from '../services/metricsService.js';
 import { suggestionLimiter } from '../middleware/rateLimiters.js';
+import { trackAnalyticsEvent } from '../services/analyticsService.js';
 
 const router = Router();
 
@@ -48,6 +53,16 @@ router.post('/suggestions', suggestionLimiter, (req, res, next) => {
     const payload = suggestionSchema.parse(req.body);
     const suggestion = createSuggestion(payload.text.trim(), payload.category);
     return res.status(201).json({ data: suggestion });
+  } catch (error) {
+    return next(error);
+  }
+});
+
+router.post('/analytics/events', (req, res, next) => {
+  try {
+    const payload = analyticsEventSchema.parse(req.body);
+    const event = trackAnalyticsEvent(payload.type);
+    return res.status(201).json({ data: event });
   } catch (error) {
     return next(error);
   }

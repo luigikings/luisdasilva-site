@@ -6,7 +6,7 @@ import { useT } from '../hooks/useT'
 import { SuggestionPrompt } from './SuggestionPrompt'
 import type { QuestionGroupKey, QuestionKey } from '../i18n/dict'
 import { dict } from '../i18n/dict'
-import { trackQuestionClick } from '../services/publicApi'
+import { trackAnalyticsEvent, trackQuestionClick } from '../services/publicApi'
 
 const questionGroupConfig: Record<QuestionGroupKey, { emoji: string; questions: QuestionKey[] }> = {
   aboutYou: {
@@ -294,6 +294,12 @@ export function Interview() {
   }
 
   const handleGithubRedirect = () => {
+    void trackAnalyticsEvent('github_visit').catch((error) => {
+      if (import.meta.env.DEV) {
+        // eslint-disable-next-line no-console
+        console.error('Failed to track analytics event', error)
+      }
+    })
     if (typeof window !== 'undefined') {
       window.open(GITHUB_URL, '_blank', 'noopener,noreferrer')
     }
@@ -301,6 +307,12 @@ export function Interview() {
   }
 
   const handleCvDownload = () => {
+    void trackAnalyticsEvent('cv_download').catch((error) => {
+      if (import.meta.env.DEV) {
+        // eslint-disable-next-line no-console
+        console.error('Failed to track analytics event', error)
+      }
+    })
     if (typeof document !== 'undefined') {
       const link = document.createElement('a')
       link.href = CV_URL

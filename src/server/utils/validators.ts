@@ -42,3 +42,7 @@ export const approveSuggestionSchema = z.object({
     .max(60)
     .optional()
 });
+
+export const analyticsEventSchema = z.object({
+  type: z.enum(['cv_download', 'github_visit'])
+});

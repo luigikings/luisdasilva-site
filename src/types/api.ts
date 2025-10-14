@@ -15,6 +15,8 @@ export interface MetricsSummary {
   pendingSuggestions: number
   approvedSuggestions: number
   rejectedSuggestions: number
+  cvDownloads: number
+  githubVisits: number
   topQuestions: Array<Pick<Question, 'id' | 'text' | 'category' | 'clickCount'>>
 }
 

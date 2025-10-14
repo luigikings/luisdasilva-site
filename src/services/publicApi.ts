@@ -25,3 +25,12 @@ export async function trackQuestionClick(payload: QuestionTrackPayload) {
     body: JSON.stringify(payload),
   })
 }
+
+export type AnalyticsEventType = 'cv_download' | 'github_visit'
+
+export async function trackAnalyticsEvent(type: AnalyticsEventType) {
+  return request<{ type: AnalyticsEventType; total: number }>('/analytics/events', {
+    method: 'POST',
+    body: JSON.stringify({ type }),
+  })
+}
