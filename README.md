@@ -1,82 +1,60 @@
-# 🎮 Pixel Interrogatorio — Portfolio de LK
+# Pixel Interrogatorio
 
-> Portal interactivo en pixel art para conocer el trabajo de **Luis Ángel Jose Da Silva (LK)**. Incluye flujo de entrevista, portafolio editable y descarga de CV.
+> An interactive pixel-art interview experience that doubles as the online portfolio for **Luis Ángel Jose Da Silva (LK)**.
 
-## 📦 Stack principal
-- [Vite](https://vitejs.dev/) + [React](https://react.dev/) + [TypeScript](https://www.typescriptlang.org/)
-- [Tailwind CSS](https://tailwindcss.com/) para estilos con estética retro
-- [Framer Motion](https://www.framer.com/motion/) para animaciones sutiles
-- i18n artesanal con diccionarios ES/EN y persistencia en `localStorage`
+## 🚀 Getting Started
 
-## 🚀 Primeros pasos
-```bash
-npm install
-npm run dev
+1. **Install Node.js 18+** (or use the version specified in your tooling).
+2. **Clone the repository** and move into the project folder.
+   ```bash
+   git clone <repo-url>
+   cd luisdasilva-site
+   ```
+3. **Install dependencies**.
+   ```bash
+   npm install
+   ```
+4. **Start the Vite dev server**.
+   ```bash
+   npm run dev
+   ```
+5. Open [http://localhost:5173](http://localhost:5173) in your browser to explore the experience.
+
+Additional scripts:
+- `npm run build` – compile the production-ready bundle in `dist/`.
+- `npm run preview` – serve the production build locally.
+- `npm run lint` – run ESLint with the project configuration.
+- `npm run format` – format all files with Prettier.
+
+## 🛠️ Tech Stack
+- [React 18](https://react.dev/) + [Vite](https://vitejs.dev/) with [TypeScript](https://www.typescriptlang.org/)
+- [Tailwind CSS](https://tailwindcss.com/) for the retro-inspired styling layer
+- [Framer Motion](https://www.framer.com/motion/) for smooth transitions and animated scenes
+- Lightweight, hand-rolled i18n layer with localStorage persistence
+
+## 📂 Project Structure
+```text
+luisdasilva-site/
+├── public/             # Static assets such as the downloadable CV, sitemap, and robots.txt
+├── src/
+│   ├── components/     # Pixel-inspired scenes (Language intro, Door, Interview, Portfolio grid, etc.)
+│   ├── data/           # Dialog lines and portfolio entries consumed by the UI
+│   ├── hooks/          # Custom hooks like the translation helper `useT`
+│   ├── i18n/           # Dictionary files that power the bilingual experience
+│   ├── lib/            # Shared utilities such as the analytics tracker
+│   ├── App.tsx         # Main application flow controller
+│   └── index.css       # Tailwind directives and global styles
+├── index.html          # Document head metadata and root mounting point
+└── vite.config.ts      # Vite + React configuration
 ```
-- Abre [http://localhost:5173](http://localhost:5173) para ver el interrogatorio.
-- `npm run build` genera la carpeta `dist/` lista para producción.
-- `npm run preview` sirve el build generado.
-- `npm run lint` valida el código con ESLint.
-- `npm run format` aplica Prettier a todo el proyecto.
 
-## 🗂️ Estructura de carpetas
-```
-public/
-  LK_CV.pdf       # CV de ejemplo (reemplazar por el real)
-  robots.txt
-  sitemap.xml
-src/
-  components/     # UI modular (Loading, Door, Interview, Portfolio, etc.)
-  data/           # Datos editables: diálogos y proyectos
-  hooks/          # useT y proveedores de idioma
-  i18n/           # Diccionario bilingüe ES/EN
-  lib/            # Utilidades (analytics stub)
-  index.css       # Tailwind + estilos globales
-  App.tsx         # Flow principal de la experiencia
-```
+## 💡 How It Works
+- Visitors choose their language, triggering the localized copy defined in [`src/i18n/dict.ts`](src/i18n/dict.ts).
+- A playful loading screen and animated door scene (via [`DoorScene`](src/components/DoorScene.tsx)) set the tone before entering the interview.
+- The interview flow renders grouped questions, dynamic typing effects, and shareable actions (e.g., open GitHub or download the CV) inside [`Interview`](src/components/Interview.tsx).
+- Portfolio items and extra dialog content are driven by easily editable data modules in [`src/data`](src/data).
+- Animations respect the user’s motion preferences thanks to `prefers-reduced-motion` checks across components.
 
-## 🌐 Cómo traducir o editar textos
-- Todas las cadenas visibles viven en [`src/i18n/dict.ts`](src/i18n/dict.ts).
-- Cada clave tiene su versión en español (`es`) e inglés (`en`).
-- El hook `useT()` permite acceder a las traducciones desde cualquier componente.
-- El idioma se guarda automáticamente en `localStorage` (`pixel-interrogatorio-lang`).
-
-## 💼 Cómo editar el portafolio
-- Modifica [`src/data/portfolio.ts`](src/data/portfolio.ts) con tus propios proyectos.
-- Cada elemento soporta `title`, `excerpt`, `details`, `tags`, `githubUrl` y `demoUrl`.
-- El componente `PortfolioGrid` renderiza tarjetas y modales animados con CTA.
-
-## 💬 Frases de la puerta
-- Ajusta los mensajes de impaciencia en [`src/data/dialogs.ts`](src/data/dialogs.ts).
-- Cada entrada tiene `es` y `en` para mantener el tono en ambos idiomas.
-
-## 🖼️ Personalizar imágenes
-- El proyecto usa elementos vectoriales generados con CSS para la puerta y el avatar.
-- Si deseas sprites pixel art reales, añade tus propios archivos a `public/` y actualiza los componentes.
-- Para redes sociales, publica tu propia imagen OG y ajusta las etiquetas en `index.html`.
-
-## 🔍 SEO y accesibilidad
-- `index.html` incluye `<title>`, meta description, etiquetas Open Graph y Twitter Card.
-- `public/robots.txt` y `public/sitemap.xml` están listos para subir al dominio `luis-dasilva.com`.
-- Animaciones sensibles a `prefers-reduced-motion`, navegación por teclado y `aria-labels` en controles.
-
-## 📈 Analíticas
-- [`src/lib/analytics.ts`](src/lib/analytics.ts) expone `track(eventName, payload?)`.
-- Reemplaza la implementación por la integración real (Plausible, Umami, etc.).
-
-## ☁️ Despliegue sugerido
-- **Vercel**: importando el repo, Vercel detecta Vite y usa `npm run build` automáticamente.
-- **Netlify**: build command `npm run build`, publish directory `dist`.
-- Recuerda configurar dominios personalizados (`luis-dasilva.com`) y HTTPS.
-
-## 🧭 Roadmap sugerido
-- [ ] Añadir vista de timeline/experiencia profesional.
-- [ ] Conectar analytics reales (Plausible) usando `lib/analytics.ts`.
-- [ ] Incluir modo “entrevista rápida” con preguntas aleatorias.
-
-## 📜 Licencias y créditos
-- Fuentes Google: [Press Start 2P](https://fonts.google.com/specimen/Press+Start+2P) y [IBM Plex Sans](https://fonts.google.com/specimen/IBM+Plex+Sans) — licencia Open Font License.
-- Elementos gráficos generados por CSS en esta versión (sin assets externos).
-
-## 🗒️ Changelog
-- **2025-10-04** · Versión inicial del portal “Pixel Interrogatorio” con flujo completo (loading → puerta → entrevista), portafolio editable, i18n ES/EN, CV descargable, formulario sin backend y optimizaciones SEO/UX básicas.
+## 👨‍💻 Author & License
+- **Author:** Luis Ángel Jose Da Silva (LK)
+- **License:** Not specified. All rights reserved unless a license is added.
