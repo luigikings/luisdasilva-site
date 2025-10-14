@@ -25,6 +25,8 @@ Additional scripts:
 - `npm run preview` – serve the production build locally.
 - `npm run lint` – run ESLint with the project configuration.
 - `npm run format` – format all files with Prettier.
+- `npm run server` – launch the Express API with live TypeScript execution.
+- `npm run build:server` – compile the backend into `dist/server`.
 
 ## 🛠️ Tech Stack
 - [React 18](https://react.dev/) + [Vite](https://vitejs.dev/) with [TypeScript](https://www.typescriptlang.org/)
@@ -54,6 +56,47 @@ luisdasilva-site/
 - The interview flow renders grouped questions, dynamic typing effects, and shareable actions (e.g., open GitHub or download the CV) inside [`Interview`](src/components/Interview.tsx).
 - Portfolio items and extra dialog content are driven by easily editable data modules in [`src/data`](src/data).
 - Animations respect the user’s motion preferences thanks to `prefers-reduced-motion` checks across components.
+
+## 🧠 Backend API
+
+The project now ships with an opinionated Express + SQLite backend located in `src/server/`. It tracks question clicks, stores user-submitted suggestions, and powers an authenticated admin dashboard.
+
+### 1. Configure environment variables
+
+Copy `.env.example` into `.env` and fill in the admin credentials:
+
+```bash
+cp .env.example .env
+# Generate a bcrypt hash for your password (replace `your-password`)
+node -e "console.log(require('bcryptjs').hashSync('your-password', 10))"
+# Update ADMIN_PASSWORD_HASH and JWT_SECRET with secure values
+```
+
+### 2. Run the API locally
+
+```bash
+npm install
+npm run server
+```
+
+The server boots on `http://localhost:3000` by default. A shared health check lives at `/health`.
+
+### 3. REST endpoints
+
+| Method | Endpoint | Description |
+| ------ | -------- | ----------- |
+| `GET` | `/api/questions` | Public list of active questions with click counters. |
+| `POST` | `/api/questions/:id/click` | Increments the click counter for a question. |
+| `POST` | `/api/suggestions` | Stores a visitor suggestion (with rate limiting and validation). |
+| `GET` | `/api/metrics` | Returns totals (clicks, clicks per categoría, suggestions, top questions). |
+| `POST` | `/api/auth/login` | Exchanges admin credentials for a JWT. |
+| `GET` | `/api/admin/questions` | Lists every question (requires `Authorization: Bearer <token>`). |
+| `GET` | `/api/admin/questions/top` | Returns the most clicked questions (configurable limit). |
+| `GET` | `/api/admin/suggestions` | Lists suggestions, optionally filtered by status. |
+| `POST` | `/api/admin/suggestions/:id/approve` | Approves a suggestion and publishes it as an active question. |
+| `POST` | `/api/admin/suggestions/:id/reject` | Rejects a suggestion. |
+
+SQLite files are stored in `data/app.db` by default, making the project portable to services like Vercel, Render, or Railway.
 
 ## 👨‍💻 Author & License
 - **Author:** Luis Ángel Jose Da Silva (LK)
