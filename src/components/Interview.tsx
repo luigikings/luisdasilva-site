@@ -3,6 +3,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import { track } from '../lib/analytics'
 import { useT } from '../hooks/useT'
+import { SuggestionPrompt } from './SuggestionPrompt'
 import type { QuestionGroupKey, QuestionKey } from '../i18n/dict'
 
 const questionGroupConfig: Record<QuestionGroupKey, { emoji: string; questions: QuestionKey[] }> = {
@@ -554,6 +555,8 @@ export function Interview() {
           ) : null}
         </AnimatePresence>
       </div>
+
+      <SuggestionPrompt />
 
       <footer className="mt-auto text-center text-xs text-slate-500">
         {t('footer.text')}
