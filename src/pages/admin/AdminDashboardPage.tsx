@@ -182,7 +182,7 @@ export function AdminDashboardPage() {
         </div>
       ) : null}
 
-      <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+      <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
         <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-6 shadow-lg">
           <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Clicks totales</p>
           <p className="mt-3 text-3xl font-semibold text-slate-100">
@@ -201,6 +201,22 @@ export function AdminDashboardPage() {
           <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Sugerencias pendientes</p>
           <p className="mt-3 text-3xl font-semibold text-slate-100">
             {metrics ? numberFormatter.format(metrics.pendingSuggestions) : '—'}
+          </p>
+        </div>
+        <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-6 shadow-lg">
+          <p className="text-xs uppercase tracking-[0.3em] text-slate-400">
+            Veces que alguien descargó mi CV
+          </p>
+          <p className="mt-3 text-3xl font-semibold text-slate-100">
+            {metrics ? numberFormatter.format(metrics.cvDownloads) : '—'}
+          </p>
+        </div>
+        <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-6 shadow-lg">
+          <p className="text-xs uppercase tracking-[0.3em] text-slate-400">
+            Veces que alguien abrió mi GitHub
+          </p>
+          <p className="mt-3 text-3xl font-semibold text-slate-100">
+            {metrics ? numberFormatter.format(metrics.githubVisits) : '—'}
           </p>
         </div>
       </section>

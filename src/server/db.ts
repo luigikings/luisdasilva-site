@@ -38,6 +38,12 @@ CREATE TABLE IF NOT EXISTS suggestions (
 );
 
 CREATE UNIQUE INDEX IF NOT EXISTS questions_text_unique ON questions(text);
+
+CREATE TABLE IF NOT EXISTS analytics_events (
+  event_type TEXT PRIMARY KEY,
+  total INTEGER NOT NULL DEFAULT 0,
+  updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
 `);
 
 export type DatabaseClient = typeof db;

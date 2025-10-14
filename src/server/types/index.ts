@@ -19,6 +19,8 @@ export interface Suggestion {
   questionId: number | null;
 }
 
+export type AnalyticsEventType = 'cv_download' | 'github_visit';
+
 export interface MetricsSummary {
   totalClicks: number;
   clicksByCategory: Record<string, number>;
@@ -26,5 +28,7 @@ export interface MetricsSummary {
   pendingSuggestions: number;
   approvedSuggestions: number;
   rejectedSuggestions: number;
+  cvDownloads: number;
+  githubVisits: number;
   topQuestions: Array<Pick<Question, 'id' | 'text' | 'category' | 'clickCount'>>;
 }
