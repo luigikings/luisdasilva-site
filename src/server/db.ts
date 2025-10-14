@@ -36,6 +36,8 @@ CREATE TABLE IF NOT EXISTS suggestions (
   question_id INTEGER,
   FOREIGN KEY(question_id) REFERENCES questions(id)
 );
+
+CREATE UNIQUE INDEX IF NOT EXISTS questions_text_unique ON questions(text);
 `);
 
 export type DatabaseClient = typeof db;

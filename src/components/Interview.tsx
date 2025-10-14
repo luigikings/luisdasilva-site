@@ -5,6 +5,8 @@ import { track } from '../lib/analytics'
 import { useT } from '../hooks/useT'
 import { SuggestionPrompt } from './SuggestionPrompt'
 import type { QuestionGroupKey, QuestionKey } from '../i18n/dict'
+import { dict } from '../i18n/dict'
+import { trackQuestionClick } from '../services/publicApi'
 
 const questionGroupConfig: Record<QuestionGroupKey, { emoji: string; questions: QuestionKey[] }> = {
   aboutYou: {
@@ -49,6 +51,16 @@ const questionEmojis: Record<QuestionKey, string> = {
   github: '🐙',
   cv: '📄',
 }
+
+const questionToGroupMap = Object.entries(questionGroupConfig).reduce(
+  (acc, [groupKey, value]) => {
+    value.questions.forEach((questionKey) => {
+      acc[questionKey] = groupKey as QuestionGroupKey
+    })
+    return acc
+  },
+  {} as Record<QuestionKey, QuestionGroupKey>,
+)
 
 const GITHUB_URL = 'https://github.com/luigikings'
 const CV_URL = '/CV%20Luis%20Angel%20Da%20Silva%20English.pdf'
@@ -140,6 +152,23 @@ export function Interview() {
     }
     setSelected(key)
     track('interview_question_selected', { key, lang })
+
+    const groupKey = questionToGroupMap[key]
+    const canonicalText = dict.es.interview.questions[key]?.label ?? questions[key].label
+    const canonicalCategory = groupKey
+      ? dict.es.interview.categories[groupKey]
+      : 'general'
+
+    void trackQuestionClick({
+      key,
+      text: canonicalText,
+      category: canonicalCategory,
+    }).catch((error) => {
+      if (import.meta.env.DEV) {
+        // eslint-disable-next-line no-console
+        console.error('Failed to track question click', error)
+      }
+    })
   }
 
   const handleBackToGroups = () => {

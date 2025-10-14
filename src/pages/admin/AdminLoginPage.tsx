@@ -1,4 +1,5 @@
-import { FormEvent, useState } from 'react'
+import { useState } from 'react'
+import type { FormEvent } from 'react'
 import { Navigate, useLocation, useNavigate, type Location } from 'react-router-dom'
 
 import { login } from '../../services/adminApi'
