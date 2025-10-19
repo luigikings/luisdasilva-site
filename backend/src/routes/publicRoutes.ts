@@ -16,29 +16,33 @@ import { trackAnalyticsEvent } from '../services/analyticsService.js';
 
 const router = Router();
 
-router.get('/questions', (_req, res) => {
-  const questions = getActiveQuestions();
-  res.json({ data: questions });
+router.get('/questions', async (_req, res, next) => {
+  try {
+    const questions = await getActiveQuestions();
+    res.json({ data: questions });
+  } catch (error) {
+    next(error);
+  }
 });
 
-router.post('/questions/:id/click', (req, res, next) => {
+router.post('/questions/:id/click', async (req, res, next) => {
   const questionId = Number.parseInt(req.params.id, 10);
   if (Number.isNaN(questionId)) {
     return res.status(400).json({ error: 'Invalid question id' });
   }
 
   try {
-    const question = incrementQuestionClick(questionId);
+    const question = await incrementQuestionClick(questionId);
     return res.json({ data: question });
   } catch (error) {
     return next(error);
   }
 });
 
-router.post('/questions/track', (req, res, next) => {
+router.post('/questions/track', async (req, res, next) => {
   try {
     const payload = questionUsageSchema.parse(req.body);
-    const question = trackQuestionUsage({
+    const question = await trackQuestionUsage({
       text: payload.text,
       category: payload.category
     });
@@ -48,29 +52,33 @@ router.post('/questions/track', (req, res, next) => {
   }
 });
 
-router.post('/suggestions', suggestionLimiter, (req, res, next) => {
+router.post('/suggestions', suggestionLimiter, async (req, res, next) => {
   try {
     const payload = suggestionSchema.parse(req.body);
-    const suggestion = createSuggestion(payload.text.trim(), payload.category);
+    const suggestion = await createSuggestion(payload.text.trim(), payload.category);
     return res.status(201).json({ data: suggestion });
   } catch (error) {
     return next(error);
   }
 });
 
-router.post('/analytics/events', (req, res, next) => {
+router.post('/analytics/events', async (req, res, next) => {
   try {
     const payload = analyticsEventSchema.parse(req.body);
-    const event = trackAnalyticsEvent(payload.type);
+    const event = await trackAnalyticsEvent(payload.type);
     return res.status(201).json({ data: event });
   } catch (error) {
     return next(error);
   }
 });
 
-router.get('/metrics', (_req, res) => {
-  const metrics = getMetrics();
-  res.json({ data: metrics });
+router.get('/metrics', async (_req, res, next) => {
+  try {
+    const metrics = await getMetrics();
+    res.json({ data: metrics });
+  } catch (error) {
+    next(error);
+  }
 });
 
 export default router;

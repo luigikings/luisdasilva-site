@@ -1,18 +1,35 @@
-import { db } from '../db.js';
-import { createQuestion } from './questionService.js';
+import { pool } from '../db.js';
 import { NotFoundError, AppError } from '../utils/errors.js';
-import type { Suggestion } from '../types/index.js';
+import type { Suggestion, Question } from '../types/index.js';
 
 type SuggestionRow = {
   id: number;
   text: string;
   category: string | null;
   status: 'pending' | 'approved' | 'rejected';
-  created_at: string;
-  updated_at: string;
-  processed_at: string | null;
+  created_at: Date | string;
+  updated_at: Date | string;
+  processed_at: Date | string | null;
   question_id: number | null;
 };
+
+type QuestionRow = {
+  id: number;
+  text: string;
+  category: string;
+  click_count: number;
+  is_active: boolean;
+  created_at: Date | string;
+  updated_at: Date | string;
+};
+
+function toIsoString(value: Date | string | null): string | null {
+  if (value === null) {
+    return null;
+  }
+
+  return value instanceof Date ? value.toISOString() : new Date(value).toISOString();
+}
 
 function mapSuggestion(row: SuggestionRow): Suggestion {
   return {
@@ -20,31 +37,49 @@ function mapSuggestion(row: SuggestionRow): Suggestion {
     text: row.text,
     category: row.category,
     status: row.status,
-    createdAt: row.created_at,
-    updatedAt: row.updated_at,
-    processedAt: row.processed_at,
+    createdAt: toIsoString(row.created_at)!,
+    updatedAt: toIsoString(row.updated_at)!,
+    processedAt: toIsoString(row.processed_at),
     questionId: row.question_id
   };
 }
 
-export function createSuggestion(text: string, category?: string | null): Suggestion {
-  const statement = db.prepare(
-    `INSERT INTO suggestions (text, category, status)
-     VALUES (?, ?, 'pending')`
-  );
-
-  const result = statement.run(text, category ?? null);
-  return getSuggestionById(Number(result.lastInsertRowid));
+function mapQuestion(row: QuestionRow): Question {
+  return {
+    id: row.id,
+    text: row.text,
+    category: row.category,
+    clickCount: Number(row.click_count),
+    isActive: row.is_active,
+    createdAt: toIsoString(row.created_at)!,
+    updatedAt: toIsoString(row.updated_at)!
+  };
 }
 
-export function getSuggestionById(id: number): Suggestion {
-  const statement = db.prepare<[number], SuggestionRow>(
-    `SELECT id, text, category, status, created_at, updated_at, processed_at, question_id
-     FROM suggestions
-     WHERE id = ?`
+export async function createSuggestion(text: string, category?: string | null): Promise<Suggestion> {
+  const normalizedText = text.trim();
+  const trimmedCategory = category?.trim();
+  const normalizedCategory = trimmedCategory ? trimmedCategory : null;
+
+  const { rows } = await pool.query<SuggestionRow>(
+    `INSERT INTO suggestions (text, category, status)
+     VALUES ($1, $2, 'pending')
+     RETURNING id, text, category, status, created_at, updated_at, processed_at, question_id`,
+    [normalizedText, normalizedCategory]
   );
 
-  const row = statement.get(id);
+  return mapSuggestion(rows[0]);
+}
+
+export async function getSuggestionById(id: number): Promise<Suggestion> {
+  const { rows } = await pool.query<SuggestionRow>(
+    `SELECT id, text, category, status, created_at, updated_at, processed_at, question_id
+     FROM suggestions
+     WHERE id = $1`,
+    [id]
+  );
+
+  const row = rows[0];
   if (!row) {
     throw new NotFoundError('Suggestion not found');
   }
@@ -52,88 +87,133 @@ export function getSuggestionById(id: number): Suggestion {
   return mapSuggestion(row);
 }
 
-export function listSuggestions(status?: Suggestion['status']): Suggestion[] {
+export async function listSuggestions(status?: Suggestion['status']): Promise<Suggestion[]> {
   if (status) {
-    const statement = db.prepare<[Suggestion['status']], SuggestionRow>(
+    const { rows } = await pool.query<SuggestionRow>(
       `SELECT id, text, category, status, created_at, updated_at, processed_at, question_id
        FROM suggestions
-       WHERE status = ?
-       ORDER BY created_at DESC`
+       WHERE status = $1
+       ORDER BY created_at DESC`,
+      [status]
     );
-    return statement.all(status).map(mapSuggestion);
+
+    return rows.map(mapSuggestion);
   }
 
-  const statement = db.prepare<[], SuggestionRow>(
+  const { rows } = await pool.query<SuggestionRow>(
     `SELECT id, text, category, status, created_at, updated_at, processed_at, question_id
      FROM suggestions
      ORDER BY created_at DESC`
   );
-  return statement.all().map(mapSuggestion);
+
+  return rows.map(mapSuggestion);
 }
 
-export function approveSuggestion(
+export async function approveSuggestion(
   suggestionId: number,
   options: { category?: string | null } = {}
-) {
-  const suggestion = getSuggestionById(suggestionId);
+): Promise<{ suggestion: Suggestion; question: Question }> {
+  const client = await pool.connect();
 
-  if (suggestion.status !== 'pending') {
-    throw new AppError('Only pending suggestions can be approved', 409);
-  }
+  try {
+    await client.query('BEGIN');
 
-  const category = options.category ?? suggestion.category ?? 'general';
-
-  const transaction = db.transaction(() => {
-    const question = createQuestion(suggestion.text, category);
-
-    const updateStatement = db.prepare(
-      `UPDATE suggestions
-       SET status = 'approved',
-           category = ?,
-           question_id = ?,
-           processed_at = datetime('now'),
-           updated_at = datetime('now')
-       WHERE id = ?`
+    const { rows: suggestionRows } = await client.query<SuggestionRow>(
+      `SELECT id, text, category, status, created_at, updated_at, processed_at, question_id
+       FROM suggestions
+       WHERE id = $1
+       FOR UPDATE`,
+      [suggestionId]
     );
 
-    updateStatement.run(category, question.id, suggestionId);
+    const suggestionRow = suggestionRows[0];
+    if (!suggestionRow) {
+      throw new NotFoundError('Suggestion not found');
+    }
 
-    return { suggestion: getSuggestionById(suggestionId), question };
-  });
+    if (suggestionRow.status !== 'pending') {
+      throw new AppError('Only pending suggestions can be approved', 409);
+    }
 
-  return transaction();
+    const category = (options.category ?? suggestionRow.category ?? 'general').trim() || 'general';
+
+    const { rows: questionRows } = await client.query<QuestionRow>(
+      `INSERT INTO questions (text, category)
+       VALUES ($1, $2)
+       RETURNING id, text, category, click_count, is_active, created_at, updated_at`,
+      [suggestionRow.text, category]
+    );
+
+    const questionRow = questionRows[0];
+    if (!questionRow) {
+      throw new AppError('Failed to create question from suggestion');
+    }
+
+    const { rows: updatedSuggestionRows } = await client.query<SuggestionRow>(
+      `UPDATE suggestions
+       SET status = 'approved',
+           category = $1,
+           question_id = $2,
+           processed_at = NOW(),
+           updated_at = NOW()
+       WHERE id = $3
+       RETURNING id, text, category, status, created_at, updated_at, processed_at, question_id`,
+      [category, questionRow.id, suggestionId]
+    );
+
+    const updatedSuggestionRow = updatedSuggestionRows[0];
+    if (!updatedSuggestionRow) {
+      throw new AppError('Failed to update suggestion status');
+    }
+
+    await client.query('COMMIT');
+
+    return {
+      suggestion: mapSuggestion(updatedSuggestionRow),
+      question: mapQuestion(questionRow)
+    };
+  } catch (error) {
+    await client.query('ROLLBACK');
+    throw error;
+  } finally {
+    client.release();
+  }
 }
 
-export function rejectSuggestion(suggestionId: number) {
-  const suggestion = getSuggestionById(suggestionId);
+export async function rejectSuggestion(suggestionId: number): Promise<Suggestion> {
+  const suggestion = await getSuggestionById(suggestionId);
 
   if (suggestion.status !== 'pending') {
     throw new AppError('Only pending suggestions can be rejected', 409);
   }
 
-  const updateStatement = db.prepare(
+  const { rows } = await pool.query<SuggestionRow>(
     `UPDATE suggestions
      SET status = 'rejected',
-         processed_at = datetime('now'),
-         updated_at = datetime('now')
-     WHERE id = ?`
+         processed_at = NOW(),
+         updated_at = NOW()
+     WHERE id = $1
+     RETURNING id, text, category, status, created_at, updated_at, processed_at, question_id`,
+    [suggestionId]
   );
 
-  updateStatement.run(suggestionId);
-  return getSuggestionById(suggestionId);
+  return mapSuggestion(rows[0]);
 }
 
-export function deleteSuggestion(suggestionId: number) {
-  const suggestion = getSuggestionById(suggestionId);
+export async function deleteSuggestion(suggestionId: number): Promise<void> {
+  const suggestion = await getSuggestionById(suggestionId);
 
   if (suggestion.status !== 'pending') {
     throw new AppError('Only pending suggestions can be deleted', 409);
   }
 
-  const deleteStatement = db.prepare(
+  const result = await pool.query(
     `DELETE FROM suggestions
-     WHERE id = ?`
+     WHERE id = $1`,
+    [suggestionId]
   );
 
-  deleteStatement.run(suggestionId);
+  if (result.rowCount === 0) {
+    throw new NotFoundError('Suggestion not found');
+  }
 }

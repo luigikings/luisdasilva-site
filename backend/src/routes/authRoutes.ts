@@ -4,10 +4,10 @@ import { loginSchema } from '../utils/validators.js';
 
 const router = Router();
 
-router.post('/login', (req, res, next) => {
+router.post('/login', async (req, res, next) => {
   try {
     const credentials = loginSchema.parse(req.body);
-    const result = authenticate(credentials);
+    const result = await authenticate(credentials);
     res.json({ data: result });
   } catch (error) {
     next(error);

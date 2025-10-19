@@ -1,4 +1,4 @@
-import { db } from '../db.js';
+import { pool } from '../db.js';
 
 export type AnalyticsEventType = 'cv_download' | 'github_visit';
 
@@ -7,42 +7,40 @@ export type AnalyticsEventRecord = {
   total: number;
 };
 
-export function trackAnalyticsEvent(eventType: AnalyticsEventType): AnalyticsEventRecord {
-  const statement = db.prepare(
+export async function trackAnalyticsEvent(eventType: AnalyticsEventType): Promise<AnalyticsEventRecord> {
+  const { rows } = await pool.query<{ event_type: string; total: number }>(
     `INSERT INTO analytics_events (event_type, total, updated_at)
-     VALUES (?, 1, datetime('now'))
-     ON CONFLICT(event_type) DO UPDATE SET
-       total = total + 1,
-       updated_at = datetime('now')`
+     VALUES ($1, 1, NOW())
+     ON CONFLICT (event_type) DO UPDATE SET
+       total = analytics_events.total + 1,
+       updated_at = NOW()
+     RETURNING event_type, total`,
+    [eventType]
   );
 
-  statement.run(eventType);
-
-  const row = db
-    .prepare(`SELECT event_type, total FROM analytics_events WHERE event_type = ?`)
-    .get(eventType) as { event_type: string; total: number } | undefined;
-
+  const row = rows[0];
   return {
-    type: eventType,
-    total: row?.total ?? 0
+    type: row.event_type as AnalyticsEventType,
+    total: Number(row.total)
   };
 }
 
-export function getAnalyticsEventTotals(): Record<AnalyticsEventType, number> {
-  const rows = db
-    .prepare(`SELECT event_type, total FROM analytics_events`)
-    .all() as Array<{ event_type: string; total: number }>;
+export async function getAnalyticsEventTotals(): Promise<Record<AnalyticsEventType, number>> {
+  const { rows } = await pool.query<{ event_type: string; total: number }>(
+    `SELECT event_type, total FROM analytics_events`
+  );
 
-  return rows.reduce(
+  return rows.reduce<Record<AnalyticsEventType, number>>(
     (acc, row) => {
-      if (row.event_type === 'cv_download' || row.event_type === 'github_visit') {
-        acc[row.event_type] = row.total;
+      const type = row.event_type as AnalyticsEventType;
+      if (type === 'cv_download' || type === 'github_visit') {
+        acc[type] = Number(row.total);
       }
       return acc;
     },
     {
       cv_download: 0,
       github_visit: 0
-    } as Record<AnalyticsEventType, number>
+    }
   );
 }
