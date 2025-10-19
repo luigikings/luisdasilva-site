@@ -1,4 +1,4 @@
-import { db } from '../db.js';
+import { pool } from '../db.js';
 import { NotFoundError } from '../utils/errors.js';
 import type { Question } from '../types/index.js';
 
@@ -7,53 +7,57 @@ type QuestionRow = {
   text: string;
   category: string;
   click_count: number;
-  is_active: number;
-  created_at: string;
-  updated_at: string;
+  is_active: boolean;
+  created_at: Date | string;
+  updated_at: Date | string;
 };
+
+function toIsoString(value: Date | string): string {
+  return value instanceof Date ? value.toISOString() : new Date(value).toISOString();
+}
 
 function mapQuestion(row: QuestionRow): Question {
   return {
     id: row.id,
     text: row.text,
     category: row.category,
-    clickCount: row.click_count,
-    isActive: Boolean(row.is_active),
-    createdAt: row.created_at,
-    updatedAt: row.updated_at
+    clickCount: Number(row.click_count),
+    isActive: row.is_active,
+    createdAt: toIsoString(row.created_at),
+    updatedAt: toIsoString(row.updated_at)
   };
 }
 
-export function getActiveQuestions(): Question[] {
-  const statement = db.prepare(
+export async function getActiveQuestions(): Promise<Question[]> {
+  const { rows } = await pool.query<QuestionRow>(
     `SELECT id, text, category, click_count, is_active, created_at, updated_at
      FROM questions
-     WHERE is_active = 1
+     WHERE is_active = TRUE
      ORDER BY updated_at DESC, created_at DESC`
   );
 
-  const rows = statement.all() as QuestionRow[];
   return rows.map(mapQuestion);
 }
 
-export function getAllQuestions(): Question[] {
-  const statement = db.prepare(
+export async function getAllQuestions(): Promise<Question[]> {
+  const { rows } = await pool.query<QuestionRow>(
     `SELECT id, text, category, click_count, is_active, created_at, updated_at
      FROM questions
      ORDER BY updated_at DESC, created_at DESC`
   );
-  const rows = statement.all() as QuestionRow[];
+
   return rows.map(mapQuestion);
 }
 
-export function getQuestionById(id: number): Question {
-  const statement = db.prepare(
+export async function getQuestionById(id: number): Promise<Question> {
+  const { rows } = await pool.query<QuestionRow>(
     `SELECT id, text, category, click_count, is_active, created_at, updated_at
      FROM questions
-     WHERE id = ?`
+     WHERE id = $1`,
+    [id]
   );
 
-  const row = statement.get(id) as QuestionRow | undefined;
+  const row = rows[0];
   if (!row) {
     throw new NotFoundError('Question not found');
   }
@@ -61,32 +65,33 @@ export function getQuestionById(id: number): Question {
   return mapQuestion(row);
 }
 
-export function incrementQuestionClick(questionId: number): Question {
-  const updateStatement = db.prepare(
+export async function incrementQuestionClick(questionId: number): Promise<Question> {
+  const { rows } = await pool.query<QuestionRow>(
     `UPDATE questions
      SET click_count = click_count + 1,
-         updated_at = datetime('now')
-     WHERE id = ? AND is_active = 1`
+         updated_at = NOW()
+     WHERE id = $1 AND is_active = TRUE
+     RETURNING id, text, category, click_count, is_active, created_at, updated_at`,
+    [questionId]
   );
 
-  const result = updateStatement.run(questionId);
-
-  if (result.changes === 0) {
+  const row = rows[0];
+  if (!row) {
     throw new NotFoundError('Question not found or inactive');
   }
 
-  return getQuestionById(questionId);
+  return mapQuestion(row);
 }
 
-export function getQuestionByText(text: string): Question {
-  const statement = db.prepare(
+export async function getQuestionByText(text: string): Promise<Question> {
+  const { rows } = await pool.query<QuestionRow>(
     `SELECT id, text, category, click_count, is_active, created_at, updated_at
      FROM questions
-     WHERE text = ?`
+     WHERE text = $1`,
+    [text]
   );
 
-  const row = statement.get(text) as QuestionRow | undefined;
-
+  const row = rows[0];
   if (!row) {
     throw new NotFoundError('Question not found');
   }
@@ -94,58 +99,72 @@ export function getQuestionByText(text: string): Question {
   return mapQuestion(row);
 }
 
-export function createQuestion(text: string, category: string): Question {
-  const insertStatement = db.prepare(
-    `INSERT INTO questions (text, category, click_count, is_active)
-     VALUES (?, ?, 0, 1)`
+export async function createQuestion(text: string, category: string): Promise<Question> {
+  const { rows } = await pool.query<QuestionRow>(
+    `INSERT INTO questions (text, category)
+     VALUES ($1, $2)
+     RETURNING id, text, category, click_count, is_active, created_at, updated_at`,
+    [text, category]
   );
 
-  const result = insertStatement.run(text, category);
-  return getQuestionById(Number(result.lastInsertRowid));
+  return mapQuestion(rows[0]);
 }
 
-export function getTopQuestions(limit: number): Question[] {
-  const statement = db.prepare(
+export async function getTopQuestions(limit: number): Promise<Question[]> {
+  const { rows } = await pool.query<QuestionRow>(
     `SELECT id, text, category, click_count, is_active, created_at, updated_at
      FROM questions
-     WHERE is_active = 1
+     WHERE is_active = TRUE
      ORDER BY click_count DESC, updated_at DESC, created_at DESC
-     LIMIT ?`
+     LIMIT $1`,
+    [limit]
   );
 
-  const rows = statement.all(limit) as QuestionRow[];
   return rows.map(mapQuestion);
 }
 
-export function trackQuestionUsage(payload: {
+export async function trackQuestionUsage(payload: {
   text: string;
   category?: string | null;
-}): Question {
+}): Promise<Question> {
   const category = (payload.category ?? 'general').trim() || 'general';
+  const normalizedText = payload.text.trim();
 
-  const run = db.transaction(() => {
-    const upsertStatement = db.prepare(
-      `INSERT INTO questions (text, category, click_count, is_active, created_at, updated_at)
-       VALUES (?, ?, 0, 1, datetime('now'), datetime('now'))
-       ON CONFLICT(text) DO UPDATE SET
-         category = excluded.category,
-         is_active = 1,
-         updated_at = datetime('now')`
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+
+    await client.query(
+      `INSERT INTO questions (text, category, is_active)
+       VALUES ($1, $2, TRUE)
+       ON CONFLICT (text) DO UPDATE SET
+         category = EXCLUDED.category,
+         is_active = TRUE,
+         updated_at = NOW()`,
+      [normalizedText, category]
     );
 
-    upsertStatement.run(payload.text, category);
-
-    const incrementStatement = db.prepare(
+    const { rows } = await client.query<QuestionRow>(
       `UPDATE questions
        SET click_count = click_count + 1,
-           updated_at = datetime('now')
-       WHERE text = ?`
+           updated_at = NOW()
+       WHERE text = $1
+       RETURNING id, text, category, click_count, is_active, created_at, updated_at`,
+      [normalizedText]
     );
 
-    incrementStatement.run(payload.text);
+    await client.query('COMMIT');
 
-    return getQuestionByText(payload.text);
-  });
+    const row = rows[0];
+    if (!row) {
+      throw new NotFoundError('Question not found');
+    }
 
-  return run();
+    return mapQuestion(row);
+  } catch (error) {
+    await client.query('ROLLBACK');
+    throw error;
+  } finally {
+    client.release();
+  }
 }

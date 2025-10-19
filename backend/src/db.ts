@@ -1,51 +1,86 @@
-import fs from 'node:fs';
-import path from 'node:path';
-import Database from 'better-sqlite3';
+import { Pool } from 'pg';
 import { env } from './env.js';
 
-const databasePath = path.isAbsolute(env.DATABASE_FILE)
-  ? env.DATABASE_FILE
-  : path.join(process.cwd(), env.DATABASE_FILE);
+const isLocalConnection = env.DATABASE_URL.includes('localhost') || env.DATABASE_URL.includes('127.0.0.1');
 
-fs.mkdirSync(path.dirname(databasePath), { recursive: true });
+export const pool = new Pool({
+  connectionString: env.DATABASE_URL,
+  ssl: isLocalConnection
+    ? false
+    : {
+        rejectUnauthorized: false
+      }
+});
 
-const db = new Database(databasePath);
+export type DatabaseClient = typeof pool;
 
-db.pragma('journal_mode = WAL');
-db.pragma('foreign_keys = ON');
+export async function initializeDatabase() {
+  const client = await pool.connect();
 
-db.exec(`
-CREATE TABLE IF NOT EXISTS questions (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  text TEXT NOT NULL,
-  category TEXT NOT NULL DEFAULT 'general',
-  click_count INTEGER NOT NULL DEFAULT 0,
-  is_active INTEGER NOT NULL DEFAULT 1,
-  created_at TEXT NOT NULL DEFAULT (datetime('now')),
-  updated_at TEXT NOT NULL DEFAULT (datetime('now'))
-);
+  try {
+    await client.query('SELECT 1');
+    console.log('✅ Connected to PostgreSQL');
 
-CREATE TABLE IF NOT EXISTS suggestions (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  text TEXT NOT NULL,
-  category TEXT DEFAULT 'general',
-  status TEXT NOT NULL DEFAULT 'pending' CHECK(status IN ('pending','approved','rejected')),
-  created_at TEXT NOT NULL DEFAULT (datetime('now')),
-  updated_at TEXT NOT NULL DEFAULT (datetime('now')),
-  processed_at TEXT,
-  question_id INTEGER,
-  FOREIGN KEY(question_id) REFERENCES questions(id)
-);
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS questions (
+        id SERIAL PRIMARY KEY,
+        text TEXT NOT NULL,
+        category TEXT NOT NULL DEFAULT 'general',
+        click_count INTEGER NOT NULL DEFAULT 0,
+        is_active BOOLEAN NOT NULL DEFAULT TRUE,
+        created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+        updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
+      )
+    `);
 
-CREATE UNIQUE INDEX IF NOT EXISTS questions_text_unique ON questions(text);
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS suggestions (
+        id SERIAL PRIMARY KEY,
+        text TEXT NOT NULL,
+        category TEXT DEFAULT 'general',
+        status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'approved', 'rejected')),
+        created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+        updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+        processed_at TIMESTAMP WITH TIME ZONE,
+        question_id INTEGER REFERENCES questions(id)
+      )
+    `);
 
-CREATE TABLE IF NOT EXISTS analytics_events (
-  event_type TEXT PRIMARY KEY,
-  total INTEGER NOT NULL DEFAULT 0,
-  updated_at TEXT NOT NULL DEFAULT (datetime('now'))
-);
-`);
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS analytics_events (
+        event_type TEXT PRIMARY KEY,
+        total INTEGER NOT NULL DEFAULT 0,
+        updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
+      )
+    `);
 
-export type DatabaseClient = typeof db;
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS admin_credentials (
+        id SERIAL PRIMARY KEY,
+        email TEXT UNIQUE NOT NULL,
+        password_hash TEXT NOT NULL,
+        created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+        updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
+      )
+    `);
 
-export { db };
+    await client.query(`
+      CREATE UNIQUE INDEX IF NOT EXISTS questions_text_unique ON questions (text)
+    `);
+
+    await client.query(
+      `INSERT INTO admin_credentials (email, password_hash)
+       VALUES ($1, $2)
+       ON CONFLICT (email) DO UPDATE SET
+         password_hash = EXCLUDED.password_hash,
+         updated_at = NOW()`,
+      [env.ADMIN_EMAIL.toLowerCase(), env.ADMIN_PASSWORD_HASH]
+    );
+  } finally {
+    client.release();
+  }
+}
+
+export async function closeDatabase() {
+  await pool.end();
+}
