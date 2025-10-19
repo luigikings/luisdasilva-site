@@ -3,8 +3,7 @@ import { useEffect, useState } from 'react'
 import type { FormEvent } from 'react'
 
 import { useT } from '../hooks/useT'
-import { ApiError } from '../services/http'
-import { submitSuggestion } from '../services/publicApi'
+import { ApiError, submitSuggestion } from '../lib/api'
 
 export function SuggestionPrompt() {
   const { t } = useT()

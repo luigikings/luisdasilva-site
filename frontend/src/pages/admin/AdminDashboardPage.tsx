@@ -2,12 +2,12 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 import {
+  ApiError,
   deleteAdminSuggestion,
   getAdminQuestions,
   getAdminSuggestions,
   getMetrics,
-} from '../../services/adminApi'
-import { ApiError } from '../../services/http'
+} from '../../lib/api'
 import type { MetricsSummary, Question, Suggestion } from '../../types/api'
 import { useAdminAuth } from './AdminApp'
 
