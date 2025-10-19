@@ -2,7 +2,7 @@ import { useState } from 'react'
 import type { FormEvent } from 'react'
 import { Navigate, useLocation, useNavigate, type Location } from 'react-router-dom'
 
-import { login } from '../../services/adminApi'
+import { login } from '../../lib/api'
 import { useAdminAuth } from './AdminApp'
 
 export function AdminLoginPage() {
@@ -24,7 +24,7 @@ export function AdminLoginPage() {
     setError(null)
     setIsLoading(true)
     try {
-      const response = await login({ email, password })
+      const response = await login(email, password)
       setToken(response.token)
       const from = state?.from
       if (from && typeof from === 'object' && 'pathname' in from) {

@@ -6,7 +6,7 @@ import { useT } from '../hooks/useT'
 import { SuggestionPrompt } from './SuggestionPrompt'
 import type { QuestionGroupKey, QuestionKey } from '../i18n/dict'
 import { dict } from '../i18n/dict'
-import { trackAnalyticsEvent, trackQuestionClick } from '../services/publicApi'
+import { trackAnalyticsEvent, trackQuestionClick } from '../lib/api'
 
 const questionGroupConfig: Record<QuestionGroupKey, { emoji: string; questions: QuestionKey[] }> = {
   aboutYou: {
