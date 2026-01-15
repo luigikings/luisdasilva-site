@@ -214,7 +214,7 @@ export const dict: Dict = {
       },
       answers: {
         introduction:
-          'Soy Luis Ángel José Da Silva, pero todos me dicen LK. Soy desarrollador front-end y me encanta darle vida a ideas con estética retro y detallitos que cuentan historias.',
+          'Soy Luis Ángel Da Silva, aunque muchos me llaman Luigi.\nSoy desarrollador full stack y me encanta crear experiencias web que no solo se vean bien, sino que también estén bien pensadas por dentro.\nDisfruto tanto del diseño y la experiencia de usuario como de la lógica, la estructura y el funcionamiento real que hay detrás de cada proyecto.',
         motivation:
           'La programación me gusta porque mezcla lógica con creatividad. Es como armar un rompecabezas donde cada pieza cobra vida cuando todo encaja.',
         learning:
@@ -396,7 +396,7 @@ export const dict: Dict = {
       },
       answers: {
         introduction:
-          'I’m Luis Ángel Jose Da Silva—most people call me LK. I’m a front-end developer obsessed with mixing retro vibes, storytelling and polished interactions.',
+          'I’m Luis Ángel Da Silva, though many people call me Luigi.\nI’m a full stack developer and I love creating web experiences that not only look good, but are also thoughtfully built on the inside.\nI enjoy design and user experience as much as the logic, structure, and real-world functionality behind every project.',
         motivation:
           'Programming hooks me because it blends creativity with systems thinking. Building an interface feels like composing music with pixels and logic.',
         learning:
