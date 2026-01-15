@@ -228,7 +228,7 @@ export const dict: Dict = {
         superpower:
           'Elegiría detener el tiempo unos minutos. Así podría pulir detalles infinitos sin romper deadlines y regalarme más siestas.',
         languageIdentity:
-          'Sería TypeScript: estructurado, amigable con el equipo y siempre tratando de anticipar errores antes de que aparezcan.',
+          'Sería JavaScript bien pensado: flexible, creativo y capaz de adaptarse a casi cualquier cosa, pero con estructura y lógica para que nada se rompa cuando el proyecto crece.',
         aiWork:
           'Sí, la IA es parte de mi flujo. La uso para generar ideas, validar copys y prototipar, pero siempre con criterio humano y brújula ética.',
         futureProjects:
@@ -410,7 +410,7 @@ export const dict: Dict = {
         superpower:
           'I’d freeze time for a couple of minutes. Perfect for polishing micro-interactions without breaking deadlines—and for bonus naps.',
         languageIdentity:
-          'I’d be TypeScript: collaborative, strongly typed and always trying to catch bugs before they reach production.',
+          'I’d be well-thought-out JavaScript: flexible, creative and able to adapt to almost anything, but with structure and logic so nothing breaks as the project grows.',
         aiWork:
           'Yep! AI helps me ideate, sanity-check copy and prototype faster, but human criteria and ethics always steer the ship.',
         futureProjects:
