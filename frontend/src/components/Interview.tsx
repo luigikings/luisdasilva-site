@@ -11,11 +11,25 @@ import { trackAnalyticsEvent, trackQuestionClick } from '../lib/api'
 const questionGroupConfig: Record<QuestionGroupKey, { emoji: string; questions: QuestionKey[] }> = {
   aboutYou: {
     emoji: '🧑',
-    questions: ['introduction', 'languageIdentity', 'videogame'],
+    questions: [
+      'introduction',
+      'languageIdentity',
+      'videogame',
+      'location',
+      'futureSelf',
+      'spokenLanguages',
+    ],
   },
   motivations: {
     emoji: '🎉',
-    questions: ['motivation', 'hobbies', 'superpower', 'dailyMotivation', 'advicePast'],
+    questions: [
+      'motivation',
+      'hobbies',
+      'superpower',
+      'dailyMotivation',
+      'leastFavorite',
+      'advicePast',
+    ],
   },
   experience: {
     emoji: '🛠️',
@@ -39,6 +53,9 @@ const questionEmojis: Record<QuestionKey, string> = {
   contact: '📬',
   hobbies: '🎨',
   superpower: '🦸‍♂️',
+  location: '📍',
+  futureSelf: '🔮',
+  spokenLanguages: '🗣️',
   languageIdentity: '💻',
   aiWork: '🤖',
   futureProjects: '🚀',
@@ -46,6 +63,7 @@ const questionEmojis: Record<QuestionKey, string> = {
   workValues: '🎯',
   problemSolving: '🧩',
   dailyMotivation: '🌅',
+  leastFavorite: '🙃',
   videogame: '🎮',
   advicePast: '🕰️',
   github: '🐙',

@@ -8,6 +8,9 @@ export type QuestionKey =
   | 'contact'
   | 'hobbies'
   | 'superpower'
+  | 'location'
+  | 'futureSelf'
+  | 'spokenLanguages'
   | 'languageIdentity'
   | 'aiWork'
   | 'futureProjects'
@@ -15,6 +18,7 @@ export type QuestionKey =
   | 'workValues'
   | 'problemSolving'
   | 'dailyMotivation'
+  | 'leastFavorite'
   | 'videogame'
   | 'advicePast'
   | 'github'
@@ -167,6 +171,18 @@ export const dict: Dict = {
           label: 'Si tuvieras un superpoder, ¿cuál sería?',
           playerLine: 'Si tuvieras un superpoder, ¿cuál sería?',
         },
+        location: {
+          label: '¿En dónde vives?',
+          playerLine: '¿En dónde vives?',
+        },
+        futureSelf: {
+          label: '¿Cómo te ves de aquí en 2-3 años?',
+          playerLine: '¿Cómo te ves de aquí en 2-3 años?',
+        },
+        spokenLanguages: {
+          label: '¿Qué idiomas hablas?',
+          playerLine: '¿Qué idiomas hablas?',
+        },
         languageIdentity: {
           label: 'Si fueras un lenguaje de programación, ¿cuál serías?',
           playerLine: 'Si fueras un lenguaje de programación, ¿cuál serías?',
@@ -195,9 +211,13 @@ export const dict: Dict = {
           label: '¿Qué te motiva a aprender cada día?',
           playerLine: '¿Qué te motiva a aprender cada día?',
         },
+        leastFavorite: {
+          label: '¿Qué es lo que menos te gusta como programador?',
+          playerLine: '¿Qué es lo que menos te gusta como programador?',
+        },
         videogame: {
-          label: '¿Qué videojuego crees que eres?',
-          playerLine: '¿Qué videojuego crees que eres?',
+          label: '¿Por qué te metiste a Full Stack?',
+          playerLine: '¿Por qué te metiste a Full Stack?',
         },
         advicePast: {
           label: 'Si pudieras dar un consejo a tu yo del pasado, ¿cuál sería?',
@@ -227,6 +247,12 @@ export const dict: Dict = {
           'Cuando desconecto me gusta dibujar pixel art, tocar sintetizadores y salir a caminar con cámara en mano buscando texturas para futuros proyectos.',
         superpower:
           'Elegiría detener el tiempo unos minutos. Así podría pulir detalles infinitos sin romper deadlines y regalarme más siestas.',
+        location:
+          'Desde hace poco vivo en Holanda, en Eindhoven. Me inspira mucho el ambiente tech y el equilibrio con la vida tranquila que se respira aquí.',
+        futureSelf:
+          'En 2-3 años me veo liderando proyectos full stack con equipos creativos, afinando mi liderazgo y construyendo productos con impacto real.',
+        spokenLanguages:
+          'Hablo español nativamente porque nací en Venezuela, y puedo hablar inglés fluidamente sin problema.',
         languageIdentity:
           'Sería JavaScript bien pensado: flexible, creativo y capaz de adaptarse a casi cualquier cosa, pero con estructura y lógica para que nada se rompa cuando el proyecto crece.',
         aiWork:
@@ -241,8 +267,10 @@ export const dict: Dict = {
           'Cuando no sé algo, lo desarmo en piezas pequeñas, busco recursos confiables y pregunto sin miedo; el objetivo es desbloquear rápido al equipo.',
         dailyMotivation:
           'Me motiva imaginar a alguien sonriendo al usar algo que construí y la idea de que cada día puedo aprender un truco nuevo.',
+        leastFavorite:
+          'Lo que menos me gusta es cuando los procesos se vuelven burocráticos o lentos y se pierde foco en construir valor real para las personas.',
         videogame:
-          'Probablemente sería Stardew Valley: calmado, creativo, siempre cultivando algo y lleno de easter eggs para quien tenga curiosidad.',
+          'Me metí a full stack porque quería entender el viaje completo del producto: desde la idea y el diseño hasta la lógica que lo hace funcionar.',
         advicePast:
           'Le diría a mi yo del pasado que confíe más en sus ideas raras, que aprenda a descansar y que compartir temprano siempre trae feedback valioso.',
         github: 'Claro, aquí tienes.',
@@ -349,6 +377,18 @@ export const dict: Dict = {
           label: 'If you had a superpower, what would it be?',
           playerLine: 'If you had a superpower, what would it be?',
         },
+        location: {
+          label: 'Where do you live?',
+          playerLine: 'Where do you live?',
+        },
+        futureSelf: {
+          label: 'How do you see yourself in 2-3 years?',
+          playerLine: 'How do you see yourself in 2-3 years?',
+        },
+        spokenLanguages: {
+          label: 'Which languages do you speak?',
+          playerLine: 'Which languages do you speak?',
+        },
         languageIdentity: {
           label: 'If you were a programming language, which one would you be?',
           playerLine: 'If you were a programming language, which one would you be?',
@@ -377,9 +417,13 @@ export const dict: Dict = {
           label: 'What motivates you to keep learning every day?',
           playerLine: 'What motivates you to keep learning every day?',
         },
+        leastFavorite: {
+          label: 'What do you like least as a programmer?',
+          playerLine: 'What do you like least as a programmer?',
+        },
         videogame: {
-          label: 'Which video game do you think you are?',
-          playerLine: 'Which video game do you think you are?',
+          label: 'Why did you get into full stack?',
+          playerLine: 'Why did you get into full stack?',
         },
         advicePast: {
           label: 'If you could advise your past self, what would you say?',
@@ -409,6 +453,12 @@ export const dict: Dict = {
           'I recharge by sketching pixel art, noodling on synths and wandering with my camera hunting textures for future interfaces.',
         superpower:
           'I’d freeze time for a couple of minutes. Perfect for polishing micro-interactions without breaking deadlines—and for bonus naps.',
+        location:
+          'I recently moved to Eindhoven in the Netherlands. The tech energy here and the calm pace of life are a great mix.',
+        futureSelf:
+          'In 2-3 years, I see myself leading full stack projects with creative teams, sharpening my leadership and shipping products with real impact.',
+        spokenLanguages:
+          'I speak native Spanish since I was born in Venezuela, and I can speak English fluently without a problem.',
         languageIdentity:
           'I’d be well-thought-out JavaScript: flexible, creative and able to adapt to almost anything, but with structure and logic so nothing breaks as the project grows.',
         aiWork:
@@ -423,8 +473,10 @@ export const dict: Dict = {
           'When I’m stuck, I break the problem down, research reliable sources and ask for help early so the team keeps moving.',
         dailyMotivation:
           'Knowing someone might smile while using something I built—and that every day holds a fresh trick to learn—keeps me going.',
+        leastFavorite:
+          'I like programming less when processes get overly bureaucratic or slow and the focus shifts away from building real value for people.',
         videogame:
-          'Probably Stardew Valley: cozy, creative, always cultivating something and full of easter eggs for the curious.',
+          'I got into full stack because I wanted to understand the entire product journey—from the idea and design to the logic that makes it work.',
         advicePast:
           'I’d tell past-me to trust the weird ideas, rest more often and share work early; feedback is fuel.',
         github: 'Sure—here it is.',
