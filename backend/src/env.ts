@@ -18,14 +18,14 @@ const envSchema = z.object({
     .string()
     .transform((value) => Number.parseInt(value, 10))
     .pipe(z.number().int().positive()),
-  SMTP_HOST: z.string().min(1),
+  SMTP_HOST: z.string().min(1).optional(),
   SMTP_PORT: z
     .string()
     .transform((value) => Number.parseInt(value, 10))
     .pipe(z.number().int().positive())
     .optional(),
-  SMTP_USER: z.string().min(1),
-  SMTP_PASS: z.string().min(1),
+  SMTP_USER: z.string().min(1).optional(),
+  SMTP_PASS: z.string().min(1).optional(),
   SMTP_FROM: z.string().email().optional(),
   SUGGESTION_EMAIL_TO: z.string().email().optional()
 });
