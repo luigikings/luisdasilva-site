@@ -12,7 +12,7 @@ const DEFAULT_RECIPIENT = 'luigidasilv@gmail.com';
 
 function getTransportConfig() {
   if (!env.SMTP_HOST || !env.SMTP_USER || !env.SMTP_PASS) {
-    throw new Error('SMTP configuration is missing for suggestion emails.');
+    return null;
   }
 
   const port = env.SMTP_PORT ?? 587;
@@ -40,7 +40,14 @@ function buildEmailBody({ text, category, lang }: SuggestionEmailPayload) {
 }
 
 export async function sendSuggestionEmail(payload: SuggestionEmailPayload) {
-  const transport = nodemailer.createTransport(getTransportConfig());
+  const transportConfig = getTransportConfig();
+
+  if (!transportConfig) {
+    console.warn('SMTP configuration is missing; suggestion email skipped.');
+    return;
+  }
+
+  const transport = nodemailer.createTransport(transportConfig);
   const subject = payload.lang === 'en' ? 'Suggest Question' : 'Pregunta sugerida';
   const fromAddress = env.SMTP_FROM ?? env.SMTP_USER ?? DEFAULT_RECIPIENT;
   const toAddress = env.SUGGESTION_EMAIL_TO ?? DEFAULT_RECIPIENT;
