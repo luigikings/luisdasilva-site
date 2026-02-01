@@ -6,7 +6,7 @@ import { useT } from '../hooks/useT'
 import { ApiError, submitSuggestion } from '../lib/api'
 
 export function SuggestionPrompt() {
-  const { t } = useT()
+  const { t, lang } = useT()
   const copy = t<{
     buttonLabel: string
     modalTitle: string
@@ -72,6 +72,7 @@ export function SuggestionPrompt() {
       await submitSuggestion({
         text: trimmedQuestion,
         category: trimmedCategory ? trimmedCategory : undefined,
+        lang,
       })
       setStatus('success')
       setMessage(copy.successMessage)

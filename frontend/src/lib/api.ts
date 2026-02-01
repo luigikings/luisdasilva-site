@@ -158,6 +158,7 @@ export async function getStats(token: string) {
 type SuggestionPayload = {
   text: string
   category?: string | null
+  lang?: string
 }
 
 export async function submitSuggestion(payload: SuggestionPayload) {

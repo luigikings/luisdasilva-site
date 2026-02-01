@@ -9,7 +9,7 @@ import {
   incrementQuestionClick,
   trackQuestionUsage
 } from '../services/questionService.js';
-import { createSuggestion } from '../services/suggestionService.js';
+import { sendSuggestionEmail } from '../services/suggestionEmailService.js';
 import { getMetrics } from '../services/metricsService.js';
 import { suggestionLimiter } from '../middleware/rateLimiters.js';
 import { trackAnalyticsEvent } from '../services/analyticsService.js';
@@ -55,8 +55,24 @@ router.post('/questions/track', async (req, res, next) => {
 router.post('/suggestions', suggestionLimiter, async (req, res, next) => {
   try {
     const payload = suggestionSchema.parse(req.body);
-    const suggestion = await createSuggestion(payload.text.trim(), payload.category);
-    return res.status(201).json({ data: suggestion });
+    await sendSuggestionEmail({
+      text: payload.text.trim(),
+      category: payload.category,
+      lang: payload.lang
+    });
+    const now = new Date().toISOString();
+    return res.status(201).json({
+      data: {
+        id: 0,
+        text: payload.text.trim(),
+        category: payload.category ?? null,
+        status: 'pending',
+        createdAt: now,
+        updatedAt: now,
+        processedAt: null,
+        questionId: null
+      }
+    });
   } catch (error) {
     return next(error);
   }
