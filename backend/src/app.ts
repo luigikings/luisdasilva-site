@@ -1,9 +1,14 @@
-import express from 'express';
 import cors from 'cors';
-import publicRoutes from './routes/publicRoutes.js';
-import adminRoutes from './routes/adminRoutes.js';
-import authRoutes from './routes/authRoutes.js';
-import { errorHandler } from './middleware/errorHandler.js';
+import express from 'express';
+import { z } from 'zod';
+
+import { sendSuggestionEmail } from './services/suggestionEmailService.js';
+
+const suggestionSchema = z.object({
+  text: z.string().trim().min(8, 'La sugerencia debe tener al menos 8 caracteres.'),
+  category: z.string().trim().optional(),
+  lang: z.enum(['es', 'en']).optional(),
+});
 
 export function createApp() {
   const app = express();
@@ -15,11 +20,28 @@ export function createApp() {
     res.json({ status: 'ok' });
   });
 
-  app.use('/api', publicRoutes);
-  app.use('/api/auth', authRoutes);
-  app.use('/api/admin', adminRoutes);
+  app.post('/api/suggestions', async (req, res, next) => {
+    try {
+      const payload = suggestionSchema.parse(req.body);
+      await sendSuggestionEmail({
+        text: payload.text,
+        category: payload.category ? payload.category : null,
+        lang: payload.lang,
+      });
+      res.status(201).json({ ok: true });
+    } catch (error) {
+      next(error);
+    }
+  });
 
-  app.use(errorHandler);
+  app.use((error: unknown, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
+    if (error instanceof z.ZodError) {
+      const message = error.issues[0]?.message ?? 'Solicitud inválida.';
+      return res.status(400).json({ error: message });
+    }
+    console.error('Unhandled error:', error);
+    return res.status(500).json({ error: 'Error interno del servidor.' });
+  });
 
   return app;
 }
