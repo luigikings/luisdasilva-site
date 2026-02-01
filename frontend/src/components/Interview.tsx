@@ -5,8 +5,6 @@ import { track } from '../lib/analytics'
 import { useT } from '../hooks/useT'
 import { SuggestionPrompt } from './SuggestionPrompt'
 import type { QuestionGroupKey, QuestionKey } from '../i18n/dict'
-import { dict } from '../i18n/dict'
-import { trackAnalyticsEvent, trackQuestionClick } from '../lib/api'
 
 const questionGroupConfig: Record<QuestionGroupKey, { emoji: string; questions: QuestionKey[] }> = {
   aboutYou: {
@@ -249,21 +247,6 @@ export function Interview() {
     setSelected(key)
     track('interview_question_selected', { key, lang })
 
-    const canonicalText = dict.es.interview.questions[key]?.label ?? questions[key].label
-    const canonicalCategory = groupKey
-      ? dict.es.interview.categories[groupKey]
-      : 'general'
-
-    void trackQuestionClick({
-      key,
-      text: canonicalText,
-      category: canonicalCategory,
-    }).catch((error) => {
-      if (import.meta.env.DEV) {
-        // eslint-disable-next-line no-console
-        console.error('Failed to track question click', error)
-      }
-    })
   }
 
   const handleBackToGroups = () => {
@@ -389,12 +372,6 @@ export function Interview() {
   }
 
   const handleGithubRedirect = () => {
-    void trackAnalyticsEvent('github_visit').catch((error) => {
-      if (import.meta.env.DEV) {
-        // eslint-disable-next-line no-console
-        console.error('Failed to track analytics event', error)
-      }
-    })
     if (typeof window !== 'undefined') {
       window.open(GITHUB_URL, '_blank', 'noopener,noreferrer')
     }
@@ -402,12 +379,6 @@ export function Interview() {
   }
 
   const handleCvDownload = () => {
-    void trackAnalyticsEvent('cv_download').catch((error) => {
-      if (import.meta.env.DEV) {
-        // eslint-disable-next-line no-console
-        console.error('Failed to track analytics event', error)
-      }
-    })
     if (typeof document !== 'undefined') {
       const link = document.createElement('a')
       link.href = CV_URL

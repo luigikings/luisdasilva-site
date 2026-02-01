@@ -1,5 +1,3 @@
-import type { MetricsSummary, Question, Suggestion } from '../types/api'
-
 export class ApiError extends Error {
   status: number
   body: unknown
@@ -91,70 +89,6 @@ export async function apiFetch<T>(
   return payload as T
 }
 
-type LoginResponse = { token: string }
-
-export async function login(email: string, password: string) {
-  return apiFetch<LoginResponse>('/auth/login', {
-    method: 'POST',
-    body: JSON.stringify({ email, password }),
-  })
-}
-
-export async function getMetrics() {
-  return apiFetch<MetricsSummary>('/metrics')
-}
-
-export async function getAdminQuestions(token: string) {
-  return apiFetch<Question[]>('/admin/questions', {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  })
-}
-
-export async function getAdminSuggestions(
-  token: string,
-  status?: Suggestion['status'],
-) {
-  const query = status ? `?status=${encodeURIComponent(status)}` : ''
-  return apiFetch<Suggestion[]>(`/admin/suggestions${query}`, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  })
-}
-
-export async function deleteAdminSuggestion(token: string, id: number) {
-  await apiFetch<void>(`/admin/suggestions/${id}`, {
-    method: 'DELETE',
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  })
-}
-
-export async function getClicks(token: string) {
-  return apiFetch<number>('/clicks', {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  })
-}
-
-type AdminStats = {
-  totalUsers: number
-  totalSuggestions: number
-  totalQuestions: number
-}
-
-export async function getStats(token: string) {
-  return apiFetch<AdminStats>('/admin/stats', {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  })
-}
-
 type SuggestionPayload = {
   text: string
   category?: string | null
@@ -162,35 +96,8 @@ type SuggestionPayload = {
 }
 
 export async function submitSuggestion(payload: SuggestionPayload) {
-  return apiFetch<Suggestion>('/suggestions', {
+  return apiFetch<{ ok: boolean }>('/suggestions', {
     method: 'POST',
     body: JSON.stringify(payload),
-  })
-}
-
-type QuestionTrackPayload = {
-  key: string
-  text: string
-  category: string
-}
-
-export async function trackQuestionClick(payload: QuestionTrackPayload) {
-  return apiFetch<Question>('/questions/track', {
-    method: 'POST',
-    body: JSON.stringify(payload),
-  })
-}
-
-export type AnalyticsEventType = 'cv_download' | 'github_visit'
-
-type AnalyticsEventResponse = {
-  type: AnalyticsEventType
-  total: number
-}
-
-export async function trackAnalyticsEvent(type: AnalyticsEventType) {
-  return apiFetch<AnalyticsEventResponse>('/analytics/events', {
-    method: 'POST',
-    body: JSON.stringify({ type }),
   })
 }
