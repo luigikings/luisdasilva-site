@@ -63,6 +63,18 @@ type DictSection = {
     selectPrompt: string
     repeatPrompt: string
     backToCategories: string
+    tutorial: {
+      title: string
+      body: string
+      close: string
+    }
+    coins: {
+      remaining: string
+      unavailable: string
+      cost: string
+      unlimited: string
+      toggle: string
+    }
     categories: Record<QuestionGroupKey, string>
     questions: Record<QuestionKey, { label: string; playerLine: string }>
     answers: Record<QuestionKey, string>
@@ -135,6 +147,18 @@ export const dict: Dict = {
       selectPrompt: 'Selecciona una pregunta dentro del grupo.',
       repeatPrompt: 'Repetir pregunta',
       backToCategories: 'Volver a categorías',
+      tutorial: {
+        title: 'Tutorial',
+        body: 'Bienvenido a la entrevista con Luis Da Silva. En este juego por categorías tendrás una cantidad limitada de monedas: 1 moneda equivale a 1 pregunta, así que elige con estrategia. También puedes activar el modo de monedas ilimitadas para preguntar todo sin límites.',
+        close: 'Cerrar',
+      },
+      coins: {
+        remaining: 'Monedas disponibles',
+        unavailable: 'Monedas no disponibles',
+        cost: 'Costo',
+        unlimited: 'Monedas ilimitadas',
+        toggle: 'Monedas infinitas',
+      },
       categories: {
         aboutYou: 'Sobre ti',
         motivations: 'Motivaciones y gustos personales',
@@ -341,6 +365,18 @@ export const dict: Dict = {
       selectPrompt: 'Pick a question within the group.',
       repeatPrompt: 'Repeat question',
       backToCategories: 'Back to categories',
+      tutorial: {
+        title: 'Tutorial',
+        body: 'Welcome to the interview with Luis Da Silva. In this category-based game you have a limited amount of coins: 1 coin equals 1 question, so choose strategically. You can also enable unlimited coins mode to ask without limits.',
+        close: 'Close',
+      },
+      coins: {
+        remaining: 'Coins available',
+        unavailable: 'Coins not available',
+        cost: 'Cost',
+        unlimited: 'Unlimited coins',
+        toggle: 'Unlimited coins',
+      },
       categories: {
         aboutYou: 'About you',
         motivations: 'Motivations & personal tastes',

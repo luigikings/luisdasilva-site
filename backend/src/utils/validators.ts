@@ -12,7 +12,8 @@ export const suggestionSchema = z.object({
     .min(1)
     .max(60)
     .optional()
-    .or(z.literal('').transform(() => undefined))
+    .or(z.literal('').transform(() => undefined)),
+  lang: z.enum(['es', 'en']).optional()
 });
 
 export const questionUsageSchema = z.object({

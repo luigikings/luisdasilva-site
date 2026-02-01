@@ -70,6 +70,31 @@ const questionEmojis: Record<QuestionKey, string> = {
   cv: '📄',
 }
 
+const questionCosts: Record<QuestionKey, number> = {
+  introduction: 1,
+  motivation: 1,
+  learning: 1,
+  projects: 1,
+  contact: 1,
+  hobbies: 1,
+  superpower: 1,
+  location: 1,
+  futureSelf: 1,
+  spokenLanguages: 1,
+  languageIdentity: 1,
+  aiWork: 1,
+  futureProjects: 1,
+  teamwork: 1,
+  workValues: 1,
+  problemSolving: 1,
+  dailyMotivation: 1,
+  leastFavorite: 1,
+  videogame: 1,
+  advicePast: 1,
+  github: 0,
+  cv: 1,
+}
+
 const questionToGroupMap = Object.entries(questionGroupConfig).reduce(
   (acc, [groupKey, value]) => {
     value.questions.forEach((questionKey) => {
@@ -83,6 +108,14 @@ const questionToGroupMap = Object.entries(questionGroupConfig).reduce(
 const GITHUB_URL = 'https://github.com/luigikings'
 const CV_URL = '/CV%20Luis%20Angel%20Da%20Silva%20English.pdf'
 const CV_DOWNLOAD_NAME = 'CV Luis Angel Da Silva English.pdf'
+
+const initialCoinsByGroup: Record<QuestionGroupKey, number> = {
+  aboutYou: 3,
+  motivations: 4,
+  experience: 2,
+  workStyle: 2,
+  contactPortfolio: 2,
+}
 
 export function Interview() {
   const { t, lang } = useT()
@@ -103,6 +136,13 @@ export function Interview() {
   const groupPrompt = t<string>('interview.groupPrompt')
   const selectPrompt = t<string>('interview.selectPrompt')
   const backToCategories = t<string>('interview.backToCategories')
+  const coinsCopy = t<{
+    remaining: string
+    unavailable: string
+    cost: string
+    unlimited: string
+    toggle: string
+  }>('interview.coins')
   const groupEntries = useMemo(
     () =>
       (Object.entries(questionGroupConfig) as [
@@ -126,9 +166,15 @@ export function Interview() {
   const [showOk, setShowOk] = useState(false)
   const [answeredQuestions, setAnsweredQuestions] = useState<QuestionKey[]>([])
   const [isTalkingFrame, setIsTalkingFrame] = useState(false)
+  const [groupCoins, setGroupCoins] = useState<Record<QuestionGroupKey, number>>(
+    initialCoinsByGroup,
+  )
+  const [coinWarningGroup, setCoinWarningGroup] = useState<QuestionGroupKey | null>(null)
+  const [infiniteCoins, setInfiniteCoins] = useState(false)
   const typingInterval = useRef<number | null>(null)
   const typingTimeout = useRef<number | null>(null)
   const talkingInterval = useRef<number | null>(null)
+  const coinWarningTimeout = useRef<number | null>(null)
   const isConversationActive = selected !== null
 
   const clearTalkingInterval = useCallback(() => {
@@ -150,11 +196,19 @@ export function Interview() {
     clearTalkingInterval()
   }, [clearTalkingInterval])
 
+  const clearCoinWarningTimer = useCallback(() => {
+    if (coinWarningTimeout.current !== null) {
+      window.clearTimeout(coinWarningTimeout.current)
+      coinWarningTimeout.current = null
+    }
+  }, [])
+
   useEffect(() => {
     return () => {
       clearTimers()
+      clearCoinWarningTimer()
     }
-  }, [clearTimers])
+  }, [clearCoinWarningTimer, clearTimers])
 
   const handleGroupSelect = (group: QuestionGroupKey) => {
     if (isConversationActive) {
@@ -168,10 +222,33 @@ export function Interview() {
     if (isConversationActive) {
       return
     }
+    const groupKey = questionToGroupMap[key]
+    const baseCost = questionCosts[key] ?? 1
+    const isRepeat = answeredQuestions.includes(key)
+    const currentCoins = groupKey ? groupCoins[groupKey] ?? 0 : 0
+    const shouldCharge = !infiniteCoins && !isRepeat && baseCost > 0
+
+    if (shouldCharge && currentCoins < baseCost) {
+      if (groupKey) {
+        setCoinWarningGroup(groupKey)
+        clearCoinWarningTimer()
+        coinWarningTimeout.current = window.setTimeout(() => {
+          setCoinWarningGroup(null)
+        }, 2200)
+      }
+      return
+    }
+
+    if (shouldCharge && groupKey) {
+      setGroupCoins((prev) => ({
+        ...prev,
+        [groupKey]: Math.max((prev[groupKey] ?? 0) - baseCost, 0),
+      }))
+    }
+
     setSelected(key)
     track('interview_question_selected', { key, lang })
 
-    const groupKey = questionToGroupMap[key]
     const canonicalText = dict.es.interview.questions[key]?.label ?? questions[key].label
     const canonicalCategory = groupKey
       ? dict.es.interview.categories[groupKey]
@@ -470,6 +547,32 @@ export function Interview() {
           </h1>
           <p className="mx-auto max-w-xl text-sm text-slate-300">{t('interview.subtitle')}</p>
         </div>
+        <div className="flex flex-wrap items-center justify-center gap-3 text-xs uppercase tracking-[0.3em] text-slate-400">
+          <span className="rounded-full border border-slate-700/60 bg-slate-900/60 px-3 py-1 font-pixel text-[10px] text-slate-300">
+            {infiniteCoins ? coinsCopy.unlimited : coinsCopy.remaining}
+          </span>
+          <button
+            type="button"
+            onClick={() => setInfiniteCoins((prev) => !prev)}
+            className="group flex items-center gap-3 rounded-full border border-slate-700/60 bg-slate-900/50 px-4 py-2 font-pixel text-[10px] uppercase tracking-[0.35em] text-slate-300 transition-colors hover:border-highlight/50 hover:text-highlight focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-highlight focus-visible:ring-offset-2 focus-visible:ring-offset-charcoal"
+            aria-pressed={infiniteCoins}
+          >
+            <span>{coinsCopy.toggle}</span>
+            <span
+              className={`relative flex h-5 w-10 items-center rounded-full border transition-colors duration-200 ${
+                infiniteCoins
+                  ? 'border-highlight/80 bg-highlight/30'
+                  : 'border-slate-600 bg-slate-800/70'
+              }`}
+            >
+              <span
+                className={`absolute left-0.5 h-4 w-4 rounded-full transition-transform duration-200 ${
+                  infiniteCoins ? 'translate-x-5 bg-highlight' : 'bg-slate-400'
+                }`}
+              />
+            </span>
+          </button>
+        </div>
       </div>
 
       <div className="flex flex-col gap-8">
@@ -503,6 +606,21 @@ export function Interview() {
                   <span className="rounded-full border border-slate-700/60 bg-slate-900/60 px-3 py-1 font-pixel text-[10px] text-slate-300">
                     {`${selectedGroupData.emoji} ${selectedGroupData.label}`}
                   </span>
+                  <span
+                    className={`rounded-full border px-3 py-1 font-pixel text-[10px] ${
+                      coinWarningGroup === selectedGroupData.key
+                        ? 'border-red-500/80 bg-red-500/20 text-red-200'
+                        : 'border-slate-700/60 bg-slate-900/60 text-slate-300'
+                    }`}
+                  >
+                    {coinWarningGroup === selectedGroupData.key
+                      ? coinsCopy.unavailable
+                      : `${coinsCopy.remaining}: ${
+                          infiniteCoins
+                            ? '∞'
+                            : groupCoins[selectedGroupData.key] ?? 0
+                        }`}
+                  </span>
                   <button
                     type="button"
                     onClick={handleBackToGroups}
@@ -532,11 +650,15 @@ export function Interview() {
                   answeredQuestions.includes(key),
                 ).length
                 const allAnswered = answeredCount === groupQuestions.length
+                const remainingCoins = groupCoins[group.key] ?? 0
+                const showWarning = coinWarningGroup === group.key
                 const baseClasses =
                   'group relative flex flex-col gap-3 overflow-hidden rounded-pixel border px-5 py-5 text-left text-sm uppercase tracking-[0.2em] transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-highlight focus-visible:ring-offset-2 focus-visible:ring-offset-charcoal'
-                const stateClasses = allAnswered
-                  ? 'border-slate-800 bg-slate-900/40 text-slate-500 opacity-80 hover:border-highlight/40 hover:text-highlight'
-                  : 'border-slate-700 bg-slate-900/70 text-slate-200 hover:bg-slate-800/70'
+                const stateClasses = showWarning
+                  ? 'border-red-500/80 bg-red-500/15 text-red-200'
+                  : allAnswered
+                    ? 'border-slate-800 bg-slate-900/40 text-slate-500 opacity-80 hover:border-highlight/40 hover:text-highlight'
+                    : 'border-slate-700 bg-slate-900/70 text-slate-200 hover:bg-slate-800/70'
 
                 return (
                   <motion.button
@@ -552,6 +674,11 @@ export function Interview() {
                     <span className="text-lg text-highlight">{`${group.emoji} ${group.label}`}</span>
                     <span className="text-[10px] font-pixel uppercase tracking-[0.35em] text-slate-400">
                       {`${answeredCount}/${groupQuestions.length}`}
+                    </span>
+                    <span className="text-[10px] font-pixel uppercase tracking-[0.35em] text-slate-400">
+                      {showWarning
+                        ? coinsCopy.unavailable
+                        : `${coinsCopy.remaining}: ${infiniteCoins ? '∞' : remainingCoins}`}
                     </span>
                   </motion.button>
                 )
@@ -575,6 +702,7 @@ export function Interview() {
                 const isAnswered = answeredQuestions.includes(key)
                 const isActive = selected === key
                 const emoji = questionEmojis[key]
+                const baseCost = questionCosts[key] ?? 1
                 const labelWithEmoji = emoji ? `${emoji} ${question.label}` : question.label
                 const baseClasses =
                   'group relative overflow-hidden rounded-pixel border px-4 py-4 text-left text-sm uppercase tracking-[0.2em] transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-highlight focus-visible:ring-offset-2 focus-visible:ring-offset-charcoal'
@@ -602,6 +730,11 @@ export function Interview() {
                     >
                       {labelWithEmoji}
                     </span>
+                    {baseCost > 0 ? (
+                      <span className="absolute right-3 top-3 rounded-full border border-slate-700/60 bg-slate-900/60 px-2 py-0.5 font-pixel text-[9px] uppercase tracking-[0.3em] text-slate-300">
+                        {`${coinsCopy.cost}: ${baseCost}`}
+                      </span>
+                    ) : null}
                     {isAnswered ? (
                       <span className="pointer-events-none absolute inset-0 flex items-center justify-center font-pixel text-[10px] uppercase tracking-[0.3em] text-slate-400 opacity-0 transition-opacity duration-200 group-hover:opacity-100">
                         {repeatPrompt}
