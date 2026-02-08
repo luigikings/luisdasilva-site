@@ -2,11 +2,15 @@ import cors from 'cors';
 import express from 'express';
 import { z } from 'zod';
 
-import { sendSuggestionEmail } from './services/suggestionEmailService.js';
+import { sendDoorEntryEmail, sendSuggestionEmail } from './services/suggestionEmailService.js';
 
 const suggestionSchema = z.object({
   text: z.string().trim().min(8, 'La sugerencia debe tener al menos 8 caracteres.'),
   category: z.string().trim().optional(),
+  lang: z.enum(['es', 'en']).optional(),
+});
+
+const doorEntrySchema = z.object({
   lang: z.enum(['es', 'en']).optional(),
 });
 
@@ -29,6 +33,18 @@ export function createApp() {
         lang: payload.lang,
       });
       res.status(201).json({ ok: true });
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  app.post('/api/door-entry', async (req, res, next) => {
+    try {
+      const payload = doorEntrySchema.parse(req.body ?? {});
+      const result = await sendDoorEntryEmail({
+        lang: payload.lang,
+      });
+      res.status(201).json({ ok: true, ...result });
     } catch (error) {
       next(error);
     }

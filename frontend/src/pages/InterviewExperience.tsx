@@ -8,6 +8,7 @@ import { LanguageIntroScreen } from '../components/LanguageIntroScreen'
 import { LoadingScreen } from '../components/LoadingScreen'
 import { dict } from '../i18n/dict'
 import { useT } from '../hooks/useT'
+import { notifyDoorEntry } from '../lib/api'
 
 type ViewKey = 'language' | 'loading' | 'door' | 'interview'
 
@@ -64,6 +65,9 @@ export function InterviewExperience() {
   const handleConfirmLanguage = () => setView('loading')
   const handleStart = () => setView('door')
   const handleEnter = () => {
+    void notifyDoorEntry({ lang }).catch((error) => {
+      console.warn('Failed to notify door entry.', error)
+    })
     setView('interview')
     setShowTutorial(true)
   }
