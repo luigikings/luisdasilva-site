@@ -95,8 +95,19 @@ type SuggestionPayload = {
   lang?: string
 }
 
+type DoorEntryPayload = {
+  lang?: string
+}
+
 export async function submitSuggestion(payload: SuggestionPayload) {
   return apiFetch<{ ok: boolean }>('/suggestions', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  })
+}
+
+export async function notifyDoorEntry(payload: DoorEntryPayload) {
+  return apiFetch<{ ok: boolean }>('/door-entry', {
     method: 'POST',
     body: JSON.stringify(payload),
   })
