@@ -8,6 +8,10 @@ type SuggestionEmailPayload = {
   lang?: 'es' | 'en';
 };
 
+type DoorEntryEmailPayload = {
+  lang?: 'es' | 'en';
+};
+
 const DEFAULT_RECIPIENT = 'luigidasilv@gmail.com';
 
 function getTransportConfig() {
@@ -57,5 +61,27 @@ export async function sendSuggestionEmail(payload: SuggestionEmailPayload) {
     to: toAddress,
     subject,
     text: buildEmailBody(payload),
+  });
+}
+
+export async function sendDoorEntryEmail(payload: DoorEntryEmailPayload = {}) {
+  const transportConfig = getTransportConfig();
+
+  if (!transportConfig) {
+    console.warn('SMTP configuration is missing; door entry email skipped.');
+    return;
+  }
+
+  const transport = nodemailer.createTransport(transportConfig);
+  const subject = payload.lang === 'en' ? 'A user has entered' : 'Un usuario ha entrado';
+  const fromAddress = env.SMTP_FROM ?? env.SMTP_USER ?? DEFAULT_RECIPIENT;
+  const toAddress = env.SUGGESTION_EMAIL_TO ?? DEFAULT_RECIPIENT;
+  const body = payload.lang === 'en' ? 'A user has entered' : 'Un usuario ha entrado';
+
+  await transport.sendMail({
+    from: fromAddress,
+    to: toAddress,
+    subject,
+    text: body,
   });
 }
