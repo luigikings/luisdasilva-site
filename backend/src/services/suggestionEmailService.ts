@@ -1,4 +1,4 @@
-import nodemailer from 'nodemailer';
+import { Resend } from 'resend';
 
 import { env } from '../env.js';
 
@@ -14,29 +14,18 @@ type DoorEntryEmailPayload = {
 
 const DEFAULT_RECIPIENT = 'luigidasilv@gmail.com';
 
-function getTransportConfig() {
-  if (!env.SMTP_HOST || !env.SMTP_USER || !env.SMTP_PASS) {
-    return null;
+const resend = new Resend(process.env.RESEND_API_KEY);
+
+function isResendConfigured() {
+  if (!process.env.RESEND_API_KEY) {
+    console.error('RESEND_API_KEY is missing; skipping email send.');
+    return false;
   }
 
-  const port = env.SMTP_PORT ?? 587;
-
-  return {
-    host: env.SMTP_HOST,
-    port,
-    secure: port === 465,
-    requireTLS: port === 587,
-    connectionTimeout: 10000,
-    greetingTimeout: 10000,
-    socketTimeout: 15000,
-    auth: {
-      user: env.SMTP_USER,
-      pass: env.SMTP_PASS,
-    },
-  };
+  return true;
 }
 
-function buildEmailBody({ text, category, lang }: SuggestionEmailPayload) {
+function buildSuggestionEmailHtml({ text, category, lang }: SuggestionEmailPayload) {
   const labels =
     lang === 'en'
       ? { question: 'Question', category: 'Category' }
@@ -44,52 +33,54 @@ function buildEmailBody({ text, category, lang }: SuggestionEmailPayload) {
 
   const categoryValue = category?.trim() ? category.trim() : lang === 'en' ? 'Unspecified' : 'Sin categoría';
 
-  return `${labels.question}: ${text}\n${labels.category}: ${categoryValue}`;
+  return `<p><strong>${labels.question}:</strong> ${text}</p><p><strong>${labels.category}:</strong> ${categoryValue}</p>`;
 }
 
-export async function sendSuggestionEmail(payload: SuggestionEmailPayload) {
-  const transportConfig = getTransportConfig();
-
-  if (!transportConfig) {
-    console.warn('SMTP configuration is missing; suggestion email skipped.');
-    return;
+export async function sendSuggestionEmail(payload: SuggestionEmailPayload): Promise<boolean> {
+  if (!isResendConfigured()) {
+    return false;
   }
 
-  const transport = nodemailer.createTransport(transportConfig);
-  await transport.verify();
-  console.log('SMTP verify OK');
+  const fromAddress = env.SMTP_FROM ?? DEFAULT_RECIPIENT;
+  const toAddress = env.SUGGESTION_EMAIL_TO ?? DEFAULT_RECIPIENT;
   const subject = payload.lang === 'en' ? 'Suggest Question' : 'Pregunta sugerida';
-  const fromAddress = env.SMTP_FROM ?? env.SMTP_USER ?? DEFAULT_RECIPIENT;
-  const toAddress = env.SUGGESTION_EMAIL_TO ?? DEFAULT_RECIPIENT;
 
-  await transport.sendMail({
-    from: fromAddress,
-    to: toAddress,
-    subject,
-    text: buildEmailBody(payload),
-  });
+  try {
+    await resend.emails.send({
+      from: fromAddress,
+      to: toAddress,
+      subject,
+      html: buildSuggestionEmailHtml(payload),
+    });
+
+    return true;
+  } catch (error) {
+    console.error('Failed to send suggestion email with Resend:', error);
+    return false;
+  }
 }
 
-export async function sendDoorEntryEmail(payload: DoorEntryEmailPayload = {}) {
-  const transportConfig = getTransportConfig();
-
-  if (!transportConfig) {
-    console.warn('SMTP configuration is missing; door entry email skipped.');
-    return;
+export async function sendDoorEntryEmail(payload: DoorEntryEmailPayload = {}): Promise<boolean> {
+  if (!isResendConfigured()) {
+    return false;
   }
 
-  const transport = nodemailer.createTransport(transportConfig);
-  await transport.verify();
-  console.log('SMTP verify OK');
-  const subject = payload.lang === 'en' ? 'A user has entered' : 'Un usuario ha entrado';
-  const fromAddress = env.SMTP_FROM ?? env.SMTP_USER ?? DEFAULT_RECIPIENT;
+  const fromAddress = env.SMTP_FROM ?? DEFAULT_RECIPIENT;
   const toAddress = env.SUGGESTION_EMAIL_TO ?? DEFAULT_RECIPIENT;
+  const subject = payload.lang === 'en' ? 'A user has entered' : 'Un usuario ha entrado';
   const body = payload.lang === 'en' ? 'A user has entered' : 'Un usuario ha entrado';
 
-  await transport.sendMail({
-    from: fromAddress,
-    to: toAddress,
-    subject,
-    text: body,
-  });
+  try {
+    await resend.emails.send({
+      from: fromAddress,
+      to: toAddress,
+      subject,
+      html: `<p>${body}</p>`,
+    });
+
+    return true;
+  } catch (error) {
+    console.error('Failed to send door entry email with Resend:', error);
+    return false;
+  }
 }
