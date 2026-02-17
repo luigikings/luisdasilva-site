@@ -25,6 +25,10 @@ function getTransportConfig() {
     host: env.SMTP_HOST,
     port,
     secure: port === 465,
+    requireTLS: port === 587,
+    connectionTimeout: 10000,
+    greetingTimeout: 10000,
+    socketTimeout: 15000,
     auth: {
       user: env.SMTP_USER,
       pass: env.SMTP_PASS,
@@ -52,6 +56,8 @@ export async function sendSuggestionEmail(payload: SuggestionEmailPayload) {
   }
 
   const transport = nodemailer.createTransport(transportConfig);
+  await transport.verify();
+  console.log('SMTP verify OK');
   const subject = payload.lang === 'en' ? 'Suggest Question' : 'Pregunta sugerida';
   const fromAddress = env.SMTP_FROM ?? env.SMTP_USER ?? DEFAULT_RECIPIENT;
   const toAddress = env.SUGGESTION_EMAIL_TO ?? DEFAULT_RECIPIENT;
@@ -73,6 +79,8 @@ export async function sendDoorEntryEmail(payload: DoorEntryEmailPayload = {}) {
   }
 
   const transport = nodemailer.createTransport(transportConfig);
+  await transport.verify();
+  console.log('SMTP verify OK');
   const subject = payload.lang === 'en' ? 'A user has entered' : 'Un usuario ha entrado';
   const fromAddress = env.SMTP_FROM ?? env.SMTP_USER ?? DEFAULT_RECIPIENT;
   const toAddress = env.SUGGESTION_EMAIL_TO ?? DEFAULT_RECIPIENT;
