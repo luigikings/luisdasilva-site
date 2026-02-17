@@ -5,12 +5,9 @@ config();
 
 const rawEnv = {
   PORT: process.env.PORT ?? '3000',
-  SMTP_HOST: process.env.SMTP_HOST,
-  SMTP_PORT: process.env.SMTP_PORT,
-  SMTP_USER: process.env.SMTP_USER,
-  SMTP_PASS: process.env.SMTP_PASS,
-  SMTP_FROM: process.env.SMTP_FROM,
-  SUGGESTION_EMAIL_TO: process.env.SUGGESTION_EMAIL_TO ?? 'luigidasilv@gmail.com'
+  RESEND_API_KEY: process.env.RESEND_API_KEY,
+  EMAIL_FROM: process.env.EMAIL_FROM,
+  SUGGESTION_EMAIL_TO: process.env.SUGGESTION_EMAIL_TO,
 };
 
 const envSchema = z.object({
@@ -18,16 +15,9 @@ const envSchema = z.object({
     .string()
     .transform((value) => Number.parseInt(value, 10))
     .pipe(z.number().int().positive()),
-  SMTP_HOST: z.string().min(1).optional(),
-  SMTP_PORT: z
-    .string()
-    .transform((value) => Number.parseInt(value, 10))
-    .pipe(z.number().int().positive())
-    .optional(),
-  SMTP_USER: z.string().min(1).optional(),
-  SMTP_PASS: z.string().min(1).optional(),
-  SMTP_FROM: z.string().email().optional(),
-  SUGGESTION_EMAIL_TO: z.string().email().optional()
+  RESEND_API_KEY: z.string().min(1).optional(),
+  EMAIL_FROM: z.string().min(1).optional(),
+  SUGGESTION_EMAIL_TO: z.string().email(),
 });
 
 const parsed = envSchema.safeParse(rawEnv);
@@ -39,10 +29,7 @@ if (!parsed.success) {
 
 export const env = {
   PORT: parsed.data.PORT,
-  SMTP_HOST: parsed.data.SMTP_HOST,
-  SMTP_PORT: parsed.data.SMTP_PORT ?? 587,
-  SMTP_USER: parsed.data.SMTP_USER,
-  SMTP_PASS: parsed.data.SMTP_PASS,
-  SMTP_FROM: parsed.data.SMTP_FROM,
-  SUGGESTION_EMAIL_TO: parsed.data.SUGGESTION_EMAIL_TO ?? 'luigidasilv@gmail.com'
+  RESEND_API_KEY: parsed.data.RESEND_API_KEY,
+  EMAIL_FROM: parsed.data.EMAIL_FROM,
+  SUGGESTION_EMAIL_TO: parsed.data.SUGGESTION_EMAIL_TO,
 };
