@@ -27,12 +27,12 @@ export function createApp() {
   app.post('/api/suggestions', async (req, res, next) => {
     try {
       const payload = suggestionSchema.parse(req.body);
-      await sendSuggestionEmail({
+      const emailSent = await sendSuggestionEmail({
         text: payload.text,
         category: payload.category ? payload.category : null,
         lang: payload.lang,
       });
-      res.status(201).json({ ok: true });
+      res.status(201).json({ ok: true, emailSent });
     } catch (error) {
       next(error);
     }
@@ -41,10 +41,10 @@ export function createApp() {
   app.post('/api/door-entry', async (req, res, next) => {
     try {
       const payload = doorEntrySchema.parse(req.body ?? {});
-      await sendDoorEntryEmail({
+      const emailSent = await sendDoorEntryEmail({
         lang: payload.lang,
       });
-      res.status(201).json({ ok: true });
+      res.status(201).json({ ok: true, emailSent });
     } catch (error) {
       next(error);
     }
