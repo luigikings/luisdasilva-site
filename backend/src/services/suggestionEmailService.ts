@@ -31,14 +31,13 @@ function isResendConfigured() {
 }
 
 function buildSuggestionEmailHtml({ text, category, lang }: SuggestionEmailPayload) {
-  const labels =
-    lang === 'en'
-      ? { question: 'Question', category: 'Category' }
-      : { question: 'Pregunta', category: 'Categoría' };
-
   const categoryValue = category?.trim() ? category.trim() : lang === 'en' ? 'Unspecified' : 'Sin categoría';
 
-  return `<p><strong>${labels.question}:</strong> ${text}</p><p><strong>${labels.category}:</strong> ${categoryValue}</p>`;
+  if (lang !== 'en') {
+    return `<p>Tienes la siguiente Sugerencia de pregunta:</p><p>Pregunta: ${text}</p><p>Categoria: ${categoryValue}</p>`;
+  }
+
+  return `<p><strong>Question:</strong> ${text}</p><p><strong>Category:</strong> ${categoryValue}</p>`;
 }
 
 export async function sendSuggestionEmail(payload: SuggestionEmailPayload): Promise<EmailSendResult> {
@@ -50,7 +49,7 @@ export async function sendSuggestionEmail(payload: SuggestionEmailPayload): Prom
   }
 
   const toAddress = env.SUGGESTION_EMAIL_TO;
-  const subject = payload.lang === 'en' ? 'Suggest Question' : 'Pregunta sugerida';
+  const subject = payload.lang === 'en' ? 'Suggest Question' : 'Te han sugerido una Pregunta';
 
   try {
     await resend.emails.send({
@@ -82,8 +81,8 @@ export async function sendDoorEntryEmail(payload: DoorEntryEmailPayload = {}): P
   }
 
   const toAddress = env.SUGGESTION_EMAIL_TO;
-  const subject = payload.lang === 'en' ? 'A user has entered' : 'Un usuario ha entrado';
-  const body = payload.lang === 'en' ? 'A user has entered' : 'Un usuario ha entrado';
+  const subject = payload.lang === 'en' ? 'A user has entered' : 'Has entrado a una entrevista!';
+  const body = payload.lang === 'en' ? 'A user has entered' : 'Un usuario te ha dejado pasar para la entrevista!';
 
   try {
     await resend.emails.send({
