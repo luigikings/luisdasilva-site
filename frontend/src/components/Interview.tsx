@@ -1,126 +1,47 @@
-import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
+import { useReducedMotion } from 'framer-motion'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
+import {
+  GITHUB_URL,
+  CV_URL,
+  CV_DOWNLOAD_NAME,
+  initialCoinsByGroup,
+  questionCosts,
+  questionGroupConfig,
+  questionToGroupMap,
+  questionEmojis,
+} from '../data/interview'
 import { track } from '../lib/analytics'
 import { useT } from '../hooks/useT'
+import { ConversationPanel } from './interview/ConversationPanel'
+import { CoinBar } from './interview/CoinBar'
+import { InterviewNav } from './interview/InterviewNav'
 import { SuggestionPrompt } from './SuggestionPrompt'
 import type { QuestionGroupKey, QuestionKey } from '../i18n/dict'
 
-const questionGroupConfig: Record<QuestionGroupKey, { emoji: string; questions: QuestionKey[] }> = {
-  aboutYou: {
-    emoji: '🧑',
-    questions: [
-      'introduction',
-      'languageIdentity',
-      'videogame',
-      'location',
-      'futureSelf',
-      'spokenLanguages',
-    ],
-  },
-  motivations: {
-    emoji: '🎉',
-    questions: [
-      'motivation',
-      'hobbies',
-      'superpower',
-      'dailyMotivation',
-      'leastFavorite',
-      'advicePast',
-    ],
-  },
-  experience: {
-    emoji: '🛠️',
-    questions: ['learning', 'projects', 'futureProjects', 'aiWork'],
-  },
-  workStyle: {
-    emoji: '🤝',
-    questions: ['teamwork', 'workValues', 'problemSolving'],
-  },
-  contactPortfolio: {
-    emoji: '📬',
-    questions: ['contact', 'github', 'cv'],
-  },
-}
-
-const questionEmojis: Record<QuestionKey, string> = {
-  introduction: '🙋‍♂️',
-  motivation: '💡',
-  learning: '📚',
-  projects: '🛠️',
-  contact: '📬',
-  hobbies: '🎨',
-  superpower: '🦸‍♂️',
-  location: '📍',
-  futureSelf: '🔮',
-  spokenLanguages: '🗣️',
-  languageIdentity: '💻',
-  aiWork: '🤖',
-  futureProjects: '🚀',
-  teamwork: '🤝',
-  workValues: '🎯',
-  problemSolving: '🧩',
-  dailyMotivation: '🌅',
-  leastFavorite: '🙃',
-  videogame: '🎮',
-  advicePast: '🕰️',
-  github: '🐙',
-  cv: '📄',
-}
-
-const questionCosts: Record<QuestionKey, number> = {
-  introduction: 1,
-  motivation: 1,
-  learning: 1,
-  projects: 1,
-  contact: 1,
-  hobbies: 1,
-  superpower: 1,
-  location: 1,
-  futureSelf: 1,
-  spokenLanguages: 1,
-  languageIdentity: 1,
-  aiWork: 1,
-  futureProjects: 1,
-  teamwork: 1,
-  workValues: 1,
-  problemSolving: 1,
-  dailyMotivation: 1,
-  leastFavorite: 1,
-  videogame: 1,
-  advicePast: 1,
-  github: 0,
-  cv: 1,
-}
-
-const questionToGroupMap = Object.entries(questionGroupConfig).reduce(
-  (acc, [groupKey, value]) => {
-    value.questions.forEach((questionKey) => {
-      acc[questionKey] = groupKey as QuestionGroupKey
-    })
-    return acc
-  },
-  {} as Record<QuestionKey, QuestionGroupKey>,
-)
-
-const GITHUB_URL = 'https://github.com/luigikings'
-const CV_URL = '/CV%20Luis%20Angel%20Da%20Silva%20English.pdf'
-const CV_DOWNLOAD_NAME = 'CV Luis Angel Da Silva English.pdf'
-
-const initialCoinsByGroup: Record<QuestionGroupKey, number> = {
-  aboutYou: 3,
-  motivations: 4,
-  experience: 2,
-  workStyle: 2,
-  contactPortfolio: 2,
-}
-
+/**
+ * The main interview component.
+ *
+ * Navigation flow:
+ *   1. Visitor sees category (group) buttons
+ *   2. Selects a group → question buttons for that group appear
+ *   3. Selects a question → conversation begins (playerTyping → answerTyping → complete)
+ *   4. Visitor clicks OK → returns to question list for the same group
+ *
+ * Coin system:
+ *   Each group starts with a fixed coin budget. Selecting an unanswered question
+ *   that costs > 0 deducts one coin from that group's pool. Already-answered
+ *   questions and the `github` question (cost 0) are always re-askable for free.
+ *   An "infinite coins" toggle bypasses the system entirely.
+ *
+ * Typing animation:
+ *   Player line types at 32 ms/char; after a 280 ms pause the answer types at 26 ms/char.
+ *   Under `prefers-reduced-motion` all text appears instantly.
+ */
 export function Interview() {
   const { t, lang } = useT()
   const prefersReducedMotion = useReducedMotion()
-  const questions = t<
-    Record<QuestionKey, { label: string; playerLine: string }>
-  >('interview.questions')
+  const questions = t<Record<QuestionKey, { label: string; playerLine: string }>>('interview.questions')
   const categories = t<Record<QuestionGroupKey, string>>('interview.categories')
   const answers = t<Record<QuestionKey, string>>('interview.answers')
   const repeatPrompt = t<string>('interview.repeatPrompt')
@@ -141,6 +62,7 @@ export function Interview() {
     unlimited: string
     toggle: string
   }>('interview.coins')
+
   const groupEntries = useMemo(
     () =>
       (Object.entries(questionGroupConfig) as [
@@ -154,25 +76,27 @@ export function Interview() {
       })),
     [categories],
   )
+
   const [selectedGroup, setSelectedGroup] = useState<QuestionGroupKey | null>(null)
   const [selected, setSelected] = useState<QuestionKey | null>(null)
-  const [stage, setStage] = useState<'idle' | 'playerTyping' | 'answerTyping' | 'complete'>(
-    'idle',
-  )
+  // Conversation stage machine: idle → playerTyping → answerTyping → complete
+  const [stage, setStage] = useState<'idle' | 'playerTyping' | 'answerTyping' | 'complete'>('idle')
   const [playerLine, setPlayerLine] = useState('')
   const [answerLine, setAnswerLine] = useState('')
   const [showOk, setShowOk] = useState(false)
   const [answeredQuestions, setAnsweredQuestions] = useState<QuestionKey[]>([])
+  // Controls the character sprite: alternates between still and talking frames
   const [isTalkingFrame, setIsTalkingFrame] = useState(false)
-  const [groupCoins, setGroupCoins] = useState<Record<QuestionGroupKey, number>>(
-    initialCoinsByGroup,
-  )
+  const [groupCoins, setGroupCoins] = useState<Record<QuestionGroupKey, number>>(initialCoinsByGroup)
   const [coinWarningGroup, setCoinWarningGroup] = useState<QuestionGroupKey | null>(null)
   const [infiniteCoins, setInfiniteCoins] = useState(false)
+
   const typingInterval = useRef<number | null>(null)
   const typingTimeout = useRef<number | null>(null)
   const talkingInterval = useRef<number | null>(null)
   const coinWarningTimeout = useRef<number | null>(null)
+
+  // A conversation is "active" whenever a question is selected (even if still typing)
   const isConversationActive = selected !== null
 
   const clearTalkingInterval = useCallback(() => {
@@ -209,24 +133,22 @@ export function Interview() {
   }, [clearCoinWarningTimer, clearTimers])
 
   const handleGroupSelect = (group: QuestionGroupKey) => {
-    if (isConversationActive) {
-      return
-    }
+    if (isConversationActive) return
     setSelectedGroup(group)
     track('interview_group_selected', { group, lang })
   }
 
   const handleSelect = (key: QuestionKey) => {
-    if (isConversationActive) {
-      return
-    }
+    if (isConversationActive) return
     const groupKey = questionToGroupMap[key]
     const baseCost = questionCosts[key] ?? 1
     const isRepeat = answeredQuestions.includes(key)
     const currentCoins = groupKey ? groupCoins[groupKey] ?? 0 : 0
+    // Only charge coins for first-time non-free questions when infinite mode is off
     const shouldCharge = !infiniteCoins && !isRepeat && baseCost > 0
 
     if (shouldCharge && currentCoins < baseCost) {
+      // Flash a warning on the group badge instead of silently ignoring the click
       if (groupKey) {
         setCoinWarningGroup(groupKey)
         clearCoinWarningTimer()
@@ -246,16 +168,14 @@ export function Interview() {
 
     setSelected(key)
     track('interview_question_selected', { key, lang })
-
   }
 
   const handleBackToGroups = () => {
-    if (isConversationActive) {
-      return
-    }
+    if (isConversationActive) return
     setSelectedGroup(null)
   }
 
+  // Kicks off the player-typing animation when a question is selected
   useEffect(() => {
     if (!selected) {
       clearTimers()
@@ -295,6 +215,7 @@ export function Interview() {
         window.clearInterval(typingInterval.current)
         typingInterval.current = null
 
+        // Brief pause between player line finishing and answer starting
         typingTimeout.current = window.setTimeout(() => {
           setStage('answerTyping')
         }, 280)
@@ -306,10 +227,9 @@ export function Interview() {
     }
   }, [answers, clearTimers, prefersReducedMotion, questions, selected])
 
+  // Runs the answer-typing animation once the stage advances to answerTyping
   useEffect(() => {
-    if (stage !== 'answerTyping' || !selected) {
-      return
-    }
+    if (stage !== 'answerTyping' || !selected) return
 
     const answerMessage = answers[selected]
     let answerIndex = 0
@@ -334,6 +254,7 @@ export function Interview() {
     }
   }, [answers, clearTimers, selected, stage])
 
+  // Flips the character sprite between still/talking at 220 ms while answer is typing
   useEffect(() => {
     if (prefersReducedMotion) {
       clearTalkingInterval()
@@ -357,6 +278,7 @@ export function Interview() {
     }
   }, [clearTalkingInterval, prefersReducedMotion, stage])
 
+  /** Marks the question as answered and resets conversation state back to idle. */
   const handleOk = () => {
     if (selected) {
       setAnsweredQuestions((prev) =>
@@ -378,6 +300,7 @@ export function Interview() {
     handleOk()
   }
 
+  /** Programmatically creates a hidden <a> to trigger the browser's download dialog. */
   const handleCvDownload = () => {
     if (typeof document !== 'undefined') {
       const link = document.createElement('a')
@@ -391,10 +314,7 @@ export function Interview() {
   }
 
   const selectedGroupData = useMemo(
-    () =>
-      selectedGroup
-        ? groupEntries.find((group) => group.key === selectedGroup) ?? null
-        : null,
+    () => selectedGroup ? groupEntries.find((group) => group.key === selectedGroup) ?? null : null,
     [groupEntries, selectedGroup],
   )
 
@@ -404,320 +324,55 @@ export function Interview() {
   return (
     <section className="relative flex min-h-screen flex-col gap-8 px-4 py-10 md:px-12">
       <div className="flex flex-col items-center gap-6 text-center">
-        <div className="relative flex flex-col items-center">
-          <motion.div
-            className="relative flex h-56 w-56 items-center justify-center rounded-pixel border-4 border-slate-700 bg-slate-900 shadow-pixel md:h-64 md:w-64"
-            initial={prefersReducedMotion ? undefined : { opacity: 0, scale: 0.9 }}
-            animate={prefersReducedMotion ? undefined : { opacity: 1, scale: 1 }}
-            transition={{ type: 'spring', stiffness: 120, damping: 14 }}
-          >
-            <div className="absolute inset-[8%] flex items-center justify-center overflow-hidden rounded-[22px] border-4 border-slate-800 bg-gradient-to-br from-slate-700 via-slate-800 to-slate-950">
-              <img
-                src={
-                  stage === 'answerTyping' && !prefersReducedMotion && isTalkingFrame
-                    ? '/imgs/main_caracter/LK_hablando1.png'
-                    : '/imgs/main_caracter/LK_defrente.png'
-                }
-                alt={t('interview.avatarAlt')}
-                className="h-full w-full object-contain"
-              />
-            </div>
-          </motion.div>
-
-          <AnimatePresence mode="popLayout">
-            {answerLine || stage === 'answerTyping' || stage === 'complete' ? (
-              <motion.div
-                key="answer-line"
-                initial={
-                  prefersReducedMotion
-                    ? undefined
-                    : { opacity: 0 }
-                }
-                animate={
-                  prefersReducedMotion
-                    ? undefined
-                    : { opacity: 1 }
-                }
-                exit={
-                  prefersReducedMotion
-                    ? undefined
-                    : { opacity: 0 }
-                }
-                transition={{ duration: 0.25, ease: 'easeOut' }}
-                className="mt-4 flex w-full max-w-xs flex-col gap-3 rounded-2xl border border-slate-700/70 bg-slate-800/90 p-4 text-left text-sm text-slate-100 shadow-inner md:absolute md:left-full md:top-1/2 md:mt-0 md:ml-6 md:w-72 md:-translate-y-1/2 md:transform md:text-left md:shadow-xl"
-              >
-                <p className="text-[11px] uppercase tracking-[0.3em] text-slate-400">
-                  {conversation.characterLabel}
-                </p>
-                <p className="leading-relaxed">{answerLine}</p>
-                <AnimatePresence>
-                  {showOk ? (
-                    <motion.div
-                      key="answer-actions"
-                      initial={prefersReducedMotion ? undefined : { opacity: 0, scale: 0.95 }}
-                      animate={prefersReducedMotion ? undefined : { opacity: 1, scale: 1 }}
-                      exit={prefersReducedMotion ? undefined : { opacity: 0, scale: 0.95 }}
-                      className="flex flex-wrap justify-end gap-2"
-                    >
-                      {selected === 'github' ? (
-                        <motion.button
-                          type="button"
-                          onClick={handleGithubRedirect}
-                          className="rounded-full bg-highlight px-4 py-1 font-pixel text-[10px] uppercase tracking-[0.35em] text-charcoal shadow-sm transition-colors hover:bg-highlight/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-highlight focus-visible:ring-offset-2 focus-visible:ring-offset-slate-800"
-                          whileTap={prefersReducedMotion ? undefined : { scale: 0.97 }}
-                        >
-                          {conversation.githubButton}
-                        </motion.button>
-                      ) : null}
-                      {selected === 'cv' ? (
-                        <motion.button
-                          type="button"
-                          onClick={handleCvDownload}
-                          className="rounded-full bg-highlight px-4 py-1 font-pixel text-[10px] uppercase tracking-[0.35em] text-charcoal shadow-sm transition-colors hover:bg-highlight/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-highlight focus-visible:ring-offset-2 focus-visible:ring-offset-slate-800"
-                          whileTap={prefersReducedMotion ? undefined : { scale: 0.97 }}
-                        >
-                          {conversation.cvButton}
-                        </motion.button>
-                      ) : null}
-                      <motion.button
-                        type="button"
-                        onClick={handleOk}
-                        className="rounded-full bg-white px-4 py-1 font-pixel text-[10px] uppercase tracking-[0.35em] text-slate-900 shadow-sm transition-colors hover:bg-white/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-highlight focus-visible:ring-offset-2 focus-visible:ring-offset-slate-800"
-                        whileTap={prefersReducedMotion ? undefined : { scale: 0.97 }}
-                      >
-                        {conversation.okButton}
-                      </motion.button>
-                    </motion.div>
-                  ) : null}
-                </AnimatePresence>
-              </motion.div>
-            ) : null}
-          </AnimatePresence>
-
-          <AnimatePresence mode="popLayout">
-            {playerLine ? (
-              <motion.div
-                key="player-line"
-                initial={prefersReducedMotion ? undefined : { opacity: 0, y: 12 }}
-                animate={prefersReducedMotion ? undefined : { opacity: 1, y: 0 }}
-                exit={prefersReducedMotion ? undefined : { opacity: 0, y: -8 }}
-                transition={{ duration: 0.3, ease: 'easeOut' }}
-                className="mt-6 w-full max-w-md rounded-2xl border border-highlight/60 bg-highlight/15 px-6 py-4 text-center text-sm text-highlight shadow-pixel"
-              >
-                <p className="mb-1 text-[11px] uppercase tracking-[0.3em] text-highlight/70">
-                  {conversation.youLabel}
-                </p>
-                <p>{playerLine}</p>
-              </motion.div>
-            ) : null}
-          </AnimatePresence>
-        </div>
+        <ConversationPanel
+          stage={stage}
+          isTalkingFrame={isTalkingFrame}
+          prefersReducedMotion={prefersReducedMotion}
+          avatarAlt={t('interview.avatarAlt')}
+          answerLine={answerLine}
+          playerLine={playerLine}
+          showOk={showOk}
+          selected={selected}
+          conversation={conversation}
+          onOk={handleOk}
+          onGithub={handleGithubRedirect}
+          onCv={handleCvDownload}
+        />
         <div className="space-y-3">
           <h1 className="font-pixel text-lg uppercase tracking-[0.5em] text-highlight">
             {t('interview.title')}
           </h1>
           <p className="mx-auto max-w-xl text-sm text-slate-300">{t('interview.subtitle')}</p>
         </div>
-        <div className="flex flex-wrap items-center justify-center gap-3 text-xs uppercase tracking-[0.3em] text-slate-400">
-          <span className="rounded-full border border-slate-700/60 bg-slate-900/60 px-3 py-1 font-pixel text-[10px] text-slate-300">
-            {infiniteCoins ? coinsCopy.unlimited : coinsCopy.remaining}
-          </span>
-          <button
-            type="button"
-            onClick={() => setInfiniteCoins((prev) => !prev)}
-            className="group flex items-center gap-3 rounded-full border border-slate-700/60 bg-slate-900/50 px-4 py-2 font-pixel text-[10px] uppercase tracking-[0.35em] text-slate-300 transition-colors hover:border-highlight/50 hover:text-highlight focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-highlight focus-visible:ring-offset-2 focus-visible:ring-offset-charcoal"
-            aria-pressed={infiniteCoins}
-          >
-            <span>{coinsCopy.toggle}</span>
-            <span
-              className={`relative flex h-5 w-10 items-center rounded-full border transition-colors duration-200 ${
-                infiniteCoins
-                  ? 'border-highlight/80 bg-highlight/30'
-                  : 'border-slate-600 bg-slate-800/70'
-              }`}
-            >
-              <span
-                className={`absolute left-0.5 h-4 w-4 rounded-full transition-transform duration-200 ${
-                  infiniteCoins ? 'translate-x-5 bg-highlight' : 'bg-slate-400'
-                }`}
-              />
-            </span>
-          </button>
-        </div>
+        <CoinBar
+          infiniteCoins={infiniteCoins}
+          onToggle={() => setInfiniteCoins((prev) => !prev)}
+          coinsCopy={coinsCopy}
+        />
       </div>
 
-      <div className="flex flex-col gap-8">
-        <AnimatePresence mode="wait">
-          {isShowingCategories ? (
-            <motion.div
-              key="group-prompt"
-              initial={prefersReducedMotion ? undefined : { opacity: 0, y: 15 }}
-              animate={prefersReducedMotion ? undefined : { opacity: 1, y: 0 }}
-              exit={prefersReducedMotion ? undefined : { opacity: 0, y: -10 }}
-              transition={{ duration: 0.35, ease: 'easeOut' }}
-            >
-              <p className="text-center text-sm text-slate-300">{groupPrompt}</p>
-            </motion.div>
-          ) : null}
-        </AnimatePresence>
-
-        <AnimatePresence mode="wait">
-          {isShowingQuestions ? (
-            <motion.div
-              key="question-prompt"
-              initial={prefersReducedMotion ? undefined : { opacity: 0, y: 15 }}
-              animate={prefersReducedMotion ? undefined : { opacity: 1, y: 0 }}
-              exit={prefersReducedMotion ? undefined : { opacity: 0, y: -10 }}
-              transition={{ duration: 0.35, ease: 'easeOut' }}
-              className="flex flex-col items-center gap-4 text-center"
-            >
-              <p className="text-sm text-slate-300">{selectPrompt}</p>
-              {selectedGroupData ? (
-                <div className="flex flex-wrap items-center justify-center gap-3 text-xs uppercase tracking-[0.3em] text-slate-400">
-                  <span className="rounded-full border border-slate-700/60 bg-slate-900/60 px-3 py-1 font-pixel text-[10px] text-slate-300">
-                    {`${selectedGroupData.emoji} ${selectedGroupData.label}`}
-                  </span>
-                  <span
-                    className={`rounded-full border px-3 py-1 font-pixel text-[10px] ${
-                      coinWarningGroup === selectedGroupData.key
-                        ? 'border-red-500/80 bg-red-500/20 text-red-200'
-                        : 'border-slate-700/60 bg-slate-900/60 text-slate-300'
-                    }`}
-                  >
-                    {coinWarningGroup === selectedGroupData.key
-                      ? coinsCopy.unavailable
-                      : `${coinsCopy.remaining}: ${
-                          infiniteCoins
-                            ? '∞'
-                            : groupCoins[selectedGroupData.key] ?? 0
-                        }`}
-                  </span>
-                  <button
-                    type="button"
-                    onClick={handleBackToGroups}
-                    className="rounded-full border border-slate-700/60 bg-slate-900/40 px-3 py-1 font-pixel text-[10px] uppercase tracking-[0.3em] text-slate-400 transition-colors hover:border-highlight/40 hover:text-highlight focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-highlight focus-visible:ring-offset-2 focus-visible:ring-offset-charcoal"
-                  >
-                    {backToCategories}
-                  </button>
-                </div>
-              ) : null}
-            </motion.div>
-          ) : null}
-        </AnimatePresence>
-
-        <AnimatePresence>
-          {isShowingCategories ? (
-            <motion.div
-              key="groups"
-              className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 lg:flex lg:flex-wrap lg:justify-center"
-              initial={prefersReducedMotion ? undefined : { opacity: 0, y: 15 }}
-              animate={prefersReducedMotion ? undefined : { opacity: 1, y: 0 }}
-              exit={prefersReducedMotion ? undefined : { opacity: 0, y: -10 }}
-              transition={{ duration: 0.35, ease: 'easeOut' }}
-            >
-              {groupEntries.map((group, index) => {
-                const groupQuestions = group.questionKeys
-                const answeredCount = groupQuestions.filter((key) =>
-                  answeredQuestions.includes(key),
-                ).length
-                const allAnswered = answeredCount === groupQuestions.length
-                const remainingCoins = groupCoins[group.key] ?? 0
-                const showWarning = coinWarningGroup === group.key
-                const baseClasses =
-                  'group relative flex flex-col gap-3 overflow-hidden rounded-pixel border px-5 py-5 text-left text-sm uppercase tracking-[0.2em] transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-highlight focus-visible:ring-offset-2 focus-visible:ring-offset-charcoal'
-                const stateClasses = showWarning
-                  ? 'border-red-500/80 bg-red-500/15 text-red-200'
-                  : allAnswered
-                    ? 'border-slate-800 bg-slate-900/40 text-slate-500 opacity-80 hover:border-highlight/40 hover:text-highlight'
-                    : 'border-slate-700 bg-slate-900/70 text-slate-200 hover:bg-slate-800/70'
-
-                return (
-                  <motion.button
-                    key={group.key}
-                    type="button"
-                    onClick={() => handleGroupSelect(group.key)}
-                    className={`${baseClasses} ${stateClasses} lg:basis-[calc(33.333%_-_12px)] lg:max-w-[calc(33.333%_-_12px)] lg:flex-none`}
-                    initial={prefersReducedMotion ? undefined : { opacity: 0, y: 15 }}
-                    animate={prefersReducedMotion ? undefined : { opacity: 1, y: 0 }}
-                    transition={{ duration: 0.3, delay: prefersReducedMotion ? 0 : 0.05 * index }}
-                    aria-pressed={selectedGroup === group.key}
-                  >
-                    <span className="text-lg text-highlight">{`${group.emoji} ${group.label}`}</span>
-                    <span className="text-[10px] font-pixel uppercase tracking-[0.35em] text-slate-400">
-                      {`${answeredCount}/${groupQuestions.length}`}
-                    </span>
-                    <span className="text-[10px] font-pixel uppercase tracking-[0.35em] text-slate-400">
-                      {showWarning
-                        ? coinsCopy.unavailable
-                        : `${coinsCopy.remaining}: ${infiniteCoins ? '∞' : remainingCoins}`}
-                    </span>
-                  </motion.button>
-                )
-              })}
-            </motion.div>
-          ) : null}
-        </AnimatePresence>
-
-        <AnimatePresence>
-          {isShowingQuestions && selectedGroupData ? (
-            <motion.div
-              key="questions"
-              className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3"
-              initial={prefersReducedMotion ? undefined : { opacity: 0, y: 15 }}
-              animate={prefersReducedMotion ? undefined : { opacity: 1, y: 0 }}
-              exit={prefersReducedMotion ? undefined : { opacity: 0, y: -10 }}
-              transition={{ duration: 0.3, ease: 'easeOut' }}
-            >
-              {selectedGroupData.questionKeys.map((key, index) => {
-                const question = questions[key]
-                const isAnswered = answeredQuestions.includes(key)
-                const isActive = selected === key
-                const emoji = questionEmojis[key]
-                const baseCost = questionCosts[key] ?? 1
-                const labelWithEmoji = emoji ? `${emoji} ${question.label}` : question.label
-                const baseClasses =
-                  'group relative overflow-hidden rounded-pixel border px-4 py-4 text-left text-sm uppercase tracking-[0.2em] transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-highlight focus-visible:ring-offset-2 focus-visible:ring-offset-charcoal'
-                const stateClasses = isActive
-                  ? 'border-highlight bg-highlight/25 text-highlight shadow-pixel'
-                  : isAnswered
-                    ? 'border-slate-800 bg-slate-900/40 text-slate-500 opacity-60 hover:border-highlight/40 hover:bg-slate-800/60 hover:text-slate-300 hover:opacity-90'
-                    : 'border-slate-700 bg-slate-900/70 text-slate-200 hover:bg-slate-800/70'
-
-                return (
-                  <motion.button
-                    key={key}
-                    type="button"
-                    onClick={() => handleSelect(key)}
-                    className={`${baseClasses} ${stateClasses}`}
-                    initial={prefersReducedMotion ? undefined : { opacity: 0, y: 15 }}
-                    animate={prefersReducedMotion ? undefined : { opacity: 1, y: 0 }}
-                    transition={{ duration: 0.3, delay: prefersReducedMotion ? 0 : 0.05 * index }}
-                    aria-pressed={isActive}
-                  >
-                    <span
-                      className={`block transition-opacity duration-200 ${
-                        isAnswered ? 'group-hover:opacity-0' : ''
-                      }`}
-                    >
-                      {labelWithEmoji}
-                    </span>
-                    {baseCost > 0 ? (
-                      <span className="absolute right-3 top-3 rounded-full border border-slate-700/60 bg-slate-900/60 px-2 py-0.5 font-pixel text-[9px] uppercase tracking-[0.3em] text-slate-300">
-                        {`${coinsCopy.cost}: ${baseCost}`}
-                      </span>
-                    ) : null}
-                    {isAnswered ? (
-                      <span className="pointer-events-none absolute inset-0 flex items-center justify-center font-pixel text-[10px] uppercase tracking-[0.3em] text-slate-400 opacity-0 transition-opacity duration-200 group-hover:opacity-100">
-                        {repeatPrompt}
-                      </span>
-                    ) : null}
-                  </motion.button>
-                )
-              })}
-            </motion.div>
-          ) : null}
-        </AnimatePresence>
-      </div>
+      <InterviewNav
+        isShowingCategories={isShowingCategories}
+        isShowingQuestions={isShowingQuestions}
+        selectedGroup={selectedGroup}
+        selectedGroupData={selectedGroupData}
+        groupEntries={groupEntries}
+        questions={questions}
+        answeredQuestions={answeredQuestions}
+        selected={selected}
+        groupCoins={groupCoins}
+        infiniteCoins={infiniteCoins}
+        coinWarningGroup={coinWarningGroup}
+        prefersReducedMotion={prefersReducedMotion}
+        coinsCopy={coinsCopy}
+        repeatPrompt={repeatPrompt}
+        groupPrompt={groupPrompt}
+        selectPrompt={selectPrompt}
+        backToCategories={backToCategories}
+        onGroupSelect={handleGroupSelect}
+        onBackToGroups={handleBackToGroups}
+        onSelect={handleSelect}
+      />
 
       <SuggestionPrompt />
 

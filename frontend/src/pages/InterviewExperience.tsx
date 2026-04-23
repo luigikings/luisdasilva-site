@@ -10,6 +10,16 @@ import { dict } from '../i18n/dict'
 import { useT } from '../hooks/useT'
 import { notifyDoorEntry } from '../lib/api'
 
+/**
+ * Top-level view controller for the entire interview experience.
+ *
+ * View state machine:
+ *   language → loading → door → interview
+ *
+ * Each view fills the full viewport and transitions via AnimatePresence (mode="wait"),
+ * so only one view is mounted at a time. The LanguageSwitcher is hidden on the
+ * language-selection screen because there the user hasn't committed to a language yet.
+ */
 type ViewKey = 'language' | 'loading' | 'door' | 'interview'
 
 export function InterviewExperience() {
@@ -26,6 +36,7 @@ export function InterviewExperience() {
     close: string
   }>('interview.tutorial')
 
+  // Rotate document.title during loading to entertain visitors while they wait
   useEffect(() => {
     if (view === 'language') {
       document.title = dict[lang].meta.languageTitle
@@ -47,6 +58,7 @@ export function InterviewExperience() {
     }
   }, [lang, loadingTitleIndex, loadingTitles, view])
 
+  // Cycle the loading title every 2 s; clean up when leaving the loading view
   useEffect(() => {
     if (view !== 'loading') {
       setLoadingTitleIndex(0)
@@ -65,6 +77,7 @@ export function InterviewExperience() {
   const handleConfirmLanguage = () => setView('loading')
   const handleStart = () => setView('door')
   const handleEnter = () => {
+    // Fire-and-forget: a failed notification should never block the user from entering
     void notifyDoorEntry({ lang }).catch((error) => {
       console.warn('Failed to notify door entry.', error)
     })
@@ -120,6 +133,7 @@ export function InterviewExperience() {
             transition={{ duration: 0.4, ease: 'easeOut' }}
           >
             <Interview />
+            {/* Tutorial overlay shown once on first entry; dismissed by the visitor */}
             <AnimatePresence>
               {showTutorial ? (
                 <motion.div

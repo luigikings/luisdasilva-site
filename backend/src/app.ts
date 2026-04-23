@@ -4,6 +4,7 @@ import { z } from 'zod';
 
 import { sendDoorEntryEmail, sendSuggestionEmail } from './services/suggestionEmailService.js';
 
+/** Minimum length matched on both client and server to prevent trivial spam */
 const suggestionSchema = z.object({
   text: z.string().trim().min(8, 'La sugerencia debe tener al menos 8 caracteres.'),
   category: z.string().trim().optional(),
@@ -14,6 +15,10 @@ const doorEntrySchema = z.object({
   lang: z.enum(['es', 'en']).optional(),
 });
 
+/**
+ * Creates and configures the Express application.
+ * Exported as a factory so tests can instantiate isolated copies.
+ */
 export function createApp() {
   const app = express();
 
@@ -45,6 +50,7 @@ export function createApp() {
 
   app.post('/api/door-entry', async (req, res, next) => {
     try {
+      // req.body can be undefined when Content-Type header is absent
       const payload = doorEntrySchema.parse(req.body ?? {});
       const { emailSent, error } = await sendDoorEntryEmail({
         lang: payload.lang,
@@ -60,6 +66,7 @@ export function createApp() {
     }
   });
 
+  // Express recognises error-handling middleware by its 4-argument signature — all four params are required
   app.use((error: unknown, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
     if (error instanceof z.ZodError) {
       const message = error.issues[0]?.message ?? 'Solicitud inválida.';

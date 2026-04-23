@@ -8,6 +8,17 @@ type DoorSceneProps = {
   onEnter: () => void
 }
 
+/**
+ * Animated door-knocking scene that plays before the interview begins.
+ *
+ * Stage machine: idle → knocking → dialog
+ * - idle: door is shown, no animation yet (1.6 s pause)
+ * - knocking: door shakes with a knock animation (0.9 s)
+ * - dialog: typed messages appear one by one; "Enter" button shows after the first
+ *
+ * Under `prefers-reduced-motion` the stage jumps straight to dialog and all
+ * messages appear instantly without typing or transitions.
+ */
 export function DoorScene({ onEnter }: DoorSceneProps) {
   const { t, lang } = useT()
   const prefersReducedMotion = useReducedMotion()
@@ -16,6 +27,7 @@ export function DoorScene({ onEnter }: DoorSceneProps) {
   const [typedMessage, setTypedMessage] = useState('')
   const [doorImpact, setDoorImpact] = useState(false)
   const [showEnterButton, setShowEnterButton] = useState(false)
+  // Refs hold timer IDs so they can all be cleared on unmount or language change
   const timers = useRef<number[]>([])
   const typeInterval = useRef<number | null>(null)
   const previousMessageIndex = useRef(-1)
@@ -27,6 +39,7 @@ export function DoorScene({ onEnter }: DoorSceneProps) {
 
   const introMessage = t<string>('door.intro')
 
+  // Full message sequence: intro line followed by the three knock dialogs
   const sequence = useMemo<string[]>(
     () => [introMessage, ...dialogs],
     [dialogs, introMessage],
@@ -47,6 +60,7 @@ export function DoorScene({ onEnter }: DoorSceneProps) {
     }
   }, [])
 
+  // Restart the whole sequence when the language changes
   useEffect(() => {
     clearTimers()
     setStage(prefersReducedMotion ? 'dialog' : 'idle')
@@ -64,6 +78,7 @@ export function DoorScene({ onEnter }: DoorSceneProps) {
     timers.current.push(idleTimer)
   }, [lang, prefersReducedMotion, sequence])
 
+  // Advance from knocking to dialog after the door animation plays
   useEffect(() => {
     if (stage !== 'knocking') {
       return
@@ -77,6 +92,7 @@ export function DoorScene({ onEnter }: DoorSceneProps) {
     timers.current.push(timer)
   }, [stage])
 
+  // Type out each message character by character at 35 ms/char, then queue the next
   useEffect(() => {
     if (messageIndex < 0 || messageIndex >= sequence.length) {
       setTypedMessage('')
@@ -126,6 +142,7 @@ export function DoorScene({ onEnter }: DoorSceneProps) {
         window.clearInterval(typeInterval.current)
         typeInterval.current = null
 
+        // Show the Enter button 1 s after the first message finishes typing
         if (messageIndex === 0) {
           const buttonTimer = window.setTimeout(() => {
             setShowEnterButton(true)
@@ -133,6 +150,7 @@ export function DoorScene({ onEnter }: DoorSceneProps) {
           timers.current.push(buttonTimer)
         }
 
+        // Auto-advance to the next message after 5 s
         if (messageIndex < sequence.length - 1) {
           const timer = window.setTimeout(() => {
             setMessageIndex((prev) => Math.min(prev + 1, sequence.length - 1))
@@ -150,6 +168,7 @@ export function DoorScene({ onEnter }: DoorSceneProps) {
     }
   }, [messageIndex, prefersReducedMotion, sequence])
 
+  // Trigger a brief door-impact animation whenever the message index advances
   useEffect(() => {
     if (prefersReducedMotion) {
       previousMessageIndex.current = messageIndex
@@ -261,6 +280,7 @@ export function DoorScene({ onEnter }: DoorSceneProps) {
           </div>
         </motion.div>
 
+        {/* aria-live so screen readers announce each new typed message */}
         <motion.div
           className="mx-auto max-w-xl rounded-3xl border border-slate-700/70 bg-slate-900/70 p-6 shadow-lg"
           initial={prefersReducedMotion ? undefined : { opacity: 0, y: 10 }}

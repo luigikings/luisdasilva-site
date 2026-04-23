@@ -17,12 +17,15 @@ type EmailSendResult = {
   error: string | null;
 };
 
-const FROM = process.env.EMAIL_FROM || 'LuisDaSilvaDev <noreply@luisdasilvadev.com>';
+// Read at module-init time; EMAIL_FROM falls back to a branded noreply address
+const FROM = env.EMAIL_FROM ?? 'LuisDaSilvaDev <noreply@luisdasilvadev.com>';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+// Resend client is instantiated once — constructor accepts undefined without throwing
+const resend = new Resend(env.RESEND_API_KEY);
 
+/** Returns false and logs if the API key is absent, so callers can skip the network call */
 function isResendConfigured() {
-  if (!process.env.RESEND_API_KEY) {
+  if (!env.RESEND_API_KEY) {
     console.error('RESEND_API_KEY is missing; skipping email send.');
     return false;
   }
@@ -30,6 +33,7 @@ function isResendConfigured() {
   return true;
 }
 
+/** Produces bilingual HTML depending on the visitor's chosen language */
 function buildSuggestionEmailHtml({ text, category, lang }: SuggestionEmailPayload) {
   const categoryValue = category?.trim() ? category.trim() : lang === 'en' ? 'Unspecified' : 'Sin categoría';
 
@@ -40,6 +44,11 @@ function buildSuggestionEmailHtml({ text, category, lang }: SuggestionEmailPaylo
   return `<p><strong>Question:</strong> ${text}</p><p><strong>Category:</strong> ${categoryValue}</p>`;
 }
 
+/**
+ * Sends a visitor's question suggestion to the configured recipient.
+ * Always resolves — errors are captured and returned rather than thrown,
+ * so the HTTP response can still report partial success (201 with emailSent: false).
+ */
 export async function sendSuggestionEmail(payload: SuggestionEmailPayload): Promise<EmailSendResult> {
   if (!isResendConfigured()) {
     return {
@@ -72,6 +81,10 @@ export async function sendSuggestionEmail(payload: SuggestionEmailPayload): Prom
   }
 }
 
+/**
+ * Fires a notification email whenever a visitor enters the interview.
+ * Errors are swallowed so a failed send never blocks the user from continuing.
+ */
 export async function sendDoorEntryEmail(payload: DoorEntryEmailPayload = {}): Promise<EmailSendResult> {
   if (!isResendConfigured()) {
     return {

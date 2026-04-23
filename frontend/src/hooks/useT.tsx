@@ -11,8 +11,14 @@ type LanguageContextValue = {
 
 const LanguageContext = createContext<LanguageContextValue | undefined>(undefined)
 
+// Persisted in localStorage so the choice survives page reloads
 const STORAGE_KEY = 'pixel-interrogatorio-lang'
 
+/**
+ * Provides the active language and the `t()` translation helper to the whole tree.
+ * Persists the language choice to localStorage and syncs `document.documentElement.lang`
+ * for screen readers and SEO crawlers.
+ */
 export function LanguageProvider({ children }: { children: ReactNode }) {
   const [lang, setLangState] = useState<Language>(() => {
     if (typeof window === 'undefined') {
@@ -36,6 +42,11 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
   }, [lang])
 
   const value = useMemo<LanguageContextValue>(() => {
+    /**
+     * Looks up a nested translation by dot-notation path (e.g. `'interview.title'`).
+     * Returns the path string itself when a key is missing, so missing strings are
+     * visible in the UI rather than silently undefined.
+     */
     const t = <T = unknown>(path: string): T => {
       const segments = path.split('.')
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -63,6 +74,7 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
   return <LanguageContext.Provider value={value}>{children}</LanguageContext.Provider>
 }
 
+/** Throws if called outside a LanguageProvider, making misconfiguration obvious at dev time */
 export function useT() {
   const context = useContext(LanguageContext)
   if (!context) {

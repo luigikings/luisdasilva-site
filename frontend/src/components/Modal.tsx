@@ -12,9 +12,19 @@ type ModalProps = {
   children: ReactNode
 }
 
+/**
+ * Accessible modal dialog rendered into document.body via a portal.
+ *
+ * Accessibility features:
+ * - Focus is moved to the close button when the modal opens
+ * - Tab key cycles only within the modal (focus trap) to prevent background interaction
+ * - Escape key closes the modal
+ * - body overflow is set to hidden while open to prevent scroll bleed
+ */
 export function Modal({ isOpen, title, onClose, children }: ModalProps) {
   const { t } = useT()
   const prefersReducedMotion = useReducedMotion()
+  // Stable ID ties the heading to aria-labelledby without manual string management
   const headingId = useId()
   const overlayRef = useRef<HTMLDivElement>(null)
   const closeButtonRef = useRef<HTMLButtonElement>(null)
@@ -30,6 +40,7 @@ export function Modal({ isOpen, title, onClose, children }: ModalProps) {
         onClose()
       }
       if (event.key === 'Tab') {
+        // Collect all focusable elements inside the modal to cycle between them
         const focusable = overlayRef.current?.querySelectorAll<HTMLElement>(
           'button, [href], input, textarea, [tabindex]:not([tabindex="-1"])',
         )
@@ -56,6 +67,7 @@ export function Modal({ isOpen, title, onClose, children }: ModalProps) {
     closeButtonRef.current?.focus()
     return () => {
       document.removeEventListener('keydown', onKeyDown)
+      // Restore the previous overflow value rather than blindly clearing it
       document.body.style.overflow = previousOverflow
     }
   }, [isOpen, onClose])
@@ -75,6 +87,7 @@ export function Modal({ isOpen, title, onClose, children }: ModalProps) {
           exit={prefersReducedMotion ? undefined : { opacity: 0 }}
           onClick={onClose}
         >
+          {/* stopPropagation prevents overlay click from closing the modal when clicking inside */}
           <motion.div
             role="dialog"
             aria-modal="true"

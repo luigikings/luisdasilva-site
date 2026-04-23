@@ -5,6 +5,11 @@ import type { FormEvent } from 'react'
 import { useT } from '../hooks/useT'
 import { ApiError, submitSuggestion } from '../lib/api'
 
+/**
+ * Floating button + inline modal that lets visitors suggest new interview questions.
+ * The form resets every time the modal closes so stale input or error state never
+ * bleeds into the next open.
+ */
 export function SuggestionPrompt() {
   const { t, lang } = useT()
   const copy = t<{
@@ -29,6 +34,7 @@ export function SuggestionPrompt() {
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle')
   const [message, setMessage] = useState<string | null>(null)
 
+  // Reset all form state on close so re-opening always starts fresh
   useEffect(() => {
     if (!isOpen) {
       setQuestion('')
@@ -60,6 +66,7 @@ export function SuggestionPrompt() {
     const trimmedQuestion = question.trim()
     const trimmedCategory = category.trim()
 
+    // Client-side guard mirrors the 8-char minimum enforced by the backend schema
     if (trimmedQuestion.length < 8) {
       setMessage(copy.validationMessage)
       return
@@ -78,6 +85,7 @@ export function SuggestionPrompt() {
       setMessage(copy.successMessage)
     } catch (error) {
       console.error(error)
+      // Prefer the server's error message when available for better user feedback
       const apiMessage =
         error instanceof ApiError && typeof error.body === 'object' && error.body && 'error' in error.body
           ? String((error.body as { error?: string }).error)

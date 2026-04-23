@@ -1,3 +1,4 @@
+/** Typed error carrying the HTTP status and raw response body for callers to inspect */
 export class ApiError extends Error {
   status: number
   body: unknown
@@ -11,14 +12,17 @@ export class ApiError extends Error {
 
 const rawApiUrl = import.meta.env.VITE_API_URL
 
+// Validate at module load time so a missing env var surfaces immediately, not on first request
 if (!rawApiUrl) {
   throw new Error(
     'VITE_API_URL environment variable is required to make API requests.',
   )
 }
 
+// Strip trailing slashes and append /api so callers only pass path segments
 const API_BASE_URL = `${rawApiUrl.replace(/\/+$/, '')}/api`
 
+/** Builds an absolute URL from a path segment, passing through full URLs unchanged */
 function buildUrl(path: string) {
   if (path.startsWith('http://') || path.startsWith('https://')) {
     return path
@@ -29,6 +33,7 @@ function buildUrl(path: string) {
   return `${API_BASE_URL}/${path}`
 }
 
+/** Normalises the three valid HeadersInit shapes into a plain object */
 function normalizeHeaders(headers?: HeadersInit): Record<string, string> {
   if (!headers) {
     return {}
@@ -45,6 +50,13 @@ function normalizeHeaders(headers?: HeadersInit): Record<string, string> {
   return { ...headers }
 }
 
+/**
+ * Generic fetch wrapper that:
+ * - Defaults Content-Type to application/json
+ * - Skips body parsing for 204/205 responses
+ * - Unwraps a top-level `data` envelope when present
+ * - Throws ApiError on non-2xx responses so callers get typed error info
+ */
 export async function apiFetch<T>(
   path: string,
   init: RequestInit = {},
@@ -82,6 +94,7 @@ export async function apiFetch<T>(
     return undefined as T
   }
 
+  // Unwrap `{ data: ... }` envelope used by some backend responses
   if (isJson && payload && typeof payload === 'object' && 'data' in payload) {
     return (payload as { data: unknown }).data as T
   }

@@ -5,6 +5,7 @@ import { useT } from '../hooks/useT'
 
 const languages: Language[] = ['es', 'en']
 
+/** Fixed top-right toggle that lets the user switch language at any point in the experience */
 export function LanguageSwitcher() {
   const { lang, setLang, t } = useT()
 

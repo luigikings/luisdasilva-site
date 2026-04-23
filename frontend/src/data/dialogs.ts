@@ -1,3 +1,4 @@
+/** Bilingual lines the visitor "knocks" with before being let into the interview */
 export type DoorDialog = {
   id: string
   es: string

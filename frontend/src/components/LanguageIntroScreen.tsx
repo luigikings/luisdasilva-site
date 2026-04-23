@@ -6,11 +6,17 @@ import { useT } from '../hooks/useT'
 
 const languageOrder: Language[] = ['en', 'es']
 
+/**
+ * First screen the visitor sees — lets them pick ES or EN before the experience begins.
+ * The selection is previewed locally until confirmed, so copy updates reactively
+ * without committing to the global language context yet.
+ */
 export function LanguageIntroScreen({ onConfirm }: { onConfirm: () => void }) {
   const prefersReducedMotion = useReducedMotion()
   const { lang, setLang } = useT()
   const [selected, setSelected] = useState<Language>(lang)
 
+  // Read copy directly from the dict for the previewed language, not the context language
   const copy = useMemo(() => dict[selected].languageIntro, [selected])
 
   const handleConfirm = () => {

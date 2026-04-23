@@ -1,6 +1,7 @@
 import { config } from 'dotenv';
 import { z } from 'zod';
 
+// Load .env into process.env before validation runs
 config();
 
 const rawEnv = {
@@ -15,13 +16,16 @@ const envSchema = z.object({
     .string()
     .transform((value) => Number.parseInt(value, 10))
     .pipe(z.number().int().positive()),
+  // Optional: server starts without email sending capability if these are absent
   RESEND_API_KEY: z.string().min(1).optional(),
   EMAIL_FROM: z.string().min(1).optional(),
+  // Required: nowhere to deliver suggestions without a recipient address
   SUGGESTION_EMAIL_TO: z.string().email(),
 });
 
 const parsed = envSchema.safeParse(rawEnv);
 
+// Fail fast at startup rather than silently at request time
 if (!parsed.success) {
   console.error('❌ Invalid environment configuration:', parsed.error.flatten().fieldErrors);
   throw new Error('Invalid environment configuration');

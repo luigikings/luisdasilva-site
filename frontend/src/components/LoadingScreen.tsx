@@ -3,8 +3,14 @@ import { useEffect, useState } from 'react'
 
 import { useT } from '../hooks/useT'
 
+// Total duration of the fake loading bar in milliseconds
 const PROGRESS_DURATION = 3200
 
+/**
+ * Displays an animated progress bar that runs for PROGRESS_DURATION ms.
+ * The start button is disabled until the bar completes, giving the experience
+ * a deliberate pacing before the door scene begins.
+ */
 export function LoadingScreen({ onStart }: { onStart: () => void }) {
   const { t } = useT()
   const prefersReducedMotion = useReducedMotion()
@@ -15,6 +21,7 @@ export function LoadingScreen({ onStart }: { onStart: () => void }) {
     const start = performance.now()
     let frame: number
 
+    // rAF-driven progress so the bar stays in sync with actual elapsed time
     const step = (now: number) => {
       const elapsed = now - start
       const pct = Math.min(100, (elapsed / PROGRESS_DURATION) * 100)
@@ -30,6 +37,7 @@ export function LoadingScreen({ onStart }: { onStart: () => void }) {
     return () => cancelAnimationFrame(frame)
   }, [])
 
+  // Under reduced motion: skip Framer variants and drive width via inline style
   const barVariants = prefersReducedMotion
     ? undefined
     : {
