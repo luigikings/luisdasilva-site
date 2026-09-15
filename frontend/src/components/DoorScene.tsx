@@ -186,34 +186,26 @@ export function DoorScene({ onEnter }: DoorSceneProps) {
     previousMessageIndex.current = messageIndex
   }, [messageIndex, prefersReducedMotion])
 
+  // The door itself barely moves (real doors don't rock on their hinges) —
+  // a tiny jitter sells the physical hit, while the panel compression and
+  // the knuckle/impact-ring effects below carry the "someone is knocking
+  // from the other side" read.
   const doorVariants: Variants = {
-    rest: { rotate: 0, x: 0, scale: 1, opacity: 1, boxShadow: '0 14px 0 0 rgba(8, 12, 22, 0.65)' },
+    rest: { x: 0, scale: 1, opacity: 1, boxShadow: '0 10px 0 0 rgba(60, 36, 19, 0.35)' },
     knock: {
+      x: [0, -1.5, 1.5, -1, 1, 0],
       scale: 1,
       opacity: 1,
-      rotate: [0, -1.2, 1.5, -1, 0.6, 0],
-      x: [0, -4, 4, -3, 2, 0],
-      transition: {
-        duration: 0.7,
-        ease: 'easeInOut',
-        repeat: 2,
-        repeatDelay: 0.1,
-      },
-      boxShadow: '0 18px 0 0 rgba(8, 12, 22, 0.85)',
+      boxShadow: '0 12px 0 0 rgba(60, 36, 19, 0.45)',
+      transition: { duration: 0.5, ease: 'easeInOut', repeat: 1, repeatDelay: 0.25 },
     },
-    impact: {
-      rotate: 0,
-      x: [0, -2, 2, -1, 0],
-      scale: [1, 1.06, 0.97, 1],
-      opacity: 1,
-      boxShadow: [
-        '0 14px 0 0 rgba(8, 12, 22, 0.65)',
-        '0 22px 0 0 rgba(8, 12, 22, 0.75)',
-        '0 12px 0 0 rgba(8, 12, 22, 0.6)',
-        '0 14px 0 0 rgba(8, 12, 22, 0.65)',
-      ],
-      transition: { duration: 0.42, ease: 'easeOut' },
-    },
+  }
+
+  const knockRingTransition = {
+    duration: 0.45,
+    ease: 'easeOut' as const,
+    repeat: 2,
+    repeatDelay: 0.2,
   }
 
   return (
@@ -227,62 +219,90 @@ export function DoorScene({ onEnter }: DoorSceneProps) {
         <motion.div
           role="img"
           aria-label={t('door.intro')}
-          className="relative mx-auto h-52 w-44 rounded-pixel border-4 border-slate-800 bg-slate-950/60 shadow-[0_10px_0_0_rgba(8,12,22,0.65)]"
+          className="relative mx-auto h-52 w-44"
           initial={prefersReducedMotion ? undefined : { scale: 0.85, opacity: 0 }}
-          animate={
-            prefersReducedMotion
-              ? undefined
-              : stage === 'knocking'
-                ? 'knock'
-                : doorImpact
-                  ? 'impact'
-                  : 'rest'
-          }
+          animate={prefersReducedMotion ? undefined : stage === 'knocking' ? 'knock' : 'rest'}
           variants={prefersReducedMotion ? undefined : doorVariants}
           transition={{ type: 'spring', stiffness: 130, damping: 14 }}
         >
+          {/* floor shadow */}
           <div
-            className="absolute inset-x-6 -bottom-4 h-4 rounded-b-[18px] bg-slate-900/70 blur-[2px]"
+            className="absolute inset-x-6 -bottom-3 h-4 rounded-b-[18px] bg-[#3c2413]/30 blur-[2px]"
             aria-hidden
           />
-          <div
-            className="absolute -inset-3 rounded-[22px] border-4 border-slate-950/80 bg-slate-900/80"
-            aria-hidden
-          />
-          <div className="relative h-full w-full overflow-hidden rounded-[18px] border-[3px] border-slate-950 bg-gradient-to-b from-[#99a4c4] via-[#5f6b89] to-[#222b3c] shadow-[inset_0_10px_16px_rgba(15,23,42,0.45)]">
-            <div className="absolute inset-x-8 top-6 h-6 rounded-[12px] border-2 border-slate-900/70 bg-slate-100/80 shadow-[inset_0_-2px_6px_rgba(51,65,85,0.35)]" />
-            <div className="absolute inset-x-10 top-[38%] h-2 rounded-full bg-slate-900/35" />
-            <div className="absolute inset-x-8 top-[44%] h-[38%] rounded-[14px] border-[3px] border-slate-900/60 bg-gradient-to-b from-[#465470]/85 via-[#374152]/90 to-[#111827] shadow-[inset_0_6px_8px_rgba(15,23,42,0.45)]" />
-            <div className="absolute inset-x-10 bottom-8 h-12 rounded-[10px] border-[3px] border-slate-900/60 bg-gradient-to-b from-[#71809f]/85 via-[#55617d]/90 to-[#1f2637] shadow-[inset_0_6px_10px_rgba(15,23,42,0.5)]" />
+          {/* dark wood frame */}
+          <div className="absolute inset-0 rounded-t-[20px] rounded-b-[10px] bg-[#3c2413]" aria-hidden />
+          <div className="absolute left-0 top-9 h-4 w-1.5 rounded-sm bg-[#2a160a]" aria-hidden />
+          <div className="absolute bottom-9 left-0 h-4 w-1.5 rounded-sm bg-[#2a160a]" aria-hidden />
+
+          {/* door face — this is what visibly takes the hit */}
+          <motion.div
+            className="absolute inset-2 overflow-hidden rounded-t-[16px] rounded-b-[8px] bg-gradient-to-b from-[#c99a5b] to-[#b3854a] shadow-[inset_0_10px_16px_rgba(60,36,19,0.35)]"
+            animate={
+              prefersReducedMotion
+                ? undefined
+                : stage === 'knocking'
+                  ? { scaleY: [1, 0.985, 1, 0.985, 1] }
+                  : doorImpact
+                    ? { scaleY: [1, 0.99, 1] }
+                    : { scaleY: 1 }
+            }
+            transition={stage === 'knocking' ? { duration: 0.5, ease: 'easeInOut' } : { duration: 0.3, ease: 'easeOut' }}
+          >
+            <div className="absolute inset-x-7 top-7 h-20 rounded-[10px] bg-gradient-to-b from-[#a9713f] to-[#8a5a30] shadow-[inset_0_2px_0_rgba(255,240,210,0.4),inset_0_-3px_4px_rgba(60,36,19,0.5)]" />
+            <div className="absolute inset-x-8 bottom-6 h-16 rounded-[10px] bg-gradient-to-b from-[#a9713f] to-[#8a5a30] shadow-[inset_0_2px_0_rgba(255,240,210,0.4),inset_0_-3px_4px_rgba(60,36,19,0.5)]" />
+
+            {/* brass knob at real knob height, not moving — a fixed door doesn't rattle */}
+            <div className="absolute right-3 top-[104px] h-9 w-2.5 rounded bg-[#7a5230]" />
+            <div className="absolute right-2 top-[107px] h-4 w-4 rounded-full bg-[radial-gradient(circle_at_35%_30%,#fbe3ab,#cf9a4a_55%,#a9743a)] shadow-[0_1px_2px_rgba(60,36,19,0.5)]" />
+
+            {/* knuckle contact points, right where the knocking happens */}
             <motion.div
-              className="absolute right-8 top-1/2 h-4 w-4 -translate-y-1/2 rounded-full bg-highlight shadow-[0_0_0_3px_rgba(17,17,26,0.55)]"
+              aria-hidden
+              className="pointer-events-none absolute left-1/2 top-16 h-1.5 w-1.5 -translate-x-3 -translate-y-1/2 rounded-full bg-[#3c2413]/70"
               animate={
                 prefersReducedMotion
-                  ? undefined
+                  ? { opacity: 0 }
                   : stage === 'knocking'
-                    ? { scale: [1, 0.85, 1.1, 1] }
-                    : { scale: 1 }
+                    ? { opacity: [0, 1, 0], scale: [0.6, 1, 0.6] }
+                    : { opacity: 0 }
               }
-              transition={{ duration: 0.6, ease: 'easeInOut', repeat: stage === 'knocking' ? 2 : 0, repeatDelay: 0.15 }}
+              transition={knockRingTransition}
             />
-            <div className="absolute right-8 top-[54%] h-1 w-6 rounded-full bg-highlight/35" aria-hidden />
             <motion.div
-              className="absolute inset-0"
+              aria-hidden
+              className="pointer-events-none absolute left-1/2 top-16 h-1.5 w-1.5 translate-x-1.5 -translate-y-1/2 rounded-full bg-[#3c2413]/70"
               animate={
                 prefersReducedMotion
-                  ? undefined
+                  ? { opacity: 0 }
                   : stage === 'knocking'
-                    ? { boxShadow: ['0 0 0 rgba(148, 163, 184, 0)', '0 0 32px rgba(148, 163, 184, 0.3)', '0 0 0 rgba(148, 163, 184, 0)'] }
-                    : { boxShadow: '0 0 0 rgba(148, 163, 184, 0)' }
+                    ? { opacity: [0, 1, 0], scale: [0.6, 1, 0.6] }
+                    : { opacity: 0 }
               }
-              transition={{ duration: 0.9, ease: 'easeInOut', repeat: stage === 'knocking' ? 2 : 0, repeatDelay: 0.2 }}
+              transition={{ ...knockRingTransition, delay: 0.08 }}
             />
-          </div>
+
+            {/* impact ring: energy rippling out from behind the panel */}
+            <motion.div
+              aria-hidden
+              className="pointer-events-none absolute left-1/2 top-16 h-10 w-10 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-highlight"
+              animate={
+                prefersReducedMotion
+                  ? { opacity: 0 }
+                  : stage === 'knocking'
+                    ? { scale: [0.4, 1.5], opacity: [0.6, 0] }
+                    : doorImpact
+                      ? { scale: [0.5, 1.2], opacity: [0.4, 0] }
+                      : { scale: 0.4, opacity: 0 }
+              }
+              transition={stage === 'knocking' ? knockRingTransition : { duration: 0.5, ease: 'easeOut' }}
+            />
+          </motion.div>
         </motion.div>
 
         {/* aria-live so screen readers announce each new typed message */}
         <motion.div
-          className="mx-auto max-w-xl rounded-3xl border border-slate-700/70 bg-slate-900/70 p-6 shadow-lg"
+          className="mx-auto max-w-xl rounded-3xl border-2 border-[#d8c39a] bg-[#fffaf0] p-6 shadow-lg"
           initial={prefersReducedMotion ? undefined : { opacity: 0, y: 10 }}
           animate={stage === 'dialog' ? { opacity: 1, y: 0 } : { opacity: 0, y: 10 }}
           transition={{ duration: 0.5, ease: 'easeOut' }}
@@ -290,10 +310,10 @@ export function DoorScene({ onEnter }: DoorSceneProps) {
         >
           <motion.p
             key={messageIndex}
-            initial={prefersReducedMotion ? undefined : { opacity: 0, y: 10 }}
-            animate={prefersReducedMotion ? undefined : { opacity: 1, y: 0 }}
-            transition={{ duration: 0.4, ease: 'easeOut' }}
-            className="font-pixel text-lg uppercase tracking-[0.5em] text-highlight"
+            initial={prefersReducedMotion ? undefined : { opacity: 0, y: 8, scale: 0.98 }}
+            animate={prefersReducedMotion ? undefined : { opacity: 1, y: 0, scale: 1 }}
+            transition={{ duration: 0.35, ease: 'easeOut' }}
+            className="font-sans text-lg font-semibold tracking-wide text-charcoal"
           >
             {typedMessage}
           </motion.p>
@@ -306,10 +326,23 @@ export function DoorScene({ onEnter }: DoorSceneProps) {
             key="enter-door-button"
             type="button"
             onClick={onEnter}
-            className="rounded-pixel bg-highlight px-8 py-3 font-pixel text-base uppercase tracking-[0.4em] text-charcoal shadow-pixel transition-all duration-200 hover:-translate-y-1 hover:bg-highlight/90 hover:shadow-[0_0_18px_rgba(255,241,208,0.35)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-highlight focus-visible:ring-offset-2 focus-visible:ring-offset-charcoal"
+            className="rounded-pixel bg-highlight px-8 py-3 font-sans text-base font-bold tracking-wide text-charcoal shadow-pixel transition-all duration-200 hover:-translate-y-1 hover:bg-highlight/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-highlight focus-visible:ring-offset-2 focus-visible:ring-offset-cream"
             initial={prefersReducedMotion ? undefined : { opacity: 0, scale: 0.95 }}
-            animate={prefersReducedMotion ? undefined : { opacity: 1, scale: 1 }}
+            animate={
+              prefersReducedMotion
+                ? undefined
+                : {
+                    opacity: 1,
+                    scale: [1, 1.03, 1],
+                    boxShadow: [
+                      '0 4px 0 0 rgba(60,36,19,0.35)',
+                      '0 4px 0 0 rgba(60,36,19,0.35), 0 0 16px rgba(207,154,74,0.45)',
+                      '0 4px 0 0 rgba(60,36,19,0.35)',
+                    ],
+                  }
+            }
             exit={prefersReducedMotion ? undefined : { opacity: 0, scale: 0.95 }}
+            transition={prefersReducedMotion ? undefined : { duration: 2.2, repeat: Infinity, ease: 'easeInOut' }}
             whileTap={prefersReducedMotion ? undefined : { scale: 0.97 }}
             aria-label={t('door.button')}
           >

@@ -3,11 +3,11 @@
 @tailwind utilities;
 
 :root {
-  color-scheme: dark;
+  color-scheme: light;
 }
 
 body {
-  @apply bg-charcoal text-slate-100 font-sans antialiased;
+  @apply bg-cream text-charcoal font-sans antialiased;
 }
 
 a {
@@ -27,10 +27,10 @@ button:focus-visible,
 a:focus-visible,
 input:focus-visible,
 textarea:focus-visible {
-  @apply outline-none ring-2 ring-highlight ring-offset-2 ring-offset-charcoal;
+  @apply outline-none ring-2 ring-highlight ring-offset-2 ring-offset-cream;
 }
 
 ::selection {
-  background-color: #f5c249;
-  color: #1f1f2b;
+  background-color: #cf9a4a;
+  color: #3c2413;
 }

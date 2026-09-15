@@ -11,9 +11,11 @@ export default {
         sans: ['"IBM Plex Sans"', 'system-ui', 'sans-serif'],
       },
       colors: {
-        charcoal: '#1f1f2b',
+        charcoal: '#3c2413',
         pixelSlate: '#2c2c3a',
-        highlight: '#f5c249',
+        highlight: '#cf9a4a',
+        cream: '#f3e6cd',
+        creamPanel: '#ecd9b6',
       },
       boxShadow: {
         pixel: '0 4px 0 0 rgba(0,0,0,0.35)',

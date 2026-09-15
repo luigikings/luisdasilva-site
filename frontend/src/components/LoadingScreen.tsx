@@ -53,10 +53,10 @@ export function LoadingScreen({ onStart }: { onStart: () => void }) {
         transition={{ duration: 0.6, ease: 'easeOut' }}
         className="max-w-xl space-y-4"
       >
-        <h1 className="text-2xl font-bold uppercase tracking-[0.4em] text-highlight drop-shadow">
+        <h1 className="text-2xl font-bold tracking-wide text-charcoal drop-shadow-sm">
           {t('loading.title')}
         </h1>
-        <p className="text-sm text-slate-200/80">{t('loading.description')}</p>
+        <p className="text-sm text-charcoal/70">{t('loading.description')}</p>
       </motion.div>
 
       <div className="w-full max-w-md space-y-4">
@@ -66,7 +66,7 @@ export function LoadingScreen({ onStart }: { onStart: () => void }) {
           aria-valuenow={Math.round(progress)}
           aria-valuemin={0}
           aria-valuemax={100}
-          className="relative h-4 overflow-hidden rounded-full border border-slate-700 bg-slate-900/70"
+          className="relative h-4 overflow-hidden rounded-full border border-[#d8c39a] bg-creamPanel/70"
         >
           <motion.div
             className="h-full bg-highlight"
@@ -77,7 +77,7 @@ export function LoadingScreen({ onStart }: { onStart: () => void }) {
             transition={{ duration: 0.4, ease: 'easeOut' }}
           />
         </div>
-        <span className="block text-xs font-mono text-slate-300">
+        <span className="block text-xs font-mono text-charcoal/60">
           {Math.round(progress)}%
         </span>
       </div>
@@ -87,7 +87,7 @@ export function LoadingScreen({ onStart }: { onStart: () => void }) {
         onClick={onStart}
         disabled={!done}
         aria-disabled={!done}
-        className="rounded-pixel bg-highlight px-6 py-3 font-pixel text-sm uppercase tracking-widest text-charcoal shadow-pixel transition-all duration-200 enabled:hover:-translate-y-1 enabled:hover:bg-highlight/90 enabled:hover:shadow-[0_0_18px_rgba(255,241,208,0.35)] disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-highlight focus-visible:ring-offset-2 focus-visible:ring-offset-charcoal"
+        className="rounded-pixel bg-highlight px-6 py-3 font-sans text-sm font-bold tracking-wide text-charcoal shadow-pixel transition-all duration-200 enabled:hover:-translate-y-1 enabled:hover:bg-highlight/90 enabled:hover:shadow-[0_0_18px_rgba(207,154,74,0.45)] disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-highlight focus-visible:ring-offset-2 focus-visible:ring-offset-cream"
         initial={prefersReducedMotion ? undefined : { opacity: 0, scale: 0.95 }}
         animate={
           done
