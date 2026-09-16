@@ -1,4 +1,4 @@
-import { useReducedMotion } from 'framer-motion'
+import { motion, useReducedMotion } from 'framer-motion'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import {
@@ -323,7 +323,7 @@ export function Interview() {
 
   return (
     <section className="relative flex min-h-screen flex-col gap-8 px-4 py-10 md:px-12">
-      <div className="flex flex-col items-center gap-6 text-center">
+      <motion.div layout className="flex flex-col items-center gap-6 text-center">
         <ConversationPanel
           stage={stage}
           isTalkingFrame={isTalkingFrame}
@@ -339,17 +339,17 @@ export function Interview() {
           onCv={handleCvDownload}
         />
         <div className="space-y-3">
-          <h1 className="font-pixel text-lg uppercase tracking-[0.5em] text-highlight">
+          <h1 className="font-sans text-lg font-bold tracking-wide text-charcoal">
             {t('interview.title')}
           </h1>
-          <p className="mx-auto max-w-xl text-sm text-slate-300">{t('interview.subtitle')}</p>
+          <p className="mx-auto max-w-xl text-sm text-charcoal/70">{t('interview.subtitle')}</p>
         </div>
         <CoinBar
           infiniteCoins={infiniteCoins}
           onToggle={() => setInfiniteCoins((prev) => !prev)}
           coinsCopy={coinsCopy}
         />
-      </div>
+      </motion.div>
 
       <InterviewNav
         isShowingCategories={isShowingCategories}
@@ -376,7 +376,7 @@ export function Interview() {
 
       <SuggestionPrompt />
 
-      <footer className="mt-auto text-center text-xs text-slate-500">
+      <footer className="mt-auto text-center text-xs text-charcoal/50">
         {t('footer.text')}
       </footer>
     </section>

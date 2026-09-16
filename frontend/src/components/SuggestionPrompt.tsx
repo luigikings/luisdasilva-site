@@ -100,7 +100,7 @@ export function SuggestionPrompt() {
       <button
         type="button"
         onClick={() => setIsOpen(true)}
-        className="rounded-full border border-highlight/60 bg-highlight/10 px-6 py-2 text-sm font-pixel uppercase tracking-[0.35em] text-highlight transition-colors hover:bg-highlight/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-highlight focus-visible:ring-offset-2 focus-visible:ring-offset-charcoal"
+        className="rounded-full border border-highlight/60 bg-highlight/10 px-6 py-2 text-sm font-sans font-semibold uppercase tracking-wide text-charcoal transition-colors duration-300 hover:bg-highlight/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-highlight focus-visible:ring-offset-2 focus-visible:ring-offset-cream"
       >
         {copy.buttonLabel}
       </button>
@@ -109,41 +109,42 @@ export function SuggestionPrompt() {
         {isOpen ? (
           <motion.div
             key="modal"
-            className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 px-4 backdrop-blur"
+            className="fixed inset-0 z-50 flex items-center justify-center bg-[#2a160a]/50 px-4 backdrop-blur"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
+            transition={{ duration: 0.3, ease: 'easeOut' }}
           >
             <motion.div
-              className="w-full max-w-lg rounded-2xl border border-slate-800 bg-slate-900/90 p-6 shadow-2xl"
-              initial={{ opacity: 0, y: 30 }}
+              className="w-full max-w-lg rounded-2xl border border-[#d8c39a] bg-cream p-6 shadow-2xl"
+              initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 20 }}
-              transition={{ duration: 0.2, ease: 'easeOut' }}
+              exit={{ opacity: 0, y: 14 }}
+              transition={{ duration: 0.35, ease: 'easeOut' }}
             >
               <div className="mb-4 flex items-start justify-between gap-4">
                 <div>
-                  <h2 className="text-lg font-semibold text-slate-100">{copy.modalTitle}</h2>
-                  <p className="mt-1 text-sm text-slate-400">{copy.modalDescription}</p>
+                  <h2 className="text-lg font-semibold text-charcoal">{copy.modalTitle}</h2>
+                  <p className="mt-1 text-sm text-charcoal/60">{copy.modalDescription}</p>
                 </div>
                 <button
                   type="button"
                   onClick={() => setIsOpen(false)}
-                  className="rounded-full border border-slate-700 px-3 py-1 text-xs uppercase tracking-[0.3em] text-slate-400 transition-colors hover:border-highlight hover:text-highlight"
+                  className="rounded-full border border-[#d8c39a] px-3 py-1 text-xs uppercase tracking-wide text-charcoal/60 transition-colors hover:border-highlight hover:text-highlight"
                 >
                   {copy.cancel}
                 </button>
               </div>
 
               {status === 'success' ? (
-                <div className="rounded-xl border border-highlight/50 bg-highlight/10 p-4 text-sm text-highlight">
-                  <p className="font-semibold uppercase tracking-[0.2em]">{copy.successTitle}</p>
-                  <p className="mt-2 text-highlight/90">{message}</p>
+                <div className="rounded-xl border border-highlight/50 bg-highlight/10 p-4 text-sm text-charcoal">
+                  <p className="font-semibold uppercase tracking-wide">{copy.successTitle}</p>
+                  <p className="mt-2 text-charcoal/80">{message}</p>
                   <div className="mt-4 flex justify-end">
                     <button
                       type="button"
                       onClick={() => setIsOpen(false)}
-                      className="rounded-full bg-highlight px-4 py-2 text-xs font-pixel uppercase tracking-[0.3em] text-charcoal"
+                      className="rounded-full bg-highlight px-4 py-2 text-xs font-sans font-semibold uppercase tracking-wide text-charcoal"
                     >
                       OK
                     </button>
@@ -152,12 +153,12 @@ export function SuggestionPrompt() {
               ) : (
                 <form className="space-y-5" onSubmit={handleSubmit}>
                   <div className="space-y-2">
-                    <label className="text-xs uppercase tracking-[0.3em] text-slate-400" htmlFor="suggestion-question">
+                    <label className="text-xs uppercase tracking-wide text-charcoal/60" htmlFor="suggestion-question">
                       {copy.questionLabel}
                     </label>
                     <textarea
                       id="suggestion-question"
-                      className="min-h-[120px] w-full resize-none rounded-xl border border-slate-700 bg-slate-950/60 px-4 py-3 text-sm text-slate-100 focus:border-highlight"
+                      className="min-h-[120px] w-full resize-none rounded-xl border border-[#d8c39a] bg-[#fffaf0] px-4 py-3 text-sm text-charcoal focus:border-highlight"
                       placeholder={copy.questionPlaceholder}
                       value={question}
                       onChange={(event) => setQuestion(event.target.value)}
@@ -166,12 +167,12 @@ export function SuggestionPrompt() {
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-xs uppercase tracking-[0.3em] text-slate-400" htmlFor="suggestion-category">
+                    <label className="text-xs uppercase tracking-wide text-charcoal/60" htmlFor="suggestion-category">
                       {copy.categoryLabel}
                     </label>
                     <input
                       id="suggestion-category"
-                      className="w-full rounded-xl border border-slate-700 bg-slate-950/60 px-4 py-2 text-sm text-slate-100 focus:border-highlight"
+                      className="w-full rounded-xl border border-[#d8c39a] bg-[#fffaf0] px-4 py-2 text-sm text-charcoal focus:border-highlight"
                       placeholder={copy.categoryPlaceholder}
                       value={category}
                       onChange={(event) => setCategory(event.target.value)}
@@ -181,7 +182,7 @@ export function SuggestionPrompt() {
                   {message ? (
                     <p
                       className={`text-sm ${
-                        status === 'error' ? 'text-red-400' : 'text-highlight'
+                        status === 'error' ? 'text-red-700' : 'text-highlight'
                       }`}
                     >
                       {message}
@@ -192,14 +193,14 @@ export function SuggestionPrompt() {
                     <button
                       type="button"
                       onClick={() => setIsOpen(false)}
-                      className="rounded-full border border-slate-700 px-4 py-2 text-xs font-pixel uppercase tracking-[0.3em] text-slate-300 transition-colors hover:border-highlight hover:text-highlight"
+                      className="rounded-full border border-[#d8c39a] px-4 py-2 text-xs font-sans font-semibold uppercase tracking-wide text-charcoal/70 transition-colors hover:border-highlight hover:text-highlight"
                     >
                       {copy.cancel}
                     </button>
                     <button
                       type="submit"
                       disabled={status === 'loading'}
-                      className="rounded-full bg-highlight px-4 py-2 text-xs font-pixel uppercase tracking-[0.3em] text-charcoal transition-opacity disabled:cursor-not-allowed disabled:opacity-70"
+                      className="rounded-full bg-highlight px-4 py-2 text-xs font-sans font-semibold uppercase tracking-wide text-charcoal transition-opacity disabled:cursor-not-allowed disabled:opacity-70"
                     >
                       {status === 'loading' ? 'Enviando…' : copy.submit}
                     </button>

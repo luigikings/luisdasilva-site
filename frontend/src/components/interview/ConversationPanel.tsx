@@ -38,14 +38,14 @@ export function ConversationPanel({
   onCv,
 }: ConversationPanelProps) {
   return (
-    <div className="relative flex flex-col items-center">
+    <motion.div layout className="relative flex flex-col items-center">
       <motion.div
-        className="relative flex h-56 w-56 items-center justify-center rounded-pixel border-4 border-slate-700 bg-slate-900 shadow-pixel md:h-64 md:w-64"
-        initial={prefersReducedMotion ? undefined : { opacity: 0, scale: 0.9 }}
+        className="relative flex h-56 w-56 items-center justify-center rounded-pixel border-4 border-[#8a5a30] bg-creamPanel shadow-pixel md:h-64 md:w-64"
+        initial={prefersReducedMotion ? undefined : { opacity: 0, scale: 0.94 }}
         animate={prefersReducedMotion ? undefined : { opacity: 1, scale: 1 }}
-        transition={{ type: 'spring', stiffness: 120, damping: 14 }}
+        transition={{ duration: 0.5, ease: 'easeOut' }}
       >
-        <div className="absolute inset-[8%] flex items-center justify-center overflow-hidden rounded-[22px] border-4 border-slate-800 bg-gradient-to-br from-slate-700 via-slate-800 to-slate-950">
+        <div className="absolute inset-[8%] flex items-center justify-center overflow-hidden rounded-[22px] border-4 border-[#8a5a30] bg-gradient-to-br from-[#c99a5b] via-[#b3854a] to-[#8a5a30]">
           <img
             src={
               stage === 'answerTyping' && !prefersReducedMotion && isTalkingFrame
@@ -62,13 +62,14 @@ export function ConversationPanel({
         {answerLine || stage === 'answerTyping' || stage === 'complete' ? (
           <motion.div
             key="answer-line"
-            initial={prefersReducedMotion ? undefined : { opacity: 0 }}
-            animate={prefersReducedMotion ? undefined : { opacity: 1 }}
-            exit={prefersReducedMotion ? undefined : { opacity: 0 }}
-            transition={{ duration: 0.25, ease: 'easeOut' }}
-            className="mt-4 flex w-full max-w-xs flex-col gap-3 rounded-2xl border border-slate-700/70 bg-slate-800/90 p-4 text-left text-sm text-slate-100 shadow-inner md:absolute md:left-full md:top-1/2 md:mt-0 md:ml-6 md:w-72 md:-translate-y-1/2 md:transform md:text-left md:shadow-xl"
+            layout
+            initial={prefersReducedMotion ? undefined : { opacity: 0, y: 8 }}
+            animate={prefersReducedMotion ? undefined : { opacity: 1, y: 0 }}
+            exit={prefersReducedMotion ? undefined : { opacity: 0, y: 8 }}
+            transition={{ duration: 0.4, ease: 'easeOut' }}
+            className="mt-4 flex w-full max-w-xs flex-col gap-3 rounded-2xl border border-[#d8c39a] bg-[#fffaf0] p-4 text-left text-sm text-charcoal shadow-inner md:absolute md:left-full md:top-1/2 md:mt-0 md:ml-6 md:w-72 md:-translate-y-1/2 md:transform md:text-left md:shadow-xl"
           >
-            <p className="text-[11px] uppercase tracking-[0.3em] text-slate-400">
+            <p className="text-[11px] uppercase tracking-wide text-charcoal/50">
               {conversation.characterLabel}
             </p>
             <p className="leading-relaxed">{answerLine}</p>
@@ -76,16 +77,17 @@ export function ConversationPanel({
               {showOk ? (
                 <motion.div
                   key="answer-actions"
-                  initial={prefersReducedMotion ? undefined : { opacity: 0, scale: 0.95 }}
+                  initial={prefersReducedMotion ? undefined : { opacity: 0, scale: 0.96 }}
                   animate={prefersReducedMotion ? undefined : { opacity: 1, scale: 1 }}
-                  exit={prefersReducedMotion ? undefined : { opacity: 0, scale: 0.95 }}
+                  exit={prefersReducedMotion ? undefined : { opacity: 0, scale: 0.96 }}
+                  transition={{ duration: 0.3, ease: 'easeOut' }}
                   className="flex flex-wrap justify-end gap-2"
                 >
                   {selected === 'github' ? (
                     <motion.button
                       type="button"
                       onClick={onGithub}
-                      className="rounded-full bg-highlight px-4 py-1 font-pixel text-[10px] uppercase tracking-[0.35em] text-charcoal shadow-sm transition-colors hover:bg-highlight/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-highlight focus-visible:ring-offset-2 focus-visible:ring-offset-slate-800"
+                      className="rounded-full bg-highlight px-4 py-1 font-sans text-[10px] font-semibold uppercase tracking-wide text-charcoal shadow-sm transition-colors hover:bg-highlight/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-highlight focus-visible:ring-offset-2 focus-visible:ring-offset-[#fffaf0]"
                       whileTap={prefersReducedMotion ? undefined : { scale: 0.97 }}
                     >
                       {conversation.githubButton}
@@ -95,7 +97,7 @@ export function ConversationPanel({
                     <motion.button
                       type="button"
                       onClick={onCv}
-                      className="rounded-full bg-highlight px-4 py-1 font-pixel text-[10px] uppercase tracking-[0.35em] text-charcoal shadow-sm transition-colors hover:bg-highlight/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-highlight focus-visible:ring-offset-2 focus-visible:ring-offset-slate-800"
+                      className="rounded-full bg-highlight px-4 py-1 font-sans text-[10px] font-semibold uppercase tracking-wide text-charcoal shadow-sm transition-colors hover:bg-highlight/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-highlight focus-visible:ring-offset-2 focus-visible:ring-offset-[#fffaf0]"
                       whileTap={prefersReducedMotion ? undefined : { scale: 0.97 }}
                     >
                       {conversation.cvButton}
@@ -104,7 +106,7 @@ export function ConversationPanel({
                   <motion.button
                     type="button"
                     onClick={onOk}
-                    className="rounded-full bg-white px-4 py-1 font-pixel text-[10px] uppercase tracking-[0.35em] text-slate-900 shadow-sm transition-colors hover:bg-white/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-highlight focus-visible:ring-offset-2 focus-visible:ring-offset-slate-800"
+                    className="rounded-full border border-[#d8c39a] bg-cream px-4 py-1 font-sans text-[10px] font-semibold uppercase tracking-wide text-charcoal shadow-sm transition-colors hover:bg-creamPanel focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-highlight focus-visible:ring-offset-2 focus-visible:ring-offset-[#fffaf0]"
                     whileTap={prefersReducedMotion ? undefined : { scale: 0.97 }}
                   >
                     {conversation.okButton}
@@ -120,19 +122,20 @@ export function ConversationPanel({
         {playerLine ? (
           <motion.div
             key="player-line"
-            initial={prefersReducedMotion ? undefined : { opacity: 0, y: 12 }}
+            layout
+            initial={prefersReducedMotion ? undefined : { opacity: 0, y: 10 }}
             animate={prefersReducedMotion ? undefined : { opacity: 1, y: 0 }}
-            exit={prefersReducedMotion ? undefined : { opacity: 0, y: -8 }}
-            transition={{ duration: 0.3, ease: 'easeOut' }}
-            className="mt-6 w-full max-w-md rounded-2xl border border-highlight/60 bg-highlight/15 px-6 py-4 text-center text-sm text-highlight shadow-pixel"
+            exit={prefersReducedMotion ? undefined : { opacity: 0, y: -6 }}
+            transition={{ duration: 0.4, ease: 'easeOut' }}
+            className="mt-6 w-full max-w-md rounded-2xl border border-highlight/60 bg-highlight/15 px-6 py-4 text-center text-sm text-charcoal shadow-pixel"
           >
-            <p className="mb-1 text-[11px] uppercase tracking-[0.3em] text-highlight/70">
+            <p className="mb-1 text-[11px] uppercase tracking-wide text-charcoal/60">
               {conversation.youLabel}
             </p>
             <p>{playerLine}</p>
           </motion.div>
         ) : null}
       </AnimatePresence>
-    </div>
+    </motion.div>
   )
 }
