@@ -96,6 +96,7 @@ export function InterviewExperience() {
             initial={prefersReducedMotion ? undefined : { opacity: 0 }}
             animate={prefersReducedMotion ? undefined : { opacity: 1 }}
             exit={prefersReducedMotion ? undefined : { opacity: 0 }}
+            transition={{ duration: 0.45, ease: 'easeOut' }}
           >
             <LanguageIntroScreen onConfirm={handleConfirmLanguage} />
           </motion.main>
@@ -107,6 +108,7 @@ export function InterviewExperience() {
             initial={prefersReducedMotion ? undefined : { opacity: 0 }}
             animate={prefersReducedMotion ? undefined : { opacity: 1 }}
             exit={prefersReducedMotion ? undefined : { opacity: 0 }}
+            transition={{ duration: 0.45, ease: 'easeOut' }}
           >
             <LoadingScreen onStart={handleStart} />
           </motion.main>
@@ -115,10 +117,10 @@ export function InterviewExperience() {
           <motion.main
             key="door"
             className="min-h-screen"
-            initial={prefersReducedMotion ? undefined : { opacity: 0, y: 10 }}
+            initial={prefersReducedMotion ? undefined : { opacity: 0, y: 8 }}
             animate={prefersReducedMotion ? undefined : { opacity: 1, y: 0 }}
-            exit={prefersReducedMotion ? undefined : { opacity: 0, y: -10 }}
-            transition={{ duration: 0.4, ease: 'easeOut' }}
+            exit={prefersReducedMotion ? undefined : { opacity: 0, y: -8 }}
+            transition={{ duration: 0.5, ease: 'easeOut' }}
           >
             <DoorScene onEnter={handleEnter} />
           </motion.main>
@@ -127,10 +129,10 @@ export function InterviewExperience() {
           <motion.main
             key="interview"
             className="relative min-h-screen"
-            initial={prefersReducedMotion ? undefined : { opacity: 0, y: 10 }}
+            initial={prefersReducedMotion ? undefined : { opacity: 0, y: 8 }}
             animate={prefersReducedMotion ? undefined : { opacity: 1, y: 0 }}
-            exit={prefersReducedMotion ? undefined : { opacity: 0, y: -10 }}
-            transition={{ duration: 0.4, ease: 'easeOut' }}
+            exit={prefersReducedMotion ? undefined : { opacity: 0, y: -8 }}
+            transition={{ duration: 0.5, ease: 'easeOut' }}
           >
             <Interview />
             {/* Tutorial overlay shown once on first entry; dismissed by the visitor */}
@@ -138,28 +140,29 @@ export function InterviewExperience() {
               {showTutorial ? (
                 <motion.div
                   key="tutorial-modal"
-                  className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 px-4 backdrop-blur"
+                  className="fixed inset-0 z-50 flex items-center justify-center bg-[#2a160a]/50 px-4 backdrop-blur"
                   initial={prefersReducedMotion ? undefined : { opacity: 0 }}
                   animate={prefersReducedMotion ? undefined : { opacity: 1 }}
                   exit={prefersReducedMotion ? undefined : { opacity: 0 }}
+                  transition={{ duration: 0.35, ease: 'easeOut' }}
                 >
                   <motion.div
-                    className="w-full max-w-2xl rounded-3xl border border-slate-700/70 bg-slate-900/90 p-6 text-left shadow-2xl md:p-8"
-                    initial={prefersReducedMotion ? undefined : { opacity: 0, y: 30 }}
+                    className="w-full max-w-2xl rounded-3xl border border-[#d8c39a] bg-cream p-6 text-left shadow-2xl md:p-8"
+                    initial={prefersReducedMotion ? undefined : { opacity: 0, y: 20 }}
                     animate={prefersReducedMotion ? undefined : { opacity: 1, y: 0 }}
-                    exit={prefersReducedMotion ? undefined : { opacity: 0, y: 20 }}
-                    transition={{ duration: 0.3, ease: 'easeOut' }}
+                    exit={prefersReducedMotion ? undefined : { opacity: 0, y: 14 }}
+                    transition={{ duration: 0.4, ease: 'easeOut' }}
                   >
                     <div className="flex flex-col gap-4">
-                      <h2 className="font-pixel text-lg uppercase tracking-[0.4em] text-highlight">
+                      <h2 className="font-sans text-lg font-bold tracking-wide text-charcoal">
                         {tutorial.title}
                       </h2>
-                      <p className="text-sm leading-relaxed text-slate-200">{tutorial.body}</p>
+                      <p className="text-sm leading-relaxed text-charcoal/80">{tutorial.body}</p>
                       <div className="flex justify-end">
                         <button
                           type="button"
                           onClick={() => setShowTutorial(false)}
-                          className="rounded-full bg-highlight px-5 py-2 font-pixel text-[10px] uppercase tracking-[0.35em] text-charcoal shadow-sm transition-colors hover:bg-highlight/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-highlight focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900"
+                          className="rounded-full bg-highlight px-5 py-2 font-sans text-[10px] font-semibold uppercase tracking-wide text-charcoal shadow-sm transition-colors hover:bg-highlight/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-highlight focus-visible:ring-offset-2 focus-visible:ring-offset-cream"
                         >
                           {tutorial.close}
                         </button>

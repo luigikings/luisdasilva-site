@@ -220,10 +220,10 @@ export function DoorScene({ onEnter }: DoorSceneProps) {
           role="img"
           aria-label={t('door.intro')}
           className="relative mx-auto h-52 w-44"
-          initial={prefersReducedMotion ? undefined : { scale: 0.85, opacity: 0 }}
+          initial={prefersReducedMotion ? undefined : { scale: 0.92, opacity: 0 }}
           animate={prefersReducedMotion ? undefined : stage === 'knocking' ? 'knock' : 'rest'}
           variants={prefersReducedMotion ? undefined : doorVariants}
-          transition={{ type: 'spring', stiffness: 130, damping: 14 }}
+          transition={{ duration: 0.5, ease: 'easeOut' }}
         >
           {/* floor shadow */}
           <div

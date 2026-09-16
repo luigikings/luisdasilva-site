@@ -11,15 +11,15 @@ export function LanguageSwitcher() {
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: -10 }}
+      initial={{ opacity: 0, y: -8 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ type: 'spring', stiffness: 140, damping: 12 }}
+      transition={{ duration: 0.5, ease: 'easeOut' }}
       className="fixed right-4 top-4 z-50"
     >
       <div
         role="group"
         aria-label={t('common.languageLabel')}
-        className="flex items-center gap-2 rounded-full border border-slate-600/60 bg-slate-900/60 px-2 py-1 backdrop-blur-sm"
+        className="flex items-center gap-2 rounded-full border border-[#d8c39a] bg-creamPanel/80 px-2 py-1 backdrop-blur-sm"
       >
         {languages.map((code) => (
           <button
@@ -28,10 +28,10 @@ export function LanguageSwitcher() {
             onClick={() => setLang(code)}
             aria-pressed={lang === code}
             aria-label={dict[code].common.languageName}
-            className={`flex h-9 w-9 items-center justify-center rounded-full transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-highlight focus-visible:ring-offset-2 focus-visible:ring-offset-charcoal ${
+            className={`flex h-9 w-9 items-center justify-center rounded-full transition-colors duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-highlight focus-visible:ring-offset-2 focus-visible:ring-offset-cream ${
               lang === code
                 ? 'bg-highlight shadow-pixel'
-                : 'bg-slate-800/80 hover:bg-slate-700/80'
+                : 'bg-cream hover:bg-[#e8d5ab]'
             }`}
           >
             <img

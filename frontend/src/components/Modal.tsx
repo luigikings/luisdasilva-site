@@ -81,10 +81,11 @@ export function Modal({ isOpen, title, onClose, children }: ModalProps) {
       {isOpen ? (
         <motion.div
           ref={overlayRef}
-          className="fixed inset-0 z-50 flex items-center justify-center bg-charcoal/90 px-4 py-8"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-[#2a160a]/50 px-4 py-8"
           initial={prefersReducedMotion ? undefined : { opacity: 0 }}
           animate={prefersReducedMotion ? undefined : { opacity: 1 }}
           exit={prefersReducedMotion ? undefined : { opacity: 0 }}
+          transition={{ duration: 0.3, ease: 'easeOut' }}
           onClick={onClose}
         >
           {/* stopPropagation prevents overlay click from closing the modal when clicking inside */}
@@ -92,15 +93,15 @@ export function Modal({ isOpen, title, onClose, children }: ModalProps) {
             role="dialog"
             aria-modal="true"
             aria-labelledby={headingId}
-            className="relative max-h-[85vh] w-full max-w-2xl overflow-y-auto rounded-pixel border border-slate-700 bg-slate-900 p-6 shadow-2xl"
-            initial={prefersReducedMotion ? undefined : { y: 30, opacity: 0 }}
+            className="relative max-h-[85vh] w-full max-w-2xl overflow-y-auto rounded-pixel border border-[#d8c39a] bg-cream p-6 shadow-2xl"
+            initial={prefersReducedMotion ? undefined : { y: 20, opacity: 0 }}
             animate={prefersReducedMotion ? undefined : { y: 0, opacity: 1 }}
-            exit={prefersReducedMotion ? undefined : { y: 40, opacity: 0 }}
-            transition={{ type: 'spring', stiffness: 140, damping: 16 }}
+            exit={prefersReducedMotion ? undefined : { y: 20, opacity: 0 }}
+            transition={{ duration: 0.35, ease: 'easeOut' }}
             onClick={(event) => event.stopPropagation()}
           >
             <div className="flex items-start justify-between gap-4">
-              <h2 id={headingId} className="font-pixel text-base uppercase tracking-[0.4em] text-highlight">
+              <h2 id={headingId} className="font-sans text-base font-bold tracking-wide text-charcoal">
                 {title}
               </h2>
               <button
@@ -108,12 +109,12 @@ export function Modal({ isOpen, title, onClose, children }: ModalProps) {
                 type="button"
                 onClick={onClose}
                 aria-label={t('common.close')}
-                className="rounded-full border border-slate-600 bg-slate-800 px-3 py-1 text-xs uppercase tracking-wide text-slate-100 hover:bg-slate-700"
+                className="rounded-full border border-[#d8c39a] bg-creamPanel px-3 py-1 text-xs uppercase tracking-wide text-charcoal hover:bg-[#e8d5ab]"
               >
                 {t('common.close')}
               </button>
             </div>
-            <div className="mt-4 space-y-4 text-left text-sm text-slate-100">{children}</div>
+            <div className="mt-4 space-y-4 text-left text-sm text-charcoal/80">{children}</div>
           </motion.div>
         </motion.div>
       ) : null}

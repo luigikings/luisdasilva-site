@@ -56,42 +56,44 @@ export function InterviewNav({
   onSelect,
 }: InterviewNavProps) {
   return (
-    <div className="flex flex-col gap-8">
-      <AnimatePresence mode="wait">
+    <motion.div layout className="flex flex-col gap-8">
+      <AnimatePresence mode="popLayout">
         {isShowingCategories ? (
           <motion.div
             key="group-prompt"
-            initial={prefersReducedMotion ? undefined : { opacity: 0, y: 15 }}
+            layout
+            initial={prefersReducedMotion ? undefined : { opacity: 0, y: 10 }}
             animate={prefersReducedMotion ? undefined : { opacity: 1, y: 0 }}
-            exit={prefersReducedMotion ? undefined : { opacity: 0, y: -10 }}
-            transition={{ duration: 0.35, ease: 'easeOut' }}
+            exit={prefersReducedMotion ? undefined : { opacity: 0, y: -8 }}
+            transition={{ duration: 0.45, ease: 'easeOut' }}
           >
-            <p className="text-center text-sm text-slate-300">{groupPrompt}</p>
+            <p className="text-center text-sm text-charcoal/70">{groupPrompt}</p>
           </motion.div>
         ) : null}
       </AnimatePresence>
 
-      <AnimatePresence mode="wait">
+      <AnimatePresence mode="popLayout">
         {isShowingQuestions ? (
           <motion.div
             key="question-prompt"
-            initial={prefersReducedMotion ? undefined : { opacity: 0, y: 15 }}
+            layout
+            initial={prefersReducedMotion ? undefined : { opacity: 0, y: 10 }}
             animate={prefersReducedMotion ? undefined : { opacity: 1, y: 0 }}
-            exit={prefersReducedMotion ? undefined : { opacity: 0, y: -10 }}
-            transition={{ duration: 0.35, ease: 'easeOut' }}
+            exit={prefersReducedMotion ? undefined : { opacity: 0, y: -8 }}
+            transition={{ duration: 0.45, ease: 'easeOut' }}
             className="flex flex-col items-center gap-4 text-center"
           >
-            <p className="text-sm text-slate-300">{selectPrompt}</p>
+            <p className="text-sm text-charcoal/70">{selectPrompt}</p>
             {selectedGroupData ? (
-              <div className="flex flex-wrap items-center justify-center gap-3 text-xs uppercase tracking-[0.3em] text-slate-400">
-                <span className="rounded-full border border-slate-700/60 bg-slate-900/60 px-3 py-1 font-pixel text-[10px] text-slate-300">
+              <div className="flex flex-wrap items-center justify-center gap-3 text-xs uppercase tracking-wide text-charcoal/60">
+                <span className="rounded-full border border-[#d8c39a] bg-creamPanel/70 px-3 py-1 font-sans text-[10px] font-semibold text-charcoal/70">
                   {`${selectedGroupData.emoji} ${selectedGroupData.label}`}
                 </span>
                 <span
-                  className={`rounded-full border px-3 py-1 font-pixel text-[10px] ${
+                  className={`rounded-full border px-3 py-1 font-sans text-[10px] font-semibold ${
                     coinWarningGroup === selectedGroupData.key
-                      ? 'border-red-500/80 bg-red-500/20 text-red-200'
-                      : 'border-slate-700/60 bg-slate-900/60 text-slate-300'
+                      ? 'border-red-500/80 bg-red-500/15 text-red-700'
+                      : 'border-[#d8c39a] bg-creamPanel/70 text-charcoal/70'
                   }`}
                 >
                   {coinWarningGroup === selectedGroupData.key
@@ -103,7 +105,7 @@ export function InterviewNav({
                 <button
                   type="button"
                   onClick={onBackToGroups}
-                  className="rounded-full border border-slate-700/60 bg-slate-900/40 px-3 py-1 font-pixel text-[10px] uppercase tracking-[0.3em] text-slate-400 transition-colors hover:border-highlight/40 hover:text-highlight focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-highlight focus-visible:ring-offset-2 focus-visible:ring-offset-charcoal"
+                  className="rounded-full border border-[#d8c39a] bg-creamPanel/50 px-3 py-1 font-sans text-[10px] font-semibold uppercase tracking-wide text-charcoal/60 transition-colors duration-300 hover:border-highlight/40 hover:text-highlight focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-highlight focus-visible:ring-offset-2 focus-visible:ring-offset-cream"
                 >
                   {backToCategories}
                 </button>
@@ -113,15 +115,16 @@ export function InterviewNav({
         ) : null}
       </AnimatePresence>
 
-      <AnimatePresence>
+      <AnimatePresence mode="popLayout">
         {isShowingCategories ? (
           <motion.div
             key="groups"
+            layout
             className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 lg:flex lg:flex-wrap lg:justify-center"
-            initial={prefersReducedMotion ? undefined : { opacity: 0, y: 15 }}
+            initial={prefersReducedMotion ? undefined : { opacity: 0, y: 10 }}
             animate={prefersReducedMotion ? undefined : { opacity: 1, y: 0 }}
-            exit={prefersReducedMotion ? undefined : { opacity: 0, y: -10 }}
-            transition={{ duration: 0.35, ease: 'easeOut' }}
+            exit={prefersReducedMotion ? undefined : { opacity: 0, y: -8 }}
+            transition={{ duration: 0.45, ease: 'easeOut' }}
           >
             {groupEntries.map((group, index) => {
               const groupQuestions = group.questionKeys
@@ -132,12 +135,12 @@ export function InterviewNav({
               const remainingCoins = groupCoins[group.key] ?? 0
               const showWarning = coinWarningGroup === group.key
               const baseClasses =
-                'group relative flex flex-col gap-3 overflow-hidden rounded-pixel border px-5 py-5 text-left text-sm uppercase tracking-[0.2em] transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-highlight focus-visible:ring-offset-2 focus-visible:ring-offset-charcoal'
+                'group relative flex flex-col gap-3 overflow-hidden rounded-pixel border px-5 py-5 text-left text-sm uppercase tracking-wide transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-highlight focus-visible:ring-offset-2 focus-visible:ring-offset-cream'
               const stateClasses = showWarning
-                ? 'border-red-500/80 bg-red-500/15 text-red-200'
+                ? 'border-red-500/80 bg-red-500/10 text-red-700'
                 : allAnswered
-                  ? 'border-slate-800 bg-slate-900/40 text-slate-500 opacity-80 hover:border-highlight/40 hover:text-highlight'
-                  : 'border-slate-700 bg-slate-900/70 text-slate-200 hover:bg-slate-800/70'
+                  ? 'border-[#d8c39a] bg-creamPanel/30 text-charcoal/50 opacity-80 hover:border-highlight/40 hover:text-highlight'
+                  : 'border-[#d8c39a] bg-creamPanel/60 text-charcoal/90 hover:bg-creamPanel'
 
               return (
                 <motion.button
@@ -145,16 +148,16 @@ export function InterviewNav({
                   type="button"
                   onClick={() => onGroupSelect(group.key)}
                   className={`${baseClasses} ${stateClasses} lg:basis-[calc(33.333%_-_12px)] lg:max-w-[calc(33.333%_-_12px)] lg:flex-none`}
-                  initial={prefersReducedMotion ? undefined : { opacity: 0, y: 15 }}
+                  initial={prefersReducedMotion ? undefined : { opacity: 0, y: 12 }}
                   animate={prefersReducedMotion ? undefined : { opacity: 1, y: 0 }}
-                  transition={{ duration: 0.3, delay: prefersReducedMotion ? 0 : 0.05 * index }}
+                  transition={{ duration: 0.4, ease: 'easeOut', delay: prefersReducedMotion ? 0 : 0.08 * index }}
                   aria-pressed={selectedGroup === group.key}
                 >
                   <span className="text-lg text-highlight">{`${group.emoji} ${group.label}`}</span>
-                  <span className="text-[10px] font-pixel uppercase tracking-[0.35em] text-slate-400">
+                  <span className="text-[10px] font-sans font-semibold uppercase tracking-wide text-charcoal/60">
                     {`${answeredCount}/${groupQuestions.length}`}
                   </span>
-                  <span className="text-[10px] font-pixel uppercase tracking-[0.35em] text-slate-400">
+                  <span className="text-[10px] font-sans font-semibold uppercase tracking-wide text-charcoal/60">
                     {showWarning
                       ? coinsCopy.unavailable
                       : `${coinsCopy.remaining}: ${infiniteCoins ? '∞' : remainingCoins}`}
@@ -166,15 +169,16 @@ export function InterviewNav({
         ) : null}
       </AnimatePresence>
 
-      <AnimatePresence>
+      <AnimatePresence mode="popLayout">
         {isShowingQuestions && selectedGroupData ? (
           <motion.div
             key="questions"
+            layout
             className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3"
-            initial={prefersReducedMotion ? undefined : { opacity: 0, y: 15 }}
+            initial={prefersReducedMotion ? undefined : { opacity: 0, y: 10 }}
             animate={prefersReducedMotion ? undefined : { opacity: 1, y: 0 }}
-            exit={prefersReducedMotion ? undefined : { opacity: 0, y: -10 }}
-            transition={{ duration: 0.3, ease: 'easeOut' }}
+            exit={prefersReducedMotion ? undefined : { opacity: 0, y: -8 }}
+            transition={{ duration: 0.4, ease: 'easeOut' }}
           >
             {selectedGroupData.questionKeys.map((key, index) => {
               const question = questions[key]
@@ -184,12 +188,12 @@ export function InterviewNav({
               const baseCost = questionCosts[key] ?? 1
               const labelWithEmoji = emoji ? `${emoji} ${question.label}` : question.label
               const baseClasses =
-                'group relative overflow-hidden rounded-pixel border px-4 py-4 text-left text-sm uppercase tracking-[0.2em] transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-highlight focus-visible:ring-offset-2 focus-visible:ring-offset-charcoal'
+                'group relative overflow-hidden rounded-pixel border px-4 py-4 text-left text-sm uppercase tracking-wide transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-highlight focus-visible:ring-offset-2 focus-visible:ring-offset-cream'
               const stateClasses = isActive
                 ? 'border-highlight bg-highlight/25 text-highlight shadow-pixel'
                 : isAnswered
-                  ? 'border-slate-800 bg-slate-900/40 text-slate-500 opacity-60 hover:border-highlight/40 hover:bg-slate-800/60 hover:text-slate-300 hover:opacity-90'
-                  : 'border-slate-700 bg-slate-900/70 text-slate-200 hover:bg-slate-800/70'
+                  ? 'border-[#d8c39a] bg-creamPanel/30 text-charcoal/50 opacity-70 hover:border-highlight/40 hover:bg-creamPanel/60 hover:text-charcoal/80 hover:opacity-100'
+                  : 'border-[#d8c39a] bg-creamPanel/60 text-charcoal/90 hover:bg-creamPanel'
 
               return (
                 <motion.button
@@ -197,25 +201,25 @@ export function InterviewNav({
                   type="button"
                   onClick={() => onSelect(key)}
                   className={`${baseClasses} ${stateClasses}`}
-                  initial={prefersReducedMotion ? undefined : { opacity: 0, y: 15 }}
+                  initial={prefersReducedMotion ? undefined : { opacity: 0, y: 12 }}
                   animate={prefersReducedMotion ? undefined : { opacity: 1, y: 0 }}
-                  transition={{ duration: 0.3, delay: prefersReducedMotion ? 0 : 0.05 * index }}
+                  transition={{ duration: 0.4, ease: 'easeOut', delay: prefersReducedMotion ? 0 : 0.08 * index }}
                   aria-pressed={isActive}
                 >
                   <span
-                    className={`block transition-opacity duration-200 ${
+                    className={`block transition-opacity duration-300 ${
                       isAnswered ? 'group-hover:opacity-0' : ''
                     }`}
                   >
                     {labelWithEmoji}
                   </span>
                   {baseCost > 0 ? (
-                    <span className="absolute right-3 top-3 rounded-full border border-slate-700/60 bg-slate-900/60 px-2 py-0.5 font-pixel text-[9px] uppercase tracking-[0.3em] text-slate-300">
+                    <span className="absolute right-3 top-3 rounded-full border border-[#d8c39a] bg-creamPanel/70 px-2 py-0.5 font-sans text-[9px] font-semibold uppercase tracking-wide text-charcoal/70">
                       {`${coinsCopy.cost}: ${baseCost}`}
                     </span>
                   ) : null}
                   {isAnswered ? (
-                    <span className="pointer-events-none absolute inset-0 flex items-center justify-center font-pixel text-[10px] uppercase tracking-[0.3em] text-slate-400 opacity-0 transition-opacity duration-200 group-hover:opacity-100">
+                    <span className="pointer-events-none absolute inset-0 flex items-center justify-center font-sans text-[10px] font-semibold uppercase tracking-wide text-charcoal/60 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
                       {repeatPrompt}
                     </span>
                   ) : null}
@@ -225,6 +229,6 @@ export function InterviewNav({
           </motion.div>
         ) : null}
       </AnimatePresence>
-    </div>
+    </motion.div>
   )
 }
