@@ -1,6 +1,6 @@
 # Pixel Interrogatorio
 
-An immersive, pixel-art portfolio for **Luis Ángel Jose Da Silva (LK)**. Visitors step through a knocking-door intro scene, pick questions from a gamified category menu, and watch answers type out in a retro interview format — all in Spanish or English.
+An immersive, neon-arcade pixel-art portfolio for **Luis Ángel Jose Da Silva (LK)**. Visitors pick a language on an arcade title screen, sit through a clickable boot sequence, knock on a door that swings open to reveal Luis, then spend coins to ask questions across five "worlds" — with 8-bit sound effects, particle bursts, flying coins, achievements, confetti and a hidden Konami code. All in Spanish or English.
 
 ---
 
@@ -10,7 +10,8 @@ An immersive, pixel-art portfolio for **Luis Ángel Jose Da Silva (LK)**. Visito
 |---|---|
 | Frontend framework | React 18 + Vite 5 |
 | Language | TypeScript 5 (strict) |
-| Styling | Tailwind CSS 3 with a custom pixel-art theme |
+| Styling | Tailwind CSS 3 with a custom neon-arcade theme |
+| Effects | Canvas particle engine + Web Audio 8-bit synth (no assets) |
 | Animations | Framer Motion 12 |
 | Routing | React Router DOM 7 |
 | Backend framework | Express 4 on Node.js |
@@ -45,27 +46,37 @@ luisdasilva-site/
 │   │       └── main_caracter/              # Character sprites (still + talking)
 │   ├── src/
 │   │   ├── components/
+│   │   │   ├── fx/                         # Visual effects shared by every screen
+│   │   │   │   ├── ArcadeBackground.tsx    # Parallax starfield, synthwave sun/grid, CRT overlay
+│   │   │   │   ├── CursorFx.tsx            # Cursor glow, pixel trail and click bursts
+│   │   │   │   ├── FxProvider.tsx          # Particle canvas + useFx() (burst, confetti, coins, shake)
+│   │   │   │   ├── PixelCoin.tsx           # Crisp SVG pixel coin
+│   │   │   │   └── TiltCard.tsx            # 3D tilt + glare card button
 │   │   │   ├── interview/                  # Sub-components used only by Interview.tsx
-│   │   │   │   ├── CoinBar.tsx             # Infinite-coins toggle + remaining display
+│   │   │   │   ├── AchievementToasts.tsx   # "Achievement unlocked" toasts
+│   │   │   │   ├── HudBar.tsx              # Player level/XP, coin counter, infinite switch
 │   │   │   │   ├── ConversationPanel.tsx   # Character avatar + speech bubbles
 │   │   │   │   └── InterviewNav.tsx        # Category and question selection grids
-│   │   │   ├── DoorScene.tsx               # Animated knocking-door intro
+│   │   │   ├── DoorScene.tsx               # Night street, knocking door that opens in 3D
 │   │   │   ├── Interview.tsx               # Interview state machine + coin logic
 │   │   │   ├── LanguageIntroScreen.tsx     # Language picker (first screen)
-│   │   │   ├── LanguageSwitcher.tsx        # Fixed top-right ES/EN toggle
-│   │   │   ├── LoadingScreen.tsx           # Animated progress bar
+│   │   │   ├── LanguageSwitcher.tsx        # Fixed top-right ES/EN toggle + sound toggle
+│   │   │   ├── LoadingScreen.tsx           # Boot terminal + segmented bar (click to boost)
 │   │   │   ├── Modal.tsx                   # Accessible focus-trapped modal
 │   │   │   └── SuggestionPrompt.tsx        # Visitor question suggestion form
 │   │   ├── data/
 │   │   │   ├── dialogs.ts                  # Door-knocking lines (ES + EN)
 │   │   │   └── interview.ts                # Question config, costs, and URL constants
 │   │   ├── hooks/
+│   │   │   ├── useKonami.ts                # ↑↑↓↓←→←→BA easter egg
+│   │   │   ├── useSound.ts                 # React binding for the sound engine
 │   │   │   └── useT.tsx                    # i18n context + dot-path translation hook
 │   │   ├── i18n/
 │   │   │   └── dict.ts                     # Full bilingual dictionary (ES + EN)
 │   │   ├── lib/
 │   │   │   ├── analytics.ts                # Analytics stub (ready for Plausible/Umami)
-│   │   │   └── api.ts                      # Typed fetch wrapper + API calls
+│   │   │   ├── api.ts                      # Typed fetch wrapper + API calls
+│   │   │   └── sound.ts                    # Web Audio 8-bit sound effects (mute persisted)
 │   │   ├── pages/
 │   │   │   └── InterviewExperience.tsx     # Top-level view state machine
 │   │   ├── App.tsx

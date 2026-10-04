@@ -3,20 +3,22 @@
 @tailwind utilities;
 
 :root {
-  color-scheme: light;
+  color-scheme: dark;
 }
 
+html,
 body {
-  @apply bg-cream text-charcoal font-sans antialiased;
+  @apply bg-night text-ink font-sans antialiased;
+  overflow-x: hidden;
 }
 
 a {
-  @apply underline decoration-highlight decoration-2 underline-offset-4 transition-colors duration-200;
+  @apply underline decoration-neonCyan decoration-2 underline-offset-4 transition-colors duration-200;
 }
 
 a:hover,
 a:focus-visible {
-  @apply text-highlight;
+  @apply text-neonCyan;
 }
 
 .pixelated {
@@ -27,10 +29,146 @@ button:focus-visible,
 a:focus-visible,
 input:focus-visible,
 textarea:focus-visible {
-  @apply outline-none ring-2 ring-highlight ring-offset-2 ring-offset-cream;
+  @apply outline-none ring-2 ring-neonCyan ring-offset-2 ring-offset-night;
 }
 
 ::selection {
-  background-color: #cf9a4a;
-  color: #3c2413;
+  background-color: #ff3ea5;
+  color: #0b0620;
+}
+
+/* Pixel-styled scrollbar */
+::-webkit-scrollbar {
+  width: 10px;
+}
+::-webkit-scrollbar-track {
+  background: #070314;
+}
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(#9b5cff, #ff3ea5);
+  border: 2px solid #070314;
+}
+
+@layer components {
+  /* Chunky arcade button: hard drop shadow that collapses when pressed */
+  .btn-arcade {
+    @apply relative inline-flex select-none items-center justify-center gap-2 rounded-xl border-2 border-black/60 px-6 py-3 font-pixel text-[11px] uppercase leading-none tracking-wider text-night shadow-pixel transition-[transform,box-shadow,filter] duration-150;
+    background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.35) 0%, rgba(255, 255, 255, 0) 45%);
+  }
+  .btn-arcade:hover:not(:disabled) {
+    @apply -translate-y-0.5;
+    filter: brightness(1.08) saturate(1.1);
+  }
+  .btn-arcade:active:not(:disabled) {
+    @apply translate-y-1.5 shadow-none;
+  }
+  .btn-arcade:disabled {
+    @apply cursor-not-allowed opacity-50;
+  }
+
+  .panel-neon {
+    @apply rounded-pixel border-2 border-line bg-panel/80 backdrop-blur-md;
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.06),
+      0 10px 40px rgba(0, 0, 0, 0.45);
+  }
+
+  .text-neon {
+    text-shadow:
+      0 0 6px currentColor,
+      0 0 22px currentColor;
+  }
+
+  .text-gradient {
+    @apply bg-clip-text text-transparent;
+    background-image: linear-gradient(90deg, #22e4ff, #9b5cff, #ff3ea5, #ffd23f, #22e4ff);
+    background-size: 200% auto;
+    animation: shimmer 4s linear infinite;
+  }
+
+  .chip {
+    @apply inline-flex items-center gap-1.5 rounded-full border border-line bg-abyss/70 px-3 py-1 font-pixel text-[8px] uppercase tracking-wider text-muted;
+  }
+}
+
+/* Glitch effect: two colored copies of the text jitter behind the original */
+.glitch {
+  position: relative;
+}
+.glitch::before,
+.glitch::after {
+  content: attr(data-text);
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.glitch::before {
+  color: #22e4ff;
+  transform: translate(-2px, 0);
+  clip-path: inset(0 0 55% 0);
+  animation: glitch-a 2.6s infinite steps(1);
+  mix-blend-mode: screen;
+}
+.glitch::after {
+  color: #ff3ea5;
+  transform: translate(2px, 0);
+  clip-path: inset(50% 0 0 0);
+  animation: glitch-b 3.1s infinite steps(1);
+  mix-blend-mode: screen;
+}
+@keyframes glitch-a {
+  0%, 88%, 100% { transform: translate(-2px, 0); clip-path: inset(0 0 55% 0); }
+  90% { transform: translate(-6px, -2px); clip-path: inset(10% 0 70% 0); }
+  94% { transform: translate(4px, 1px); clip-path: inset(40% 0 30% 0); }
+}
+@keyframes glitch-b {
+  0%, 85%, 100% { transform: translate(2px, 0); clip-path: inset(50% 0 0 0); }
+  87% { transform: translate(6px, 2px); clip-path: inset(70% 0 5% 0); }
+  92% { transform: translate(-5px, -1px); clip-path: inset(20% 0 55% 0); }
+}
+
+/* CRT overlay: scanlines + subtle flicker + vignette */
+.crt-scanlines {
+  background: repeating-linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0.035) 0px,
+    rgba(255, 255, 255, 0.035) 1px,
+    transparent 2px,
+    transparent 4px
+  );
+}
+.crt-vignette {
+  background: radial-gradient(ellipse at center, transparent 55%, rgba(0, 0, 0, 0.65) 100%);
+}
+
+/* Synthwave perspective floor grid */
+.synth-grid {
+  background-image:
+    linear-gradient(rgba(255, 62, 165, 0.55) 2px, transparent 2px),
+    linear-gradient(90deg, rgba(255, 62, 165, 0.55) 2px, transparent 2px);
+  background-size: 64px 64px;
+  transform: perspective(320px) rotateX(62deg);
+  transform-origin: center top;
+  mask-image: linear-gradient(to bottom, transparent 0%, black 35%, black 100%);
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 35%, black 100%);
+}
+
+/* Screen shake applied to the app root by the FX layer */
+.fx-shake {
+  animation: fx-shake 0.42s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+}
+@keyframes fx-shake {
+  10%, 90% { transform: translate3d(-2px, 1px, 0); }
+  20%, 80% { transform: translate3d(4px, -2px, 0); }
+  30%, 50%, 70% { transform: translate3d(-6px, 2px, 0); }
+  40%, 60% { transform: translate3d(6px, -1px, 0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .glitch::before,
+  .glitch::after,
+  .text-gradient,
+  .fx-shake {
+    animation: none !important;
+  }
 }
