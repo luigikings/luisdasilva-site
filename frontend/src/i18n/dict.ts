@@ -24,6 +24,14 @@ export type QuestionKey =
   | 'github'
   | 'cv'
 
+export type AchievementKey =
+  | 'firstQuestion'
+  | 'categoryComplete'
+  | 'halfway'
+  | 'allDone'
+  | 'infinite'
+  | 'konami'
+
 export type QuestionGroupKey =
   | 'aboutYou'
   | 'motivations'
@@ -41,19 +49,28 @@ type DictSection = {
     github: string
     demo: string
     download: string
+    soundOn: string
+    soundOff: string
   }
   languageIntro: {
     title: string
+    subtitle: string
     confirm: string
+    keyboardHint: string
   }
   loading: {
     title: string
     description: string
     progressLabel: string
+    bootLines: string[]
+    tips: string[]
+    boostHint: string
+    ready: string
   }
   door: {
     intro: string
     button: string
+    knock: string
   }
   interview: {
     title: string
@@ -65,7 +82,7 @@ type DictSection = {
     backToCategories: string
     tutorial: {
       title: string
-      body: string
+      steps: { icon: string; text: string }[]
       close: string
     }
     coins: {
@@ -74,7 +91,16 @@ type DictSection = {
       cost: string
       unlimited: string
       toggle: string
+      noCoinsHint: string
+      free: string
     }
+    hud: {
+      player: string
+      progress: string
+      level: string
+      escHint: string
+    }
+    achievements: Record<AchievementKey, { title: string; body: string }>
     categories: Record<QuestionGroupKey, string>
     questions: Record<QuestionKey, { label: string; playerLine: string }>
     answers: Record<QuestionKey, string>
@@ -84,6 +110,7 @@ type DictSection = {
       okButton: string
       githubButton: string
       cvButton: string
+      skipHint: string
     }
   }
   suggestions: {
@@ -125,39 +152,81 @@ export const dict: Dict = {
       github: 'GitHub',
       demo: 'Demo',
       download: 'Descargar',
+      soundOn: 'Activar sonido',
+      soundOff: 'Silenciar',
     },
     languageIntro: {
-      title: 'Selecciona tu idioma',
-      confirm: 'Confirmar',
+      title: 'Elige tu idioma',
+      subtitle: 'Jugador 1',
+      confirm: 'Jugar',
+      keyboardHint: '← → elegir · Enter jugar',
     },
     loading: {
-      title: 'Cargando interrogatorio pixelado...',
-      description: 'Ajustando las luces, colocando los píxeles y preparando las preguntas difíciles.',
+      title: 'Cargando',
+      description: 'Preparando las preguntas difíciles…',
       progressLabel: 'Progreso de carga',
+      bootLines: [
+        'LK-OS v2.0 // arrancando',
+        'cargando sprites ......... OK',
+        'afinando sintetizadores .. OK',
+        'puliendo píxeles ......... OK',
+        'llenando monedas ......... OK',
+        'café detectado ........... ☕',
+        'listo para la entrevista ✔',
+      ],
+      tips: [
+        'Tip: 1 moneda = 1 pregunta 🪙',
+        'Tip: las preguntas repetidas son gratis',
+        'Tip: haz clic en el diálogo para saltar el texto',
+        'Tip: hay un código secreto escondido… ↑↑↓↓',
+      ],
+      boostHint: 'Haz clic para acelerar ⚡',
+      ready: '¡Listo!',
     },
     door: {
       intro: 'Holaaa ¿se puede entrar??!!',
-      button: 'Dejar entrar',
+      button: 'Abrir la puerta',
+      knock: 'TOC TOC',
     },
     interview: {
       title: 'Entrevista a Luis Da Silva',
-      subtitle: 'Conoce a Luis en profundidad.',
+      subtitle: 'Elige un mundo y pregunta lo que quieras.',
       avatarAlt: 'Avatar pixelado de LK',
-      groupPrompt: 'Elige un grupo de preguntas para comenzar.',
-      selectPrompt: 'Selecciona una pregunta dentro del grupo.',
+      groupPrompt: 'Elige un mundo',
+      selectPrompt: 'Elige una pregunta',
       repeatPrompt: 'Repetir pregunta',
-      backToCategories: 'Volver a categorías',
+      backToCategories: 'Mundos',
       tutorial: {
-        title: 'Tutorial',
-        body: 'Bienvenido a la entrevista con Luis Da Silva. En este juego por categorías tendrás una cantidad limitada de monedas: 1 moneda equivale a 1 pregunta, así que elige con estrategia. También puedes activar el modo de monedas ilimitadas para preguntar todo sin límites.',
-        close: 'Cerrar',
+        title: 'Cómo se juega',
+        steps: [
+          { icon: '🗂️', text: 'Elige un mundo' },
+          { icon: '🪙', text: '1 moneda = 1 pregunta' },
+          { icon: '♾️', text: '¿Sin monedas? Modo infinito' },
+        ],
+        close: '¡Vamos!',
       },
       coins: {
-        remaining: 'Monedas disponibles',
-        unavailable: 'Monedas no disponibles',
+        remaining: 'Monedas',
+        unavailable: 'Sin monedas',
         cost: 'Costo',
         unlimited: 'Monedas ilimitadas',
-        toggle: 'Monedas infinitas',
+        toggle: 'Infinitas',
+        noCoinsHint: '¡Sin monedas aquí! Prueba el modo infinito ♾️',
+        free: 'Gratis',
+      },
+      hud: {
+        player: 'Jugador',
+        progress: 'Progreso',
+        level: 'Nv',
+        escHint: 'Esc para volver',
+      },
+      achievements: {
+        firstQuestion: { title: '¡Primera pregunta!', body: 'El hielo está roto 🧊' },
+        categoryComplete: { title: '¡Mundo completado!', body: 'Lo sabes todo de esta categoría' },
+        halfway: { title: '¡A mitad de camino!', body: 'Ya conoces media historia' },
+        allDone: { title: '¡100% completado!', body: 'Ahora sí conoces a Luis 🏆' },
+        infinite: { title: 'Modo infinito', body: 'Monedas sin límite activadas' },
+        konami: { title: '¡Código secreto!', body: 'Eres de los buenos 🕹️' },
       },
       categories: {
         aboutYou: 'Sobre ti',
@@ -306,6 +375,7 @@ export const dict: Dict = {
         okButton: 'Okey',
         githubButton: 'Ir a GitHub',
         cvButton: 'Descargar CV',
+        skipHint: 'clic para saltar',
       },
     },
     suggestions: {
@@ -343,39 +413,81 @@ export const dict: Dict = {
       github: 'GitHub',
       demo: 'Demo',
       download: 'Download',
+      soundOn: 'Sound on',
+      soundOff: 'Mute',
     },
     languageIntro: {
-      title: 'Select your language',
-      confirm: 'Confirm',
+      title: 'Choose your language',
+      subtitle: 'Player 1',
+      confirm: 'Play',
+      keyboardHint: '← → choose · Enter play',
     },
     loading: {
-      title: 'Loading pixel interrogation...',
-      description: 'Aligning LEDs, snapping pixels into place and picking the toughest questions.',
+      title: 'Loading',
+      description: 'Picking the toughest questions…',
       progressLabel: 'Loading progress',
+      bootLines: [
+        'LK-OS v2.0 // booting',
+        'loading sprites .......... OK',
+        'tuning synthesizers ...... OK',
+        'polishing pixels ......... OK',
+        'filling coin purse ....... OK',
+        'coffee detected .......... ☕',
+        'ready for the interview ✔',
+      ],
+      tips: [
+        'Tip: 1 coin = 1 question 🪙',
+        'Tip: repeated questions are free',
+        'Tip: click the dialog to skip the typing',
+        'Tip: there is a secret code hidden… ↑↑↓↓',
+      ],
+      boostHint: 'Click to speed up ⚡',
+      ready: 'Ready!',
     },
     door: {
       intro: 'Heeey! May I come in??!!',
-      button: 'Let in',
+      button: 'Open the door',
+      knock: 'KNOCK KNOCK',
     },
     interview: {
       title: 'Interview Luis Da Silva',
-      subtitle: 'Get to know Luis in depth.',
+      subtitle: 'Pick a world and ask anything.',
       avatarAlt: 'LK pixel avatar',
-      groupPrompt: 'Pick a question group to begin.',
-      selectPrompt: 'Pick a question within the group.',
+      groupPrompt: 'Pick a world',
+      selectPrompt: 'Pick a question',
       repeatPrompt: 'Repeat question',
-      backToCategories: 'Back to categories',
+      backToCategories: 'Worlds',
       tutorial: {
-        title: 'Tutorial',
-        body: 'Welcome to the interview with Luis Da Silva. In this category-based game you have a limited amount of coins: 1 coin equals 1 question, so choose strategically. You can also enable unlimited coins mode to ask without limits.',
-        close: 'Close',
+        title: 'How to play',
+        steps: [
+          { icon: '🗂️', text: 'Pick a world' },
+          { icon: '🪙', text: '1 coin = 1 question' },
+          { icon: '♾️', text: 'Out of coins? Go infinite' },
+        ],
+        close: "Let's go!",
       },
       coins: {
-        remaining: 'Coins available',
-        unavailable: 'Coins not available',
+        remaining: 'Coins',
+        unavailable: 'No coins',
         cost: 'Cost',
         unlimited: 'Unlimited coins',
-        toggle: 'Unlimited coins',
+        toggle: 'Infinite',
+        noCoinsHint: 'Out of coins here! Try infinite mode ♾️',
+        free: 'Free',
+      },
+      hud: {
+        player: 'Player',
+        progress: 'Progress',
+        level: 'Lv',
+        escHint: 'Esc to go back',
+      },
+      achievements: {
+        firstQuestion: { title: 'First question!', body: 'Ice officially broken 🧊' },
+        categoryComplete: { title: 'World cleared!', body: 'You know everything in this category' },
+        halfway: { title: 'Halfway there!', body: 'You know half the story already' },
+        allDone: { title: '100% complete!', body: 'Now you really know Luis 🏆' },
+        infinite: { title: 'Infinite mode', body: 'Unlimited coins unlocked' },
+        konami: { title: 'Secret code!', body: 'A true gamer 🕹️' },
       },
       categories: {
         aboutYou: 'About you',
@@ -524,6 +636,7 @@ export const dict: Dict = {
       okButton: 'Okay',
       githubButton: 'Go to GitHub',
       cvButton: 'Download CV',
+      skipHint: 'click to skip',
     },
   },
     suggestions: {

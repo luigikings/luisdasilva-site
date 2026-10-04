@@ -97,3 +97,32 @@ export const initialCoinsByGroup: Record<QuestionGroupKey, number> = {
   workStyle: 2,
   contactPortfolio: 2,
 }
+
+/** Neon color identity for each question group ("world") */
+export const groupTheme: Record<QuestionGroupKey, { color: string; glow: string; gradient: string }> = {
+  aboutYou: {
+    color: '#22e4ff',
+    glow: 'rgba(34,228,255,0.55)',
+    gradient: 'linear-gradient(135deg, rgba(34,228,255,0.35), rgba(155,92,255,0.15))',
+  },
+  motivations: {
+    color: '#ff3ea5',
+    glow: 'rgba(255,62,165,0.55)',
+    gradient: 'linear-gradient(135deg, rgba(255,62,165,0.35), rgba(255,138,61,0.15))',
+  },
+  experience: {
+    color: '#7cff6b',
+    glow: 'rgba(124,255,107,0.5)',
+    gradient: 'linear-gradient(135deg, rgba(124,255,107,0.3), rgba(34,228,255,0.12))',
+  },
+  workStyle: {
+    color: '#b38bff',
+    glow: 'rgba(155,92,255,0.6)',
+    gradient: 'linear-gradient(135deg, rgba(155,92,255,0.4), rgba(255,62,165,0.12))',
+  },
+  contactPortfolio: {
+    color: '#ffd23f',
+    glow: 'rgba(255,210,63,0.55)',
+    gradient: 'linear-gradient(135deg, rgba(255,210,63,0.35), rgba(255,138,61,0.15))',
+  },
+}

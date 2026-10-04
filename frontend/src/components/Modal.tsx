@@ -81,7 +81,7 @@ export function Modal({ isOpen, title, onClose, children }: ModalProps) {
       {isOpen ? (
         <motion.div
           ref={overlayRef}
-          className="fixed inset-0 z-50 flex items-center justify-center bg-[#2a160a]/50 px-4 py-8"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-abyss/80 backdrop-blur-md px-4 py-8"
           initial={prefersReducedMotion ? undefined : { opacity: 0 }}
           animate={prefersReducedMotion ? undefined : { opacity: 1 }}
           exit={prefersReducedMotion ? undefined : { opacity: 0 }}
@@ -93,7 +93,7 @@ export function Modal({ isOpen, title, onClose, children }: ModalProps) {
             role="dialog"
             aria-modal="true"
             aria-labelledby={headingId}
-            className="relative max-h-[85vh] w-full max-w-2xl overflow-y-auto rounded-pixel border border-[#d8c39a] bg-cream p-6 shadow-2xl"
+            className="relative max-h-[85vh] w-full max-w-2xl overflow-y-auto rounded-pixel border-2 border-line bg-panel p-6 shadow-neon"
             initial={prefersReducedMotion ? undefined : { y: 20, opacity: 0 }}
             animate={prefersReducedMotion ? undefined : { y: 0, opacity: 1 }}
             exit={prefersReducedMotion ? undefined : { y: 20, opacity: 0 }}
@@ -101,7 +101,7 @@ export function Modal({ isOpen, title, onClose, children }: ModalProps) {
             onClick={(event) => event.stopPropagation()}
           >
             <div className="flex items-start justify-between gap-4">
-              <h2 id={headingId} className="font-sans text-base font-bold tracking-wide text-charcoal">
+              <h2 id={headingId} className="font-sans text-base font-bold tracking-wide text-ink">
                 {title}
               </h2>
               <button
@@ -109,12 +109,12 @@ export function Modal({ isOpen, title, onClose, children }: ModalProps) {
                 type="button"
                 onClick={onClose}
                 aria-label={t('common.close')}
-                className="rounded-full border border-[#d8c39a] bg-creamPanel px-3 py-1 text-xs uppercase tracking-wide text-charcoal hover:bg-[#e8d5ab]"
+                className="rounded-xl border-2 border-line px-3 py-1 font-pixel text-[8px] uppercase text-muted hover:border-danger hover:text-danger"
               >
                 {t('common.close')}
               </button>
             </div>
-            <div className="mt-4 space-y-4 text-left text-sm text-charcoal/80">{children}</div>
+            <div className="mt-4 space-y-4 text-left text-sm text-ink/80">{children}</div>
           </motion.div>
         </motion.div>
       ) : null}
