@@ -8,7 +8,7 @@ An immersive, neon-arcade pixel-art portfolio for **Luis Ángel Jose Da Silva (L
 
 | Layer | Technology |
 |---|---|
-| Frontend framework | React 18 + Vite 5 |
+| Frontend framework | React 18 + Vite 4 |
 | Language | TypeScript 5 (strict) |
 | Styling | Tailwind CSS 3 with a custom neon-arcade theme |
 | Effects | Canvas particle engine + Web Audio 8-bit synth (no assets) |
@@ -98,10 +98,24 @@ luisdasilva-site/
 
 The experience flows through four views managed by `InterviewExperience.tsx`:
 
-1. **Language** — visitor picks Spanish or English
-2. **Loading** — a 3.2-second progress bar with a rotating document title
-3. **Door** — animated pixel door; character knocks three times before the Enter button appears
-4. **Interview** — gamified Q&A with category groups, coin budgets, and character animations
+1. **Language** — arcade title screen: glitch logo, floating character and 3D tilt flag cards
+2. **Loading** — boot terminal + segmented progress bar with the character running on top; every click boosts the progress, and the document title rotates while it loads
+3. **Door** — night street with a neon sign; the door takes three knocks (shake, sound, comic pops), Luis talks in an RPG dialog box, and "Open the door" swings it open in 3D to reveal him
+4. **Interview** — game HUD (level, XP bar, coin counter), five color-coded "worlds" with coin budgets, coins flying from the HUD when you ask, typed answers with 8-bit voice blips, and achievements with confetti
+
+Every view change is revealed by a neon pixel-bar wipe. All animations respect `prefers-reduced-motion`.
+
+### Controls & secrets
+
+| Where | Input | Action |
+|---|---|---|
+| Language screen | `←` / `→`, `Enter` | Choose language / play |
+| Loading screen | Click anywhere | Boost progress (+6%) |
+| Loading screen | `Enter` / `Space` | Start (once loaded) |
+| Interview | `Enter` / `Space` | Skip the typing / confirm the answer |
+| Interview | `Esc` | Back to the worlds |
+| Anywhere in the interview | `↑ ↑ ↓ ↓ ← → ← → B A` | Konami code: infinite coins + coin rain |
+| Top-right HUD | Speaker button | Mute / unmute sound (remembered between visits) |
 
 When a visitor enters the interview, the backend receives a `POST /api/door-entry` notification. When a visitor submits a question suggestion, it goes to `POST /api/suggestions` which emails the owner via the Resend API.
 
