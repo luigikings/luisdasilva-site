@@ -17,6 +17,50 @@ type EmailSendResult = {
   error: string | null;
 };
 
+/**
+ * Send timeout (spec 006 RF-13): an attempt reaching or exceeding this is
+ * treated as timed out and degrades instead of hanging the request.
+ */
+export const EMAIL_SEND_TIMEOUT_MS = 10_000;
+
+/** Generic user-facing timeout message (Spanish, non-empty, no technical detail). */
+export const SEND_TIMEOUT_ERROR = 'El envío tardó demasiado. Inténtalo de nuevo más tarde.';
+
+/**
+ * Pure race between an email send and a timer (spec 006 RF-13).
+ * The timer and its cancellation are injectable so the race is inspectable
+ * without real network or waiting out the real 10 s window.
+ * The orphaned send settling late is ignored: no retry, no second resolve.
+ * Never rejects — a provider rejection maps to its own failure message,
+ * distinct from the timeout message (spec 006 edge case).
+ */
+export function sendWithTimeout(
+  send: Promise<EmailSendResult>,
+  ms: number = EMAIL_SEND_TIMEOUT_MS,
+  setTimer: typeof setTimeout = setTimeout,
+  clearTimer: typeof clearTimeout = clearTimeout,
+): Promise<EmailSendResult> {
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const timeout: Promise<EmailSendResult> = new Promise((resolve) => {
+    timer = setTimer(() => resolve({ emailSent: false, error: SEND_TIMEOUT_ERROR }), ms);
+  });
+  const settled = send.then(
+    (result) => {
+      if (timer !== undefined) {
+        clearTimer(timer);
+      }
+      return result;
+    },
+    (reason) => {
+      if (timer !== undefined) {
+        clearTimer(timer);
+      }
+      return failure(reason);
+    },
+  );
+  return Promise.race([timeout, settled]);
+}
+
 // Read at module-init time; EMAIL_FROM falls back to a branded noreply address
 const FROM = env.EMAIL_FROM ?? 'LuisDaSilvaDev <noreply@luisdasilvadev.com>';
 
@@ -70,6 +114,20 @@ function success(): EmailSendResult {
   };
 }
 
+/** Pure: escapes visitor content for the HTML email (spec 006 RF-1).
+ * Maps & < > " ' to entities; newlines become <br> markup (inserted after escaping). */
+export function escapeEmailHtml(value: string): string {
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+    .replace(/\r\n/g, '<br>')
+    .replace(/\n/g, '<br>')
+    .replace(/\r/g, '<br>');
+}
+
 type OutgoingEmail = {
   subject: string;
   html: string;
@@ -78,8 +136,10 @@ type OutgoingEmail = {
 /**
  * Single network border: builds the email client only when a usable key exists
  * (never at module load), sends one message and normalises rejection, success
- * and interruption to the fixed `{emailSent, error}` shape. The client is
- * constructed per request, so concurrent sends stay independent of each other.
+ * and interruption to the fixed `{emailSent, error}` shape. The send runs
+ * under a 10 s race degrading to `{emailSent:false}` on timeout (RF-13).
+ * The client is constructed per request, so concurrent sends stay
+ * independent of each other.
  */
 async function deliverEmail({ subject, html }: OutgoingEmail): Promise<EmailSendResult> {
   const apiKey = env.RESEND_API_KEY;
@@ -91,22 +151,35 @@ async function deliverEmail({ subject, html }: OutgoingEmail): Promise<EmailSend
 
   try {
     const resend = new Resend(apiKey as string);
-    const result = await resend.emails.send({
-      from: FROM,
-      to: env.SUGGESTION_EMAIL_TO,
-      subject,
-      html,
-    });
+    // The provider attempt never rejects outward: `{data, error}` rejections
+    // map to failure with the provider message, thrown errors map to failure
+    // with their own message. The 10 s race around it degrades to the timeout
+    // message instead (spec 006 RF-13); the orphaned late send is ignored.
+    const attempt: Promise<EmailSendResult> = (async () => {
+      try {
+        const result = await resend.emails.send({
+          from: FROM,
+          to: env.SUGGESTION_EMAIL_TO,
+          subject,
+          html,
+        });
 
-    // Rejections arrive as `{data, error}` without throwing: error wins even
-    // when data is present, and an empty message becomes the generic one.
-    if (result.error) {
-      const message = toErrorText(result.error) ?? GENERIC_SEND_ERROR;
-      console.error('Resend email rejected:', message);
-      return failure(message);
-    }
+        // Rejections arrive as `{data, error}` without throwing: error wins even
+        // when data is present, and an empty message becomes the generic one.
+        if (result.error) {
+          const message = toErrorText(result.error) ?? GENERIC_SEND_ERROR;
+          console.error('Resend email rejected:', message);
+          return failure(message);
+        }
 
-    return success();
+        return success();
+      } catch (error) {
+        console.error('Resend email error:', error);
+        return failure(error);
+      }
+    })();
+
+    return await sendWithTimeout(attempt);
   } catch (error) {
     console.error('Resend email error:', error);
     return failure(error);
@@ -115,13 +188,22 @@ async function deliverEmail({ subject, html }: OutgoingEmail): Promise<EmailSend
 
 /** Produces bilingual HTML depending on the visitor's chosen language */
 function buildSuggestionEmailHtml({ text, category, lang }: SuggestionEmailPayload) {
-  const categoryValue = category?.trim() ? category.trim() : lang === 'en' ? 'Unspecified' : 'Sin categoría';
+  // Trimmed content is what gets validated and sent (spec 006 RF-2); escape it
+  // so visitor markup arrives as literal text (spec 006 RF-1).
+  const trimmedText = text.trim();
+  const trimmedCategory = category?.trim() ? category.trim() : null;
+  const escapedText = escapeEmailHtml(trimmedText);
+  const categoryValue = trimmedCategory
+    ? escapeEmailHtml(trimmedCategory)
+    : lang === 'en'
+      ? 'Unspecified'
+      : 'Sin categoría';
 
   if (lang !== 'en') {
-    return `<p>Tienes la siguiente Sugerencia de pregunta:</p><p>Pregunta: ${text}</p><p>Categoria: ${categoryValue}</p>`;
+    return `<p>Tienes la siguiente Sugerencia de pregunta:</p><p>Pregunta: ${escapedText}</p><p>Categoria: ${categoryValue}</p>`;
   }
 
-  return `<p><strong>Question:</strong> ${text}</p><p><strong>Category:</strong> ${categoryValue}</p>`;
+  return `<p><strong>Question:</strong> ${escapedText}</p><p><strong>Category:</strong> ${categoryValue}</p>`;
 }
 
 /**

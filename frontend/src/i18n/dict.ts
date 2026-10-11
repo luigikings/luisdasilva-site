@@ -131,6 +131,8 @@ type DictSection = {
     degradedMessage: string
     errorMessage: string
     validationMessage: string
+    questionTooLongMessage: string
+    categoryTooLongMessage: string
   }
   footer: {
     text: string
@@ -400,6 +402,8 @@ export const dict: Dict = {
       degradedMessage: 'Recibida, pero el aviso no se envió',
       errorMessage: 'No se pudo enviar la sugerencia. Intenta nuevamente.',
       validationMessage: 'Por favor escribe una pregunta con al menos 8 caracteres.',
+      questionTooLongMessage: 'La pregunta no puede superar los 1000 caracteres.',
+      categoryTooLongMessage: 'La categoría no puede superar los 100 caracteres.',
     },
     footer: {
       text: 'Built with React + Tailwind + Framer Motion',
@@ -665,6 +669,8 @@ export const dict: Dict = {
       degradedMessage: 'Received, but the notification was not sent',
       errorMessage: 'Could not send the suggestion. Please try again.',
       validationMessage: 'Please write a question with at least 8 characters.',
+      questionTooLongMessage: 'The question must be 1000 characters or fewer.',
+      categoryTooLongMessage: 'The category must be 100 characters or fewer.',
     },
     footer: {
       text: 'Built with React + Tailwind + Framer Motion',

@@ -2,39 +2,33 @@
 Memoria del proyecto entre sesiones. Máximo ~50 líneas: resume o elimina lo que ya no aporte.
 
 ## Estado actual
-- Specs 001–005 implementadas (005 cerrada con VEREDICTO: APROBADO del reviewer).
-- Tanda en curso, toca C4 (higiene backend).
+- Specs 001–006 implementadas (006 cerrada con VEREDICTO: APROBADO del reviewer).
+- Tanda en curso, toca C7 accesibilidad + cierre 001.
 - Todo lo automatizable en verde: lint front, build front+back, 7/7 lógica resolveCv.
 
 ## Decisiones (y porqué)
-- v1 = suavizar arcade hacia profesional directo (CV, proyectos, contacto accesibles): para reclutadores.
+- v1 = suavizar arcade hacia profesional directo: para reclutadores.
 - Cierre 004 con matriz visual manual pendiente, aceptado por el usuario: nada fabricable sin navegador/MCP.
-- Deep-link solo sin botón ni pista en interfaz (guía pública sí lo documenta): silencio para no romper el arcade.
-- ES por defecto en deep-link con equivalencia completa al cambiar a EN: reclutador local primero.
-- HUD persistente solo en deep-link, inexistente en flujo normal: esencial sin monedas.
+- Deep-link silencioso (sin botón/pista; guía pública sí lo documenta) + ES por defecto con equivalencia EN + HUD solo en deep-link: no romper arcade.
 - Sin LinkedIn, solo correo + GitHub: decisión explícita de contacto.
-- CV ES pendiente: mientras no exista, fallback al EN con aviso no bloqueante (RF-4).
-- Tono profesional con carisma (máx 1 frase con personalidad, sin jerga arcade): reclutador primero.
-- Spec 002: forma fija del 201 `{emailSent, error}` con `error null ⟺ emailSent true`: contrato estable.
-- Destinatario obligatorio con fail-fast; solo la clave degrada.
-- Verificación manual + build como criterio de cierre (sin tests automatizados): base pequeña.
-- Cierre 005 aprobado por reviewer: degradado reutiliza mismo título/presentación de éxito + literal exacto ES/EN, sin prefijos ni puntuación añadida.
-- Detalle técnico (`error`) nunca visible en el formulario: evita exponer claves o información interna.
-- README raíz no describía el envío de sugerencias → no requirió cambios (RF-8).
-- Éxito con clave real pendiente del dueño: rama `emailSent:true` verificada por inspección del mapeo.
+- CV ES pendiente → fallback EN con aviso no bloqueante; tono profesional con carisma (1 frase, sin jerga).
+- Spec 002: 201 forma fija `{emailSent, error}` con `error null ⟺ emailSent true`: contrato estable.
+- Destinatario obligatorio con fail-fast; solo la clave degrada. Detalle técnico nunca visible en formulario.
+- Verificación manual + build como criterio de cierre (sin tests): base pequeña.
+- Cierre 005 aprobado: degradado reutiliza título/presentación de éxito + literal exacto ES/EN.
+- 006 aprobado: ritmo compartido por IP (ambos endpoints); defaults CORS localhost:5173 + vercel.app; FROM ausente→defecto, inválido→fail-fast; timeout 10s con 201 degradado; 429 en ES; README documentado.
+- 006: bandeja real con clave y pasada navegador completas pendientes no bloqueantes del dueño: requieren clave/bandeja real.
 
 ## Aprendizajes y errores a evitar
 - entryMode pura con split crudo (sin URLSearchParams) por `go=%69nterview`: comparación exacta.
-- useT inicializa ES síncrono con deep-link: evita flash EN→ES.
-- suggestionOutcome pura: solo `emailSent` decide (manda sobre el detalle).
-- ApiError→errorMessage: normalizar rechazo de validación, fallo servidor y red a mensaje de error actual.
-- submitLang congelado (incluido título) para éxito/degradado/error/validación: el mensaje no cambia al cambiar idioma.
-- Constructor Resend a nivel de módulo mata el arranque sin clave: instanciar en diferido.
-- Resend v4+ devuelve `{data, error}` en vez de lanzar: inspeccionar `error`, no solo try/catch.
-- Env con preprocess para `""`: vacía = ausente sin romper fail-fast del destinatario.
-- npm.ps1 bloqueado por ExecutionPolicy → usar npm.cmd en este Windows.
+- useT ES síncrono con deep-link (evita flash) + submitLang congelado: mensaje no cambia al cambiar idioma.
+- suggestionOutcome pura (solo `emailSent` decide) + ApiError→errorMessage normalizado.
+- Resend: instanciar en diferido (módulo mata arranque sin clave); v4+ devuelve `{data, error}`, no lanza.
+- Env con preprocess `""`=ausente sin romper fail-fast; npm.cmd en este Windows (npm.ps1 bloqueado).
+- 006: `escapeEmailHtml`/`normalizeOrigins`/`isRateLimited`/`sendWithTimeout` puras; escape tras trim y `<br>` al final; Zod trim-antes-max.
+- 006: rate-limit con split crudo (sin `new URL`); PowerShell/curl comillas → cuerpos en fichero; 413 = default Express 100kb.
 - No fabricar mediciones en audit: solo valores medidos o "pendiente".
 
 ## Próximos pasos
-- C4 higiene backend.
-- Push a GitHub de 005 si el usuario lo pide.
+- C7 accesibilidad + cierre 001.
+- Push a GitHub de 006 si el usuario lo pide.

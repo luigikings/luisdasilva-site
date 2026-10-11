@@ -32,6 +32,8 @@ export function SuggestionPrompt() {
     degradedMessage: string
     errorMessage: string
     validationMessage: string
+    questionTooLongMessage: string
+    categoryTooLongMessage: string
   }>('suggestions')
 
   const { sfx } = useSound()
@@ -118,6 +120,20 @@ export function SuggestionPrompt() {
     if (trimmedQuestion.length < 8) {
       sfx.error()
       setMessage(dict[submitLang].suggestions.validationMessage)
+      return
+    }
+
+    // Client-side guards mirror the backend size caps (spec 006 RF-3, RF-4):
+    // validated on the trimmed value, message frozen in the submit language
+    // (spec 005 convention) and no network request when over the cap (RF-6).
+    if (trimmedQuestion.length > 1000) {
+      sfx.error()
+      setMessage(dict[submitLang].suggestions.questionTooLongMessage)
+      return
+    }
+    if (trimmedCategory.length > 100) {
+      sfx.error()
+      setMessage(dict[submitLang].suggestions.categoryTooLongMessage)
       return
     }
 
@@ -296,11 +312,20 @@ export function SuggestionPrompt() {
                         }}
                         required
                       />
-                      <p
-                        className={`text-right font-mono text-base ${question.trim().length >= 8 ? 'text-neonLime' : 'text-muted/60'}`}
-                      >
-                        {question.trim().length}/8+
-                      </p>
+                      {/* Always-visible size counters (spec 006 RF-6): lengths are
+                          measured on the trimmed value, like the backend caps. */}
+                      <div className="flex items-center justify-between font-mono text-base">
+                        <p
+                          className={`${question.trim().length >= 8 ? 'text-neonLime' : 'text-muted/60'}`}
+                        >
+                          {question.trim().length}/8+
+                        </p>
+                        <p
+                          className={`${question.trim().length > 1000 ? 'text-danger' : 'text-muted/60'}`}
+                        >
+                          {question.trim().length}/1000
+                        </p>
+                      </div>
                     </div>
 
                     <div className="space-y-2">
@@ -317,6 +342,11 @@ export function SuggestionPrompt() {
                         value={category}
                         onChange={(event) => setCategory(event.target.value)}
                       />
+                      <p
+                        className={`text-right font-mono text-base ${category.trim().length > 100 ? 'text-danger' : 'text-muted/60'}`}
+                      >
+                        {category.trim().length}/100
+                      </p>
                     </div>
 
                     <AnimatePresence>

@@ -139,11 +139,12 @@ Copy the example block below into a `.env` file at the **project root** (or set 
 ```env
 # Backend — email delivery
 RESEND_API_KEY=re_xxxxxxxxxxxxxxxxxxxx
-EMAIL_FROM=Your Name <noreply@yourdomain.com>
+EMAIL_FROM=noreply@yourdomain.com
 SUGGESTION_EMAIL_TO=your@email.com
 
 # Backend — server
 PORT=3000
+CORS_ORIGINS=http://localhost:5173,https://luisdasilva-site.vercel.app
 
 # Frontend (Vite reads this at build time)
 VITE_API_URL=http://localhost:3000
@@ -211,8 +212,9 @@ npm run start
 | Variable | Required | Description |
 |---|---|---|
 | `RESEND_API_KEY` | Optional* | Resend API key. Without it, emails are skipped but the server still starts. |
-| `EMAIL_FROM` | Optional* | Sender address shown in outgoing emails. Defaults to `LuisDaSilvaDev <noreply@luisdasilvadev.com>`. |
+| `EMAIL_FROM` | Optional* | Sender address shown in outgoing emails. Bare address only (e.g. `noreply@yourdomain.com`); `Name <mail>` or multiple addresses are invalid and fail startup. Defaults to `LuisDaSilvaDev <noreply@luisdasilvadev.com>` when absent or blank. |
 | `SUGGESTION_EMAIL_TO` | **Required** | Recipient address for suggestion and door-entry notifications. |
+| `CORS_ORIGINS` | Optional | Comma-separated list of allowed browser origins. Defaults to `http://localhost:5173` and `https://luisdasilva-site.vercel.app` when absent or empty. |
 | `PORT` | Optional | Backend port. Defaults to `3000`. |
 | `VITE_API_URL` | **Required** | Base URL of the backend, read by the frontend at build time. |
 
@@ -229,6 +231,18 @@ Base URL: `http://localhost:3000`
 | `GET` | `/health` | Health check — returns `{ status: "ok" }` |
 | `POST` | `/api/suggestions` | Submit a question suggestion. Body: `{ text, category?, lang? }` |
 | `POST` | `/api/door-entry` | Notify when a visitor enters the interview. Body: `{ lang? }` |
+
+---
+
+## Backend limits (anti-spam)
+
+The backend protects the owner's inbox and email-send budget with these guards. The `201` response shape (`{emailSent, error}`) is unchanged; the only new statuses are `429` (rate) and `413` (oversized body).
+
+- **Size caps** — suggestion `text` is trimmed and must be 8–1000 chars; `category` is optional, trimmed, max 100 chars. Over the cap → `400` with no send attempt; exactly 1000/100 is valid (inclusive). The form shows live `x/1000` and `x/100` counters and blocks the request client-side with a message in the active language.
+- **Rate limit** — max 10 `POST` requests per minute per IP, shared across both `/api/suggestions` and `/api/door-entry` (sliding 60 s window, in-memory only, never logged). The 11th request gets `429` JSON `{error}` in Spanish with no send attempt. Health checks, preflights, unknown routes and malformed/oversized bodies don't count. Order per request: body parser (`400` malformed / `413` oversized) → rate limit (`429`) → size validation (`400`).
+- **CORS** — only origins in `CORS_ORIGINS` get CORS headers (no credentials; methods `GET, POST, OPTIONS`; header `Content-Type`). Requests without `Origin` or with `Origin: null` (curl, server-to-server) are allowed without CORS headers; disallowed origins get the same status but no CORS headers. Each list entry is trimmed, lowercased, stripped of trailing slash, port respected; empty/invalid entries are ignored and subdomains must match exactly.
+- **Sender** — `EMAIL_FROM` accepts only a bare address (`Name <mail>` or lists are invalid and fail startup with a non-zero exit). Absent or blank → built-in default sender.
+- **Send timeout** — an email attempt reaching 10 s degrades to `201` with `emailSent: false` and a generic Spanish message; a late provider response is ignored, with no retries. No send failure ever produces `500`.
 
 ---
 
