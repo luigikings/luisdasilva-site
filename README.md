@@ -38,7 +38,7 @@ luisdasilva-site/
 │
 ├── frontend/
 │   ├── public/
-│   │   ├── CV Luis Angel Da Silva English.pdf
+│   │   ├── cv-luis-dasilva-en.pdf        # English CV (Spanish CV falls back to this file until cv-luis-dasilva-es.pdf is provided)
 │   │   ├── robots.txt
 │   │   ├── sitemap.xml
 │   │   └── imgs/
@@ -104,6 +104,8 @@ The experience flows through four views managed by `InterviewExperience.tsx`:
 4. **Interview** — gamified Q&A with category groups, coin budgets, and character animations
 
 When a visitor enters the interview, the backend receives a `POST /api/door-entry` notification. When a visitor submits a question suggestion, it goes to `POST /api/suggestions` which emails the owner via the Resend API.
+
+The interview answers the questions recruiters actually ask, in Spanish and English: who Luis is (recent DAW graduate, full stack profile — React, TypeScript and TailwindCSS on the frontend, Node.js on the backend, MySQL/MariaDB/MongoDB for data, Git/Docker/Linux as tools), three projects with verifiable links that open in a new tab ([AgencyMac](https://github.com/luigikings/AgencyMac) — marketing agency site in TypeScript, .NET and Tailwind; [MetalRenova](https://github.com/luigikings/ChatarreroMetalRenova) — scrapyard site in Astro; [Magnar WarGames](https://www.magnarwargames.com/) — live demo only, no code link), what he is learning lately (interface animation and applied accessibility, both applied in this portfolio), and how to reach him: [luigidasilv@gmail.com](mailto:luigidasilv@gmail.com) as a `mailto:` link with the address always visible and copyable, plus a button opening [github.com/luigikings](https://github.com/luigikings) in a new tab. The CV downloads per language (`cv-luis-dasilva-en.pdf` / `cv-luis-dasilva-es.pdf`): while the Spanish file does not exist yet, Spanish visitors get the English file with a non-blocking notice instead of an error.
 
 ---
 
@@ -250,6 +252,9 @@ A `vercel.json` is already included in `frontend/` to handle SPA routing.
 
 ## Author
 
-**Luis Ángel Jose Da Silva (LK)**
+**Luis Ángel Jose Da Silva (LK)** — recent Web Application Development (DAW) graduate, full stack developer (React, TypeScript, TailwindCSS · Node.js · MySQL/MariaDB/MongoDB · Git/Docker/Linux).
+- Contact: [luigidasilv@gmail.com](mailto:luigidasilv@gmail.com)
 - GitHub: [github.com/luigikings](https://github.com/luigikings)
+- Featured projects: [AgencyMac](https://github.com/luigikings/AgencyMac) · [MetalRenova](https://github.com/luigikings/ChatarreroMetalRenova) · [Magnar WarGames (live demo)](https://www.magnarwargames.com/)
+- CV: `frontend/public/cv-luis-dasilva-en.pdf` (Spanish `cv-luis-dasilva-es.pdf` falls back to the English file with a notice until provided)
 - Portfolio: this site

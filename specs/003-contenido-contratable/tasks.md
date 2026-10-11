@@ -1,0 +1,13 @@
+- [x] **T1. Renombrar CV inglés y constantes por idioma con fallback.** RF-4
+  - Hecho cuando: `public/` sirve `cv-luis-dasilva-en.pdf` sin espacios; la resolución devuelve ES solo si existe el fichero y EN + aviso en caso contrario; la ruta antigua con `%20` ya no se referencia.
+- [x] **T2. Reescribir presentación y aprendizaje (ES+EN).** RF-1, RF-5, RF-6
+  - Hecho cuando: `introduction` trae nombre, DAW, perfil y stack de la spec y `learning` trae exactamente los 2 aprendizajes con su aplicación, en ambos idiomas, con checklist de tono cumplida (máx 1 frase con personalidad, sin jerga de la lista, sin mayúsculas sostenidas).
+- [x] **T3. Respuesta de proyectos con 3 literales y enlaces.** RF-2, RF-6
+  - Hecho cuando: la respuesta muestra AgencyMac, MetalRenova y Magnar WarGames (mismo literal en ES+EN) con descripción, stack y enlace; cada enlace abre su destino en pestaña nueva; Magnar sin enlace de código ni afirmaciones extra.
+- [x] **T4. Contacto accionable sin LinkedIn.** RF-3, RF-6
+  - Hecho cuando: la respuesta muestra `luigidasilv@gmail.com` como enlace `mailto:` con la dirección visible y seleccionable, más acción a GitHub en pestaña nueva; no queda ninguna mención a LinkedIn en ES ni EN; con mailto bloqueado la dirección sigue copiable.
+- [x] **T5. Descarga de CV por idioma con aviso no bloqueante.** RF-4
+  - Hecho cuando: en EN descarga el EN sin aviso; en ES sin fichero descarga el EN con el literal exacto de aviso de la spec y sin modal ni error; el cambio de idioma rige al pedir sin alterar descargas en curso.
+  - Nota corrección (vuelta 1/2, spec manda): `resolveCv` acepta idioma indeterminado (undefined/null/distinto de es/en) → sirve EN con `showFallbackNotice:true`, y la UI fuerza el aviso EN de RF-4 en ese caso. Sin cambios para EN explícito (sin aviso) ni ES (según disponibilidad).
+- [x] **T6. README actualizado y verificación final.** RF-7
+  - Hecho cuando: los apartados existentes describen los mismos proyectos, enlaces, correo, GitHub y CVs sin secciones por spec; verificación manual ES+EN (incluido 375 px) completa según el mapa de la spec; `npm run lint` y `npm run build` (front+back) en verde.

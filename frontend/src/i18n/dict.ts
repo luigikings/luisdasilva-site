@@ -109,7 +109,9 @@ type DictSection = {
       characterLabel: string
       okButton: string
       githubButton: string
+      emailButton: string
       cvButton: string
+      cvFallbackNotice: string
       skipHint: string
     }
   }
@@ -327,15 +329,15 @@ export const dict: Dict = {
       },
       answers: {
         introduction:
-          'Soy Luis Ángel Da Silva, aunque muchos me llaman Luigi.\nSoy desarrollador full stack y me encanta crear experiencias web que no solo se vean bien, sino que también estén bien pensadas por dentro.\nDisfruto tanto del diseño y la experiencia de usuario como de la lógica, la estructura y el funcionamiento real que hay detrás de cada proyecto.',
+          'Soy Luis Ángel Jose Da Silva, recién graduado en Desarrollo de Aplicaciones Web (DAW) y desarrollador full stack.\nTrabajo con React, TypeScript y TailwindCSS en el frontend, Node.js en el backend, MySQL, MariaDB y MongoDB en datos, y Git, Docker y Linux como herramientas.\nMe gusta construir interfaces claras que la gente disfrute usando.',
         motivation:
           'La programación me gusta porque mezcla lógica con creatividad. Es como armar un rompecabezas donde cada pieza cobra vida cuando todo encaja.',
         learning:
-          'Últimamente estoy profundizando en animaciones con Framer Motion, accesibilidad aplicada y automatizaciones con IA para acelerar flujos creativos.',
+          'Últimamente estoy aprendiendo animación de interfaces, aplicada en este portfolio, y accesibilidad aplicada, también aplicada en este portfolio. Me motiva ver cómo esos detalles mejoran la experiencia de usar la página.',
         projects:
-          'He trabajado en dashboards, experiencias interactivas para eventos y sitios personales con mucho cariño pixel-art. Siempre busco que cada proyecto se sienta único.',
+          'Mis tres proyectos principales son AgencyMac, una web de agencia de marketing construida con TypeScript, .NET y Tailwind; MetalRenova, una web de chatarrería construida con Astro; y Magnar WarGames, una web inspirada en Juego de Tronos con frontend, backend y base de datos, disponible como demo en línea. Aquí abajo tienes los enlaces para verlos.',
         contact:
-          'Puedes escribirme por correo a luigidasilv@gmail.com o mandarme un mensaje por LinkedIn; contesto rápido si mencionas que viniste por la puerta pixelada!',
+          'La vía más rápida es el correo: luigidasilv@gmail.com. Cuéntame en qué puesto encajo y te respondo enseguida. Mi código está en GitHub, tienes el enlace aquí abajo.',
         hobbies:
           'Cuando desconecto me gusta dibujar pixel art, tocar sintetizadores y salir a caminar con cámara en mano buscando texturas para futuros proyectos.',
         superpower:
@@ -374,7 +376,9 @@ export const dict: Dict = {
         characterLabel: 'LK responde',
         okButton: 'Okey',
         githubButton: 'Ir a GitHub',
+        emailButton: 'Escribir correo a luigidasilv@gmail.com',
         cvButton: 'Descargar CV',
+        cvFallbackNotice: 'De momento solo tengo el CV en inglés: aquí lo tienes.',
         skipHint: 'clic para saltar',
       },
     },
@@ -588,15 +592,15 @@ export const dict: Dict = {
       },
       answers: {
         introduction:
-          'I’m Luis Ángel Da Silva, though many people call me Luigi.\nI’m a full stack developer and I love creating web experiences that not only look good, but are also thoughtfully built on the inside.\nI enjoy design and user experience as much as the logic, structure, and real-world functionality behind every project.',
+          'I’m Luis Ángel Jose Da Silva, a recent Web Application Development (DAW) graduate and full stack developer.\nI work with React, TypeScript and TailwindCSS on the frontend, Node.js on the backend, MySQL, MariaDB and MongoDB for data, and Git, Docker and Linux as tools.\nI enjoy building clear interfaces people enjoy using.',
         motivation:
           'Programming hooks me because it blends creativity with systems thinking. Building an interface feels like composing music with pixels and logic.',
         learning:
-          'I’ve been diving deeper into Framer Motion, inclusive design practices and little AI helpers that speed up ideation and prototyping.',
+          'Lately I’ve been learning interface animation, applied in this portfolio, and applied accessibility, also applied in this portfolio. I enjoy seeing how those details improve the experience of using the page.',
         projects:
-          'Recent work includes interactive dashboards, playful landing pages and personal experiments that celebrate pixel aesthetics. Each project is a new playground.',
+          'My three main projects are AgencyMac, a marketing agency website built with TypeScript, .NET and Tailwind; MetalRenova, a scrapyard website built with Astro; and Magnar WarGames, a Game of Thrones-inspired website with frontend, backend and database, available as a live demo. The links to see them are right below.',
         contact:
-          'Email me at luigidasilv@gmail.com or drop a message on LinkedIn—bonus points if you mention the pixelated door!',
+          'The fastest way is email: luigidasilv@gmail.com. Tell me which role I fit and I will get back to you quickly. My code is on GitHub, with the link right below.',
         hobbies:
           'I recharge by sketching pixel art, noodling on synths and wandering with my camera hunting textures for future interfaces.',
         superpower:
@@ -635,7 +639,9 @@ export const dict: Dict = {
       characterLabel: 'LK replies',
       okButton: 'Okay',
       githubButton: 'Go to GitHub',
+      emailButton: 'Email luigidasilv@gmail.com',
       cvButton: 'Download CV',
+      cvFallbackNotice: 'My résumé is only available in English for now — here it is.',
       skipHint: 'click to skip',
     },
   },

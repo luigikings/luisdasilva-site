@@ -1,5 +1,6 @@
 import { AnimatePresence, motion } from 'framer-motion'
 
+import { CONTACT_EMAIL, PROJECT_LINKS } from '../../data/interview'
 import type { QuestionKey } from '../../i18n/dict'
 
 type ConversationPanelProps = {
@@ -14,17 +15,22 @@ type ConversationPanelProps = {
   /** Accent color of the active world; tints the spotlight and dialog box */
   accent: string
   idleLine: string
+  /** True when the CV served is the EN fallback (spec 003, RF-4); paints the notice only. */
+  showCvFallbackNotice: boolean
   conversation: {
     youLabel: string
     characterLabel: string
     okButton: string
     githubButton: string
+    emailButton: string
     cvButton: string
+    cvFallbackNotice: string
     skipHint: string
   }
   onOk: () => void
   onGithub: () => void
   onCv: () => void
+  onProject: (url: string) => void
   onSkip: () => void
 }
 
@@ -45,10 +51,12 @@ export function ConversationPanel({
   selected,
   accent,
   idleLine,
+  showCvFallbackNotice,
   conversation,
   onOk,
   onGithub,
   onCv,
+  onProject,
   onSkip,
 }: ConversationPanelProps) {
   const isTalking = stage === 'answerTyping'
@@ -217,15 +225,48 @@ export function ConversationPanel({
                     transition={{ duration: 0.25 }}
                     className="mt-4 flex flex-wrap justify-end gap-3"
                   >
+                    {selected === 'projects'
+                      ? PROJECT_LINKS.map((project) => (
+                          <button
+                            key={project.name}
+                            type="button"
+                            onClick={() => onProject(project.url)}
+                            className="btn-arcade bg-neonCyan text-ink"
+                          >
+                            {project.kind === 'demo' ? '🌐' : '💻'} {project.name}
+                          </button>
+                        ))
+                      : null}
                     {selected === 'github' ? (
                       <button type="button" onClick={onGithub} className="btn-arcade bg-neonPurple text-ink">
                         🐙 {conversation.githubButton}
                       </button>
                     ) : null}
+                    {selected === 'contact' ? (
+                      <>
+                        <a
+                          href={`mailto:${CONTACT_EMAIL}`}
+                          aria-label={conversation.emailButton}
+                          className="btn-arcade bg-neonCyan text-ink [user-select:text]"
+                        >
+                          ✉️ {CONTACT_EMAIL}
+                        </a>
+                        <button type="button" onClick={onGithub} className="btn-arcade bg-neonPurple text-ink">
+                          🐙 {conversation.githubButton}
+                        </button>
+                      </>
+                    ) : null}
                     {selected === 'cv' ? (
-                      <button type="button" onClick={onCv} className="btn-arcade bg-coin">
-                        📄 {conversation.cvButton}
-                      </button>
+                      <>
+                        {showCvFallbackNotice ? (
+                          <p role="note" className="w-full text-left font-mono text-base text-ink/80">
+                            {conversation.cvFallbackNotice}
+                          </p>
+                        ) : null}
+                        <button type="button" onClick={onCv} className="btn-arcade bg-coin">
+                          📄 {conversation.cvButton}
+                        </button>
+                      </>
                     ) : null}
                     <button
                       type="button"

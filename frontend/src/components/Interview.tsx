@@ -3,14 +3,14 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import {
   GITHUB_URL,
-  CV_URL,
-  CV_DOWNLOAD_NAME,
+  CV_ES_AVAILABLE,
   groupTheme,
   initialCoinsByGroup,
   questionCosts,
   questionGroupConfig,
   questionToGroupMap,
   questionEmojis,
+  resolveCv,
 } from '../data/interview'
 import { track } from '../lib/analytics'
 import { resolveAsk } from '../lib/interviewAccess'
@@ -24,7 +24,7 @@ import { ConversationPanel } from './interview/ConversationPanel'
 import { HudBar } from './interview/HudBar'
 import { InterviewNav } from './interview/InterviewNav'
 import { SuggestionPrompt } from './SuggestionPrompt'
-import type { AchievementKey, QuestionGroupKey, QuestionKey } from '../i18n/dict'
+import { dict, type AchievementKey, type QuestionGroupKey, type QuestionKey } from '../i18n/dict'
 
 type Stage = 'idle' | 'playerTyping' | 'answerTyping' | 'complete'
 
@@ -71,7 +71,9 @@ export function Interview() {
     characterLabel: string
     okButton: string
     githubButton: string
+    emailButton: string
     cvButton: string
+    cvFallbackNotice: string
     skipHint: string
   }>('interview.conversation')
   const coinsCopy = t<{
@@ -460,12 +462,28 @@ export function Interview() {
     handleOk()
   }
 
+  /** Opens a project link in a new tab without closing the answer, so all 3 stay reachable. */
+  const handleProjectOpen = (url: string) => {
+    if (typeof window !== 'undefined') {
+      window.open(url, '_blank', 'noopener,noreferrer')
+    }
+  }
+
+  /** Spec 003 RF-4: which CV to serve for the active language, read when asked.
+   * With an indeterminable language, resolveCv serves EN with the notice and the
+   * panel below forces the EN notice text (spec.md caso límite). */
+  const resolvedCv = resolveCv(lang, CV_ES_AVAILABLE)
+  const conversationForPanel =
+    lang === 'es' || lang === 'en'
+      ? conversation
+      : { ...conversation, cvFallbackNotice: dict.en.interview.conversation.cvFallbackNotice }
+
   /** Programmatically creates a hidden <a> to trigger the browser's download dialog. */
   const handleCvDownload = () => {
     if (typeof document !== 'undefined') {
       const link = document.createElement('a')
-      link.href = CV_URL
-      link.download = CV_DOWNLOAD_NAME
+      link.href = resolvedCv.url
+      link.download = resolvedCv.downloadName
       document.body.appendChild(link)
       link.click()
       document.body.removeChild(link)
@@ -487,7 +505,7 @@ export function Interview() {
         if (stage === 'playerTyping' || stage === 'answerTyping') {
           event.preventDefault()
           handleSkip()
-        } else if (stage === 'complete' && selected !== 'github' && selected !== 'cv') {
+        } else if (stage === 'complete' && selected !== 'github' && selected !== 'cv' && selected !== 'projects') {
           event.preventDefault()
           handleOk()
         }
@@ -535,10 +553,12 @@ export function Interview() {
           selected={selected}
           accent={accent}
           idleLine={t('interview.subtitle')}
-          conversation={conversation}
+          conversation={conversationForPanel}
+          showCvFallbackNotice={selected === 'cv' && resolvedCv.showFallbackNotice}
           onOk={handleOk}
           onGithub={handleGithubRedirect}
           onCv={handleCvDownload}
+          onProject={handleProjectOpen}
           onSkip={handleSkip}
         />
       </div>
