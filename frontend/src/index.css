@@ -25,13 +25,28 @@ a:focus-visible {
   image-rendering: pixelated;
 }
 
+/* RF-4 (spec 007): keyboard focus indicator, visible in every context
+   (language, loading, door, interview, notices, tutorial, suggestion,
+   contact). Double ring: a 2 px near-black outline floating 2 px off
+   the element plus a 2 px near-white outer ring (box-shadow spread
+   4 px, painted under the outline). Measured on the palette extremes:
+   the dark band keeps >= 5:1 against the bright arcade surfaces (coin
+   #ffd23f and every neon) and the light band keeps >= 12:1 against the
+   dark surfaces (night #0b0620, abyss, panel), so one band always has
+   AA (>= 3:1) contrast against the adjacent color. Static CSS only —
+   no transition or animation — so it renders identically with reduced
+   motion and at 200% zoom. !important keeps the indicator above
+   decorative shadows (neon glows, celebration pulses) that components
+   set inline, so a decoration can never hide it. */
 button:focus-visible,
 a:focus-visible,
 input:focus-visible,
 textarea:focus-visible,
 [tabindex]:focus-visible,
 [role='button']:focus-visible {
-  @apply outline-none ring-2 ring-neonCyan ring-offset-2 ring-offset-night;
+  outline: 2px solid #0b0620 !important;
+  outline-offset: 2px !important;
+  box-shadow: 0 0 0 4px #f4f1ff !important;
 }
 
 ::selection {

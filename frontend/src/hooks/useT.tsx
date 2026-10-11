@@ -24,8 +24,8 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
   const [lang, setLangState] = useState<Language>(() => {
     // Spec 004 T2: the silent recruiter deep-link (?go=interview) starts the
     // interview in ES, so the query param wins over the stored language on
-    // every load (a reload with the param re-applies ES). Without it,
-    // the stored choice (or EN by default) is kept and the normal flow runs.
+    // every load (a reload with the param re-applies ES). Without it, the
+    // stored choice (or ES by default) is kept and the normal flow runs.
     if (
       typeof window !== 'undefined' &&
       resolveEntryMode(window.location.search) === 'deeplink'
@@ -33,10 +33,10 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
       return 'es'
     }
     if (typeof window === 'undefined') {
-      return 'en'
+      return 'es'
     }
     const stored = window.localStorage.getItem(STORAGE_KEY)
-    return stored === 'en' || stored === 'es' ? stored : 'en'
+    return stored === 'en' || stored === 'es' ? stored : 'es'
   })
 
   const setLang = (value: Language) => {

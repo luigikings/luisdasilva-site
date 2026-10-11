@@ -47,23 +47,24 @@ export function RecruiterQuickBar({ label, cvUrl, cvDownloadName, copy }: Recrui
   }
 
   return (
-    <nav
+    <div
+      role="group"
       aria-label={label}
       className="sticky top-16 z-30 flex flex-wrap items-center gap-2 rounded-2xl border-2 border-line bg-panel/95 px-3 py-2 shadow-neon backdrop-blur-md sm:gap-3 sm:px-4"
     >
       <button type="button" onClick={handleCvDownload} className="btn-arcade bg-coin">
         📄 {copy.cvButton}
       </button>
-      <button type="button" onClick={handleGithubRedirect} className="btn-arcade bg-neonPurple text-ink">
+      <button type="button" onClick={handleGithubRedirect} className="btn-arcade bg-neonPurple text-night">
         🐙 {copy.githubButton}
       </button>
       <a
         href={`mailto:${CONTACT_EMAIL}`}
         aria-label={copy.emailButton}
-        className="btn-arcade bg-neonCyan text-ink [user-select:text]"
+        className="btn-arcade bg-neonCyan text-night [user-select:text]"
       >
         ✉️ {CONTACT_EMAIL}
       </a>
-    </nav>
+    </div>
   )
 }

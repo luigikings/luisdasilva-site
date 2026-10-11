@@ -55,7 +55,7 @@ export function HudBar({
                 initial={prefersReducedMotion ? undefined : { scale: 2, opacity: 0, rotate: -20 }}
                 animate={prefersReducedMotion ? undefined : { scale: 1, opacity: 1, rotate: 0 }}
                 transition={{ type: 'spring', stiffness: 400, damping: 14 }}
-                className="shrink-0 rounded bg-neonPink px-1.5 py-0.5 font-pixel text-[8px] text-ink"
+                className="shrink-0 rounded bg-neonPink px-1.5 py-0.5 font-pixel text-[8px] text-night"
               >
                 {hudCopy.level} {level}
               </motion.span>

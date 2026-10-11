@@ -183,9 +183,10 @@ export function InterviewExperience() {
     sfx.start()
     fx.burst(centerOf(tutorialButtonRef.current), { count: 50, speed: 9 })
     setShowTutorial(false)
-    // RF-19: return focus to the interview so keyboard visitors keep going
+    // RF-12/RF-19: return focus to the main region (the interview
+    // content, tabIndex={-1}) so keyboard visitors keep going.
     window.setTimeout(() => {
-      document.getElementById('interview-main')?.focus({ preventScroll: true })
+      document.getElementById('main')?.focus({ preventScroll: true })
     }, 0)
   }
 
@@ -231,6 +232,13 @@ export function InterviewExperience() {
 
   return (
     <div id="app-shell" className="relative min-h-screen overflow-hidden">
+      {/* RF-2: global skip link — first focusable element, moves focus to #main */}
+      <a
+        href="#main"
+        className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:rounded-xl focus:border-2 focus:border-neonCyan focus:bg-abyss focus:px-6 focus:py-4 focus:font-pixel focus:text-xs focus:text-ink focus:outline-none focus:ring-2 focus:ring-neonCyan focus:ring-offset-2 focus:ring-offset-night"
+      >
+        {t('a11y.skipLink')}
+      </a>
       <ArcadeBackground showGrid={view !== 'interview'} />
       <CursorFx />
       <LanguageSwitcher showLanguages={view !== 'language'} />
@@ -238,9 +246,10 @@ export function InterviewExperience() {
       <AnimatePresence mode="wait">
         <motion.main
           key={view}
-          id={view === 'interview' ? 'interview-main' : undefined}
-          tabIndex={view === 'interview' ? -1 : undefined}
-          className="relative min-h-screen"
+          id="main"
+          tabIndex={-1}
+          aria-label={t('a11y.main')}
+          className="relative min-h-screen focus:outline-none"
           {...viewMotion}
         >
           {view === 'language' ? (
@@ -322,7 +331,7 @@ export function InterviewExperience() {
                         delay: prefersReducedMotion ? 0 : 0.8 + index * 0.15,
                       }}
                     >
-                      <span className="absolute -left-2 -top-3 flex h-7 w-7 items-center justify-center rounded-lg bg-neonPink font-pixel text-[10px] text-ink shadow-pixel-sm">
+                      <span className="absolute -left-2 -top-3 flex h-7 w-7 items-center justify-center rounded-lg bg-neonPink font-pixel text-[10px] text-night shadow-pixel-sm">
                         {index + 1}
                       </span>
                       <motion.span

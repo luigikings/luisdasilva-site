@@ -56,7 +56,7 @@ cumplidos). `Medido` = duración cronometrada o «n/a» (estático/condicional).
 
 | ID | Animación | Qué comunica | Límite | Medido | Entendible | Mov. reducido | Pasa | Notas |
 |----|-----------|--------------|--------|--------|------------|---------------|------|-------|
-| B1 | Contador % gigante y pop al completar | Progreso y fin | RF-1, RF-2 | total ≈2,5 s real (código: `PROGRESS_DURATION = 2000` × wobble medio ~0,8); pop 0,4 s | sí — número % + barra + botón comenzar | sí — 100 % directo, botón con foco | sí (código) | Total ≤ 3 s con margen; pendiente cronómetro ES/EN T10 |
+| B1 | Contador % gigante y pop al completar | Progreso y fin | RF-1, RF-2 | total ≈2,5 s real (código: `PROGRESS_DURATION = 2000` × wobble medio ~0,8); pop 0,4 s | sí — número % + barra + botón comenzar | sí — 100 % directo, botón con foco | **no** (medido 3,11–3,29 s, ver «Re-medición manual (spec 007, T9)») | El cálculo por código daba ≈ 2,5 s; el cronómetro desde confirmar idioma hasta botón habilitado excede 3 s |
 | B2 | Líneas de terminal apareciendo | Actividad de arranque | RF-1, RF-2 | ≈0,3 s/línea (código: fundido `opacity/x` por defecto framer) | sí — líneas acumulativas, cursor de bloque | sí — todas visibles a la vez | sí (código) | Ligadas a umbrales de progreso; nunca borran texto previo |
 | B3 | Segmentos de la barra iluminándose | Progreso | RF-1, RF-2 | 0,25 s/segmento (código); boost +6 puntos ≥ 5, reflejado en el mismo frame (< 0,2 s) | sí — número y barra cambian a la vez + texto flotante `+6%` | sí — barra llena directa | sí (código) | `BOOST_POINTS = 6`; `setState` síncrono en el manejador |
 | B4 | Personaje corriendo sobre la barra (bucle) | Carga en curso | RF-6, RF-7 | 0,35 s/ciclo (código: `duration: 0.35 repeat: Infinity`) | sí — corre sobre el % actual | sí — no se renderiza animación (fijo tras `done`) | sí (código) | Se detiene al completar (`done`) |
@@ -151,3 +151,65 @@ auricular/altavoz + homogeneidad percibida: pendiente T10.
   cronómetro en escritorio + 375 px queda pendiente para el validador
   (protocolo en el informe de T10). Ninguna fila queda en estado distinto al
   declarado: 0 filas inventadas, 0 mediciones fabricadas.
+
+## Re-medición manual (spec 007, T9) — 2026-10-12
+
+Qué es: medición real con el navegador integrado de la app (Chromium), `performance.now()` en la página y un bucle de `requestAnimationFrame` para huecos de fotograma. Entorno: build de producción servido con `vite preview` (puerto 5173) + backend local (3000) con destino de pruebas `.invalid` y sin clave de Resend; sin throttling de CPU/red; animaciones activas; Windows 11. Instante de interacción = `keydown/click` capturado en la página; instante de fin = primer fotograma en que cambia el DOM. Resolución ≈ 14 ms (1 fotograma). Una pasada completa por idioma (RNF-4: el mayor valor), más una pasada ES en 375 px. Solo hay valores medidos; lo que no se pudo medir figura como PENDIENTE.
+
+### 10a. Umbrales con cronómetro (RF-1, RF-3, RF-4, RF-5, RF-6, RF-12, RF-17)
+
+| Umbral | Inicio → fin (RNF-4) | Límite | ES (desktop) | EN (desktop) | ES 375 px | Peor caso | Veredicto |
+|--------|----------------------|--------|--------------|--------------|-----------|-----------|-----------|
+| RF-1 carga | confirmar idioma → «Comenzar» habilitado y con foco | ≤ 3 s | 3,17 s (foco en botón: sí) | 3,11 s (foco en botón: sí) | 3,29 s | 3,29 s | **NO PASA** (excede 0,11–0,29 s). Desde que monta la vista de carga: 2,71 s ES / 2,65 s EN; el resto es la salida de la vista de idioma (≈ 0,46 s). Servidor de desarrollo: 3,28 s ES |
+| RF-3 puerta | aparición de la escena → botón «Abrir la puerta» visible | ≤ 8 s | 4,04 s (2.ª pasada ES: 4,05 s) | 4,09 s | 4,06 s | 4,09 s | pasa |
+| RF-4 mensaje 1 | inicio → texto completo | ≤ 3 s | 0,667 s | 0,701 s | 0,667 s | 0,701 s | pasa |
+| RF-4 mensaje 2 | idem | ≤ 3 s | 0,861 s | 0,806 s | 0,840 s | 0,861 s | pasa |
+| RF-4 mensaje 3 | idem | ≤ 3 s | 1,375 s | 1,194 s | 1,361 s | 1,375 s | pasa |
+| RF-4 mensaje 4 | idem | ≤ 3 s | 1,514 s | 2,000 s | 1,500 s | 2,000 s | pasa |
+| RF-6 apertura | clic en entrar → entrevista visible e interactiva | ≤ 2 s | 1,63 s (título a 1,41 s) | 1,65 s (título a 1,43 s) | 1,64 s (título a 1,41 s) | 1,65 s | pasa |
+| RF-17 aviso | aparición → desaparición del DOM (primera pregunta) | ≤ 4 s | 3,85 s | 3,88 s | 3,88 s | 3,88 s | pasa (margen 0,12 s) |
+| RF-12 saltar texto | clic/Enter → texto completo | inmediato | Enter: 5 ms | clic: 1 ms | — | 5 ms | pasa |
+| RF-17 cierre por tecla | Escape → aviso retirado | 1 interacción | 0,48 s (1 tecla) | — | — | 0,48 s | pasa |
+| RF-5 idioma → carga | confirmar → vista de carga montada y anterior retirada | ≤ 0,6 s | 0,46 s | 0,46 s | 0,47 s | 0,47 s | pasa (hasta montaje; no incluye animaciones internas de la vista nueva) |
+| RF-5 carga → puerta | clic en comenzar → vista anterior retirada | ≤ 0,6 s | 0,22 s | 0,23 s | 0,24 s | 0,24 s | parcial: vista anterior retirada y nueva montada; la cota «ninguna animación finita en curso» fue 0,93 s (EN), que incluye la entrada propia de la escena (D1, 0,7 s). La cortina no se aisló: **PENDIENTE** de veredicto estricto |
+| RF-5 puerta → entrevista | (ver RF-6) | ≤ 0,6 s | — | — | — | — | cubierto por RF-6 (1,65 s ≤ 2 s); la parte de cortina sola queda **PENDIENTE** |
+
+Sin medir (PENDIENTE): RF-2 (impulso ≥ 5 puntos en < 0,2 s; la prueba con evento sintético fue inconcluyente: salto 0 → 15 % en 12 ms no distingue impulso de progreso natural), RF-8 (movimiento reducido ≤ 0,5 s; las herramientas del panel no permiten emular `prefers-reduced-motion`), RF-18 (celebraciones y sacudida ≤ 2,5 s, una por una) y duraciones individuales de cada fila A–H.
+
+### 10b. Fluidez (hueco de fotograma > 500 ms = congelamiento)
+
+| Pasada | Huecos > 100 ms | Congelamientos > 500 ms | Tareas largas (> 50 ms) | Desbordamiento horizontal | Veredicto |
+|--------|-----------------|-------------------------|-------------------------|---------------------------|-----------|
+| EN desktop, idioma → aviso de primera pregunta | 0 | 0 | 0 | — | pasa |
+| ES 375 px, idioma → aviso de primera pregunta | 0 (tras el arranque de la página) | 0 | 0 | 0 (ancho de documento 375) | pasa |
+| ES desktop, 1.ª pasada (con consultas de árbol de accesibilidad) | 2 | 2 de ≈ 1,0 s: montaje de la entrevista (+1,25 s tras entrar) y primer montaje de la lista de preguntas | 0 | — | **NO PASA** (observado) |
+| ES desktop, pasada de teclado | 3 | 2 de ≈ 1,0 s: montaje de la entrevista (+1,26 s tras entrar) y tras enviar la sugerencia | 0 | — | **NO PASA** (observado) |
+| ES desktop con servidor de desarrollo | 1 | 1 de 1,03 s en el montaje de la entrevista | 0 | — | (referencia, no oficial) |
+
+Lectura: en escritorio y en español el hueco de ≈ 1,0 s se repitió en 3 de 3 pasadas al montar la entrevista, sin tareas largas de JavaScript (apunta a pintado/composición, no a código), y no apareció en EN escritorio ni en ES 375 px. La causa no está determinada: puede depender de la máquina o del panel. Requiere repetición por el dueño en su navegador (ES, escritorio, DevTools > Rendimiento). Los huecos de 2,24 s y 0,30 s en 375 px ocurrieron antes de la primera interacción, con el panel todavía oculto (rAF pausado), y no cuentan.
+
+Dos ciclos «por animación» (RNF-1): NO se observaron visualmente las ≈ 40 filas A–H de dos ciclos cada una. Lo registrado arriba es el monitor de huecos durante 3 pasadas completas de escritorio (EN, ES, ES teclado) y 1 de 375 px, no la observación fila por fila: **PENDIENTE** para el dueño.
+
+### 10c. Escucha de sonidos G1–G12
+
+**PENDIENTE (dueño).** El entorno no tiene salida de audio ni forma de escuchar; no se estima nada. Solo se verificó por tecla que el interruptor de silencio (G12) cambia de etiqueta («Silenciar» y «Activar sonido»), alterna `aria-pressed` y persiste en `localStorage` (`lk-arcade-muted` 1 y 0), con foco visible. Filas G1–G11: escucha con volumen moderado y homogéneo sin hacer.
+
+### 10d. Recorrido solo-teclado (ES, escritorio, build de producción)
+
+| # | Acción | Resultado | Foco visible | Veredicto |
+|---|--------|-----------|--------------|-----------|
+| 1 | Elegir idioma (← →) | ArrowLeft preselecciona EN (título «Choose your language»), `lang` sigue en `es` hasta confirmar | tarjetas: contorno 2 px | pasa |
+| 2 | Confirmar idioma (Enter) | pasa a carga; `lang` = `en` | sí | pasa |
+| 3 | Comenzar (Enter) | el botón recibe el foco al habilitarse; Enter pasa a la puerta | 2 px + anillo | pasa |
+| 4 | Entrar (Enter) | el botón recibe el foco automático; Enter abre la puerta; el foco pasa al tutorial («¡Vamos!») | 2 px | pasa |
+| 5 | Elegir mundo y pregunta (Tab/Enter) | funcionan; Tab recorre mundos y preguntas con foco visible | 2 px en todos | pasa, con salvedad: al activar el mundo o la pregunta el foco cae a `body` (tarjeta desmontada) hasta el siguiente Tab |
+| 6 | Saltar texto (Enter) | texto completo en 5 ms (la tecla es global, foco en `body`) | n/a | pasa |
+| 7 | Cerrar avisos (Escape) | 1 tecla retira el aviso (0,48 s); el aviso de modo infinito no bloquea | sí | pasa |
+| 8 | Cerrar tutorial (Enter en «¡Vamos!») | cierra; el foco vuelve a `#main` | sí | pasa |
+| 9 | Activar modo infinito (Enter) | `aria-pressed` pasa a `true`, aparece aviso textual sin bloquear | 2 px | pasa |
+| 10 | Silenciar (Enter ×2) | etiqueta y estado cambian, persiste | 2 px | pasa |
+| 11 | Enviar sugerencia (Tab, escribir, Tab ×3, Enter) | éxito degradado «¡GRACIAS! Recibida, pero el aviso no se envió» (sin clave); Tab llega a OK; Enter cierra y el foco vuelve al botón de origen | sí; tras enviar el foco cae a `body` hasta el siguiente Tab | pasa, con salvedad |
+
+Hallazgo bloqueante en el salto al contenido (RF-2 de la 007, T2): en la pantalla de idioma, Tab revela «Saltar al contenido» (contorno 2 px + anillo, correcto), pero **Enter sobre ese enlace también confirma el idioma y avanza a la carga** (reproducido 2 de 2; el atajo de Enter de la pantalla de idioma recibe el evento del enlace). Contradice «sin saltar vistas» de RF-2. Pendiente de corregir en el código antes de cerrar la 007.
+
+Cobertura de contextos de foco (RF-4): idioma, carga, puerta, entrevista, aviso, tutorial y sugerencia vistos con teclado: contorno `solid` de 2–3 px en todos los elementos recorridos (`:focus-visible` verdadero). Contacto (enlaces/redes del pie y mundo «Contacto y portfolio») no recorrido en esta pasada: **PENDIENTE**. Teclado completo en EN: **PENDIENTE** (solo se verificó ←, Enter y `lang`).

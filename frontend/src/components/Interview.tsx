@@ -596,10 +596,12 @@ export function Interview({ isDeepLink = false }: { isDeepLink?: boolean }) {
         coinWarningGroup={coinWarningGroup}
         prefersReducedMotion={prefersReducedMotion}
         coinsCopy={coinsCopy}
+        navLabel={t('a11y.interviewNav')}
         repeatPrompt={t('interview.repeatPrompt')}
         groupPrompt={t('interview.groupPrompt')}
         selectPrompt={t('interview.selectPrompt')}
         backToCategories={t('interview.backToCategories')}
+        worldClearedLabel={t('interview.worldCleared')}
         escHint={hudCopy.escHint}
         onGroupSelect={handleGroupSelect}
         onBackToGroups={handleBackToGroups}
@@ -609,7 +611,10 @@ export function Interview({ isDeepLink = false }: { isDeepLink?: boolean }) {
 
       <SuggestionPrompt />
 
-      <footer className="mt-auto pt-6 text-center font-mono text-base text-muted/60">
+      <footer
+        aria-label={t('a11y.footer')}
+        className="mt-auto pt-6 text-center font-mono text-base text-muted"
+      >
         {t('footer.text')} <span className="text-neonPink">♥</span>
       </footer>
     </section>

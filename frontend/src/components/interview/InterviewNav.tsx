@@ -2,7 +2,6 @@ import { AnimatePresence, motion } from 'framer-motion'
 
 import { groupTheme, initialCoinsByGroup, questionCosts, questionEmojis } from '../../data/interview'
 import { isEssentialQuestion } from '../../lib/interviewAccess'
-import { useT } from '../../hooks/useT'
 import type { QuestionGroupKey, QuestionKey } from '../../i18n/dict'
 import { PixelCoin } from '../fx/PixelCoin'
 import { TiltCard } from '../fx/TiltCard'
@@ -28,10 +27,14 @@ type InterviewNavProps = {
   coinWarningGroup: QuestionGroupKey | null
   prefersReducedMotion: boolean | null
   coinsCopy: { remaining: string; unavailable: string; cost: string; free: string }
+  /** Accessible name of the interview navigation region (spec 007 RF-3). */
+  navLabel: string
   repeatPrompt: string
   groupPrompt: string
   selectPrompt: string
   backToCategories: string
+  /** World-cleared badge label (spec 007 RF-5, from interview.worldCleared). */
+  worldClearedLabel: string
   escHint: string
   onGroupSelect: (key: QuestionGroupKey) => void
   onBackToGroups: () => void
@@ -69,10 +72,12 @@ export function InterviewNav({
   coinWarningGroup,
   prefersReducedMotion,
   coinsCopy,
+  navLabel,
   repeatPrompt,
   groupPrompt,
   selectPrompt,
   backToCategories,
+  worldClearedLabel,
   escHint,
   onGroupSelect,
   onBackToGroups,
@@ -82,13 +87,12 @@ export function InterviewNav({
   const enter = prefersReducedMotion ? undefined : { opacity: 0, y: 24 }
   const shown = prefersReducedMotion ? undefined : { opacity: 1, y: 0 }
   const leave = prefersReducedMotion ? undefined : { opacity: 0, y: -16, transition: { duration: 0.2 } }
-  // RF-14: world-cleared badge keeps the same meaning in both languages
-  // (no dict key exists for it, so it switches on the active language).
-  const { lang } = useT()
-  const clearLabel = lang === 'es' ? 'COMPLETADO' : 'CLEAR'
+  // Spec 007 RF-5: the world-cleared badge label comes from the bilingual
+  // dictionary (interview.worldCleared), so it keeps the same completed-world
+  // meaning in ES/EN with no untranslated text.
 
   return (
-    <div className="w-full">
+    <div role="navigation" aria-label={navLabel} className="w-full">
       <AnimatePresence mode="wait">
         {isShowingCategories ? (
           <motion.div key="groups" initial={enter} animate={shown} exit={leave} className="flex flex-col gap-5">
@@ -148,11 +152,11 @@ export function InterviewNav({
                           />
                         </span>
                         <span className="flex items-center justify-between gap-2">
-                          <span className="font-mono text-lg leading-none text-muted">
+                          <span className="rounded bg-abyss/80 px-1.5 py-0.5 font-mono text-lg leading-none text-muted">
                             {answeredCount}/{total}
                           </span>
                           {showWarning ? (
-                            <span className="font-pixel text-[8px] text-danger">{coinsCopy.unavailable}</span>
+                            <span className="rounded bg-abyss/80 px-1.5 py-0.5 font-pixel text-[8px] text-danger">{coinsCopy.unavailable}</span>
                           ) : (
                             <CoinPips remaining={remainingCoins} max={initialCoinsByGroup[group.key]} infinite={infiniteCoins} />
                           )}
@@ -161,13 +165,13 @@ export function InterviewNav({
 
                       {allAnswered ? (
                         <motion.span
-                          className="absolute right-3 top-3 rotate-12 rounded-md border-2 px-2 py-1 font-pixel text-[8px]"
+                          className="absolute right-3 top-3 rotate-12 rounded-md border-2 bg-abyss/80 px-2 py-1 font-pixel text-[8px]"
                           style={{ borderColor: theme.color, color: theme.color, textShadow: `0 0 8px ${theme.color}` }}
                           initial={prefersReducedMotion ? undefined : { scale: 3, opacity: 0 }}
                           animate={prefersReducedMotion ? undefined : { scale: 1, opacity: 1 }}
                           transition={{ type: 'spring', stiffness: 400, damping: 12 }}
                         >
-                          {clearLabel} <span className="font-sans text-xs">★</span>
+                          {worldClearedLabel} <span className="font-sans text-xs">★</span>
                         </motion.span>
                       ) : null}
                     </TiltCard>
@@ -281,7 +285,7 @@ export function InterviewNav({
                       )
                     })}
                   </div>
-                  <p className="hidden text-center font-mono text-base text-muted/60 sm:block">{escHint}</p>
+                  <p className="hidden text-center font-mono text-base text-muted sm:block">{escHint}</p>
                 </>
               )
             })()}

@@ -231,14 +231,14 @@ export function ConversationPanel({
                             key={project.name}
                             type="button"
                             onClick={() => onProject(project.url)}
-                            className="btn-arcade bg-neonCyan text-ink"
+                            className="btn-arcade bg-neonCyan text-night"
                           >
                             {project.kind === 'demo' ? '🌐' : '💻'} {project.name}
                           </button>
                         ))
                       : null}
                     {selected === 'github' ? (
-                      <button type="button" onClick={onGithub} className="btn-arcade bg-neonPurple text-ink">
+                      <button type="button" onClick={onGithub} className="btn-arcade bg-neonPurple text-night">
                         🐙 {conversation.githubButton}
                       </button>
                     ) : null}
@@ -247,11 +247,11 @@ export function ConversationPanel({
                         <a
                           href={`mailto:${CONTACT_EMAIL}`}
                           aria-label={conversation.emailButton}
-                          className="btn-arcade bg-neonCyan text-ink [user-select:text]"
+                          className="btn-arcade bg-neonCyan text-night [user-select:text]"
                         >
                           ✉️ {CONTACT_EMAIL}
                         </a>
-                        <button type="button" onClick={onGithub} className="btn-arcade bg-neonPurple text-ink">
+                        <button type="button" onClick={onGithub} className="btn-arcade bg-neonPurple text-night">
                           🐙 {conversation.githubButton}
                         </button>
                       </>

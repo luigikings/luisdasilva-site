@@ -80,6 +80,7 @@ type DictSection = {
     selectPrompt: string
     repeatPrompt: string
     backToCategories: string
+    worldCleared: string
     quickBarLabel: string
     tutorial: {
       title: string
@@ -136,6 +137,13 @@ type DictSection = {
   }
   footer: {
     text: string
+  }
+  a11y: {
+    skipLink: string
+    header: string
+    main: string
+    interviewNav: string
+    footer: string
   }
   meta: {
     languageTitle: string
@@ -202,6 +210,7 @@ export const dict: Dict = {
       selectPrompt: 'Elige una pregunta',
       repeatPrompt: 'Repetir pregunta',
       backToCategories: 'Mundos',
+      worldCleared: 'COMPLETADO',
       quickBarLabel: 'Accesos directos: CV, GitHub y contacto',
       tutorial: {
         title: 'Cómo se juega',
@@ -408,6 +417,13 @@ export const dict: Dict = {
     footer: {
       text: 'Built with React + Tailwind + Framer Motion',
     },
+    a11y: {
+      skipLink: 'Saltar al contenido',
+      header: 'Cabecera',
+      main: 'Contenido principal',
+      interviewNav: 'Navegación de la entrevista',
+      footer: 'Pie',
+    },
     meta: {
       languageTitle: 'Preparando la entrevista',
       loadingTitles: ['cargando.', 'cargando..', 'cargando...'],
@@ -469,6 +485,7 @@ export const dict: Dict = {
       selectPrompt: 'Pick a question',
       repeatPrompt: 'Repeat question',
       backToCategories: 'Worlds',
+      worldCleared: 'CLEAR',
       quickBarLabel: 'Quick links: CV, GitHub and contact',
       tutorial: {
         title: 'How to play',
@@ -674,6 +691,13 @@ export const dict: Dict = {
     },
     footer: {
       text: 'Built with React + Tailwind + Framer Motion',
+    },
+    a11y: {
+      skipLink: 'Skip to content',
+      header: 'Header',
+      main: 'Main content',
+      interviewNav: 'Interview navigation',
+      footer: 'Footer',
     },
     meta: {
       languageTitle: 'Prepare for the interview',

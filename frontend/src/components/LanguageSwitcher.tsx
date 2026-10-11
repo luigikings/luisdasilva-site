@@ -13,12 +13,16 @@ export function LanguageSwitcher({ showLanguages = true }: { showLanguages?: boo
   const { muted, toggleMuted, sfx } = useSound()
 
   return (
-    <motion.div
+    <motion.header
+      role="banner"
+      aria-label={t('a11y.header')}
       initial={prefersReducedMotion ? undefined : { opacity: 0, y: -12 }}
       animate={prefersReducedMotion ? undefined : { opacity: 1, y: 0 }}
       transition={{ duration: 0.5, ease: 'easeOut' }}
       className="fixed right-3 top-3 z-50 flex items-center gap-2 sm:right-4 sm:top-4"
     >
+      {/* Site title for the header region (spec 007 RF-3: header holds title + switches) */}
+      <span className="sr-only">{t('interview.title')}</span>
       {showLanguages ? (
         <div
           role="group"
@@ -77,7 +81,7 @@ export function LanguageSwitcher({ showLanguages = true }: { showLanguages?: boo
       >
         <SpeakerIcon muted={muted} />
       </button>
-    </motion.div>
+    </motion.header>
   )
 }
 

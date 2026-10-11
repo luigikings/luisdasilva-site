@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { dict, type Language } from '../i18n/dict'
 import { useSound } from '../hooks/useSound'
 import { useT } from '../hooks/useT'
+import { canEnterShortcutAct } from '../lib/enterShortcut'
 import { centerOf, useFx } from './fx/FxProvider'
 import { TiltCard } from './fx/TiltCard'
 
@@ -56,7 +57,11 @@ export function LanguageIntroScreen({ onConfirm }: { onConfirm: () => void }) {
         const next = languageOrder[(index + (event.key === 'ArrowRight' ? 1 : -1) + languageOrder.length) % languageOrder.length]
         choose(next)
       }
-      if (event.key === 'Enter' && document.activeElement?.tagName !== 'BUTTON') {
+      if (
+        event.key === 'Enter' &&
+        canEnterShortcutAct((event.target as HTMLElement | null)?.tagName) &&
+        canEnterShortcutAct(document.activeElement?.tagName)
+      ) {
         handleConfirm()
       }
     }
@@ -152,7 +157,7 @@ export function LanguageIntroScreen({ onConfirm }: { onConfirm: () => void }) {
                 aria-label={dict[code].common.languageName}
                 whileTap={prefersReducedMotion ? undefined : { scale: 0.94 }}
                 className={`overflow-hidden rounded-3xl p-[3px] transition-[filter,opacity] duration-300 ${
-                  isActive ? 'opacity-100' : 'opacity-60 saturate-50 hover:opacity-90 hover:saturate-100'
+                  isActive ? 'opacity-100' : 'opacity-80 saturate-50 hover:opacity-90 hover:saturate-100'
                 }`}
               >
                 {/* Rotating conic border on the active card */}
@@ -198,7 +203,7 @@ export function LanguageIntroScreen({ onConfirm }: { onConfirm: () => void }) {
         {copy.confirm} ▶
       </motion.button>
 
-      <p className="hidden font-mono text-lg text-muted/70 sm:block">{copy.keyboardHint}</p>
+      <p className="hidden font-mono text-lg text-muted sm:block">{copy.keyboardHint}</p>
     </div>
   )
 }

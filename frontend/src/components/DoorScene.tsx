@@ -344,7 +344,7 @@ export function DoorScene({ onEnter }: DoorSceneProps) {
         <div className="flex items-stretch gap-3 rounded-2xl border-4 border-ink bg-abyss/95 p-3 text-left shadow-[0_0_0_4px_#0b0620,0_0_30px_rgba(155,92,255,0.5)]">
           <div className="relative flex w-20 shrink-0 flex-col items-center justify-end overflow-hidden rounded-lg border-2 border-line bg-gradient-to-b from-neonPurple/40 to-neonPink/30 sm:w-24">
             <img src="/imgs/main_caracter/LK_hablando1.png" alt="" className="pixelated h-20 w-20 object-cover object-top sm:h-24 sm:w-24" />
-            <span className="absolute left-1 top-1 rounded bg-neonPink px-1.5 py-0.5 font-pixel text-[7px] text-ink">LK</span>
+            <span className="absolute left-1 top-1 rounded bg-neonPink px-1.5 py-0.5 font-pixel text-[7px] text-night">LK</span>
           </div>
           <div className="flex min-h-[5.5rem] flex-1 items-center">
             <p className="font-mono text-2xl leading-tight text-ink sm:text-3xl">

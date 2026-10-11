@@ -252,7 +252,7 @@ export function LoadingScreen({ onStart }: { onStart: () => void }) {
         }}
         disabled={!done}
         aria-disabled={!done}
-        className="btn-arcade bg-neonPink px-10 py-4 text-xs text-ink"
+        className="btn-arcade bg-neonPink px-10 py-4 text-xs text-night"
         animate={
           done && !prefersReducedMotion
             ? { scale: [1, 1.07, 1], boxShadow: ['0 6px 0 0 rgba(0,0,0,0.55)', '0 6px 0 0 rgba(0,0,0,0.55), 0 0 34px rgba(255,62,165,0.9)', '0 6px 0 0 rgba(0,0,0,0.55)'] }

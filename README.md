@@ -107,6 +107,18 @@ When a visitor enters the interview, the backend receives a `POST /api/door-entr
 
 Recruiters arriving with the silent deep-link `?go=interview` skip straight to the interview in Spanish (entry notice and normal tutorial included); any address without that exact parameter keeps the full Language → Loading → Door → Interview flow unchanged. Example: `https://your-domain.com/?go=interview`.
 
+## RNF-3 — Guía de uso
+
+Este documento documenta cuatro temas clave afectantes al uso del portfolio:
+
+1. **Salto al contenido**: El visitante puede saltar al contenido principal de cualquier vista usando Tab y Enter, sin saltar vistas. El foco se mueve al contenido principal de la vista activa.
+
+2. **Deep-link silencioso**: La URL `?go=interview` permite a los reclutadores saltar directamente a la entrevista en español, sin pasar por el idioma y las vistas de carga y puerta. La dirección canónica es `https://luisdasilva-site.vercel.app/`.
+
+3. **Idioma declarado inicial**: La página declara español (`lang="es"`) como idioma desde la primera carga. El atributo de idioma se propaga cuando el visitante cambia entre español e inglés.
+
+4. **Vista previa del enlace**: Al compartir la dirección `https://luisdasilva-site.vercel.app/`, la tarjeta de vista previa muestra título, descripción e imagen fijos en español con la dirección canónica. Las metas og: y twitter: son únicas en español y no conmutan por idioma (los rastreadores no ejecutan guiones).
+
 The interview answers the questions recruiters actually ask, in Spanish and English: who Luis is (recent DAW graduate, full stack profile — React, TypeScript and TailwindCSS on the frontend, Node.js on the backend, MySQL/MariaDB/MongoDB for data, Git/Docker/Linux as tools), three projects with verifiable links that open in a new tab ([AgencyMac](https://github.com/luigikings/AgencyMac) — marketing agency site in TypeScript, .NET and Tailwind; [MetalRenova](https://github.com/luigikings/ChatarreroMetalRenova) — scrapyard site in Astro; [Magnar WarGames](https://www.magnarwargames.com/) — live demo only, no code link), what he is learning lately (interface animation and applied accessibility, both applied in this portfolio), and how to reach him: [luigidasilv@gmail.com](mailto:luigidasilv@gmail.com) as a `mailto:` link with the address always visible and copyable, plus a button opening [github.com/luigikings](https://github.com/luigikings) in a new tab. The CV downloads per language (`cv-luis-dasilva-en.pdf` / `cv-luis-dasilva-es.pdf`): while the Spanish file does not exist yet, Spanish visitors get the English file with a non-blocking notice instead of an error.
 
 ---

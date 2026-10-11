@@ -189,7 +189,7 @@ export function SuggestionPrompt() {
   }
 
   const inputClasses =
-    'w-full rounded-xl border-2 border-line bg-abyss/80 px-4 py-3 text-base text-ink placeholder:text-muted/50 transition-colors focus:border-neonCyan focus:outline-none'
+    'w-full rounded-xl border-2 border-[#6a5bb0] bg-abyss/80 px-4 py-3 text-base text-ink placeholder:text-muted transition-colors focus:border-neonCyan focus:outline-none'
 
   return (
     <div className="mt-6 flex justify-center">
@@ -316,12 +316,12 @@ export function SuggestionPrompt() {
                           measured on the trimmed value, like the backend caps. */}
                       <div className="flex items-center justify-between font-mono text-base">
                         <p
-                          className={`${question.trim().length >= 8 ? 'text-neonLime' : 'text-muted/60'}`}
+                          className={`${question.trim().length >= 8 ? 'text-neonLime' : 'text-muted'}`}
                         >
                           {question.trim().length}/8+
                         </p>
                         <p
-                          className={`${question.trim().length > 1000 ? 'text-danger' : 'text-muted/60'}`}
+                          className={`${question.trim().length > 1000 ? 'text-danger' : 'text-muted'}`}
                         >
                           {question.trim().length}/1000
                         </p>
@@ -343,7 +343,7 @@ export function SuggestionPrompt() {
                         onChange={(event) => setCategory(event.target.value)}
                       />
                       <p
-                        className={`text-right font-mono text-base ${category.trim().length > 100 ? 'text-danger' : 'text-muted/60'}`}
+                        className={`text-right font-mono text-base ${category.trim().length > 100 ? 'text-danger' : 'text-muted'}`}
                       >
                         {category.trim().length}/100
                       </p>
@@ -380,7 +380,7 @@ export function SuggestionPrompt() {
                         ref={submitRef}
                         type="submit"
                         disabled={status === 'loading'}
-                        className="btn-arcade bg-neonPink text-ink"
+                        className="btn-arcade bg-neonPink text-night"
                       >
                         {status === 'loading'
                           ? lang === 'es'
