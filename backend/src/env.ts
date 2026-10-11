@@ -16,8 +16,12 @@ const envSchema = z.object({
     .string()
     .transform((value) => Number.parseInt(value, 10))
     .pipe(z.number().int().positive()),
-  // Optional: server starts without email sending capability if these are absent
-  RESEND_API_KEY: z.string().min(1).optional(),
+  // Optional: server starts without email sending capability if these are absent.
+  // An explicitly empty key counts as absent (spec 002), so it must not fail startup.
+  RESEND_API_KEY: z.preprocess(
+    (value) => (value === '' ? undefined : value),
+    z.string().min(1).optional(),
+  ),
   EMAIL_FROM: z.string().min(1).optional(),
   // Required: nowhere to deliver suggestions without a recipient address
   SUGGESTION_EMAIL_TO: z.string().email(),

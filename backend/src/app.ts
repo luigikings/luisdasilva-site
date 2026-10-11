@@ -72,6 +72,11 @@ export function createApp() {
       const message = error.issues[0]?.message ?? 'Solicitud inválida.';
       return res.status(400).json({ error: message });
     }
+    // Malformed JSON never reaches validation: the JSON parser raises a
+    // SyntaxError with status 400 — report it as 400 without sending email.
+    if (error instanceof SyntaxError && (error as { status?: unknown }).status === 400 && 'body' in error) {
+      return res.status(400).json({ error: 'Solicitud inválida.' });
+    }
     console.error('Unhandled error:', error);
     return res.status(500).json({ error: 'Error interno del servidor.' });
   });
