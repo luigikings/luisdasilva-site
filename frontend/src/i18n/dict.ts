@@ -80,6 +80,7 @@ type DictSection = {
     selectPrompt: string
     repeatPrompt: string
     backToCategories: string
+    quickBarLabel: string
     tutorial: {
       title: string
       steps: { icon: string; text: string }[]
@@ -198,6 +199,7 @@ export const dict: Dict = {
       selectPrompt: 'Elige una pregunta',
       repeatPrompt: 'Repetir pregunta',
       backToCategories: 'Mundos',
+      quickBarLabel: 'Accesos directos: CV, GitHub y contacto',
       tutorial: {
         title: 'Cómo se juega',
         steps: [
@@ -461,6 +463,7 @@ export const dict: Dict = {
       selectPrompt: 'Pick a question',
       repeatPrompt: 'Repeat question',
       backToCategories: 'Worlds',
+      quickBarLabel: 'Quick links: CV, GitHub and contact',
       tutorial: {
         title: 'How to play',
         steps: [

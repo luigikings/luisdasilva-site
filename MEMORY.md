@@ -2,13 +2,16 @@
 Memoria del proyecto entre sesiones. Máximo ~50 líneas: resume o elimina lo que ya no aporte.
 
 ## Estado actual
-- Specs 001, 002 y 003 implementadas (003 cerrada 2026-10-11, VEREDICTO con manual pendiente aceptado por el usuario).
-- Tanda C1→C7 en curso, toca C2 (atajos de reclutador).
+- Specs 001–004 implementadas (004 cerrada 2026-10-11, manual pendiente aceptado por el usuario).
+- Tanda C1→C7 en curso, toca C3 (feedback honesto de sugerencias).
 - Todo lo automatizable en verde: lint front, build front+back, 7/7 lógica resolveCv.
 
 ## Decisiones (y porqué)
 - v1 = suavizar arcade hacia profesional directo (CV, proyectos, contacto accesibles): para reclutadores.
-- Cierre 003 con verificación manual en navegador pendiente (ES/EN + 375 px), aceptado por el usuario: nada fabricable sin MCP en este entorno.
+- Cierre 004 con matriz visual manual pendiente (con/sin ?go=interview × ES/EN × escritorio/375px), aceptado por el usuario: nada fabricable sin navegador/MCP en este entorno.
+- Deep-link solo sin botón ni pista en interfaz (guía pública sí lo documenta): silencio para no romper el arcade.
+- ES por defecto en deep-link con equivalencia completa al cambiar a EN: reclutador local primero, sin textos mezclados.
+- HUD persistente solo en deep-link (CV/GitHub/contacto a 1 interacción), inexistente en flujo normal: esencial sin monedas.
 - Magnar WarGames solo con demo verificada, sin enlace de código: no afirmar nada sobre su repo.
 - Sin LinkedIn (ni mención ni enlace), solo correo + GitHub: decisión explícita de contacto.
 - CV ES pendiente: mientras no exista, fallback al EN con aviso no bloqueante (RF-4).
@@ -24,9 +27,11 @@ Memoria del proyecto entre sesiones. Máximo ~50 líneas: resume o elimina lo qu
 - Código en inglés, UI ES/EN; sin SEO obligatorio (llegan por enlace directo); stack y deploy intactos salvo aprobación.
 
 ## Aprendizajes y errores a evitar
+- entryMode pura con split crudo (sin URLSearchParams) por `go=%69nterview`: comparación exacta, sin normalizar.
+- useT inicializa ES síncrono con deep-link (sin efecto post-montaje): evita flash EN→ES.
+- T4/T5 de 004 cubiertas por reutilización (RF-13 de 001 + tutorial/aviso intactos): sin delta.
 - resolveCv con `lang:unknown` para indeterminados (sirve EN + aviso EN): no forzar idioma activo.
 - Aviso EN forzado vía `dict.en` cuando el CV servido es el inglés: coherencia idioma-aviso.
-- Botones con window.open vs `<a>`: a valorar accesibilidad/lector en 375 px (pendiente manual).
 - Constructor Resend a nivel de módulo mata el arranque sin clave: instanciar en diferido.
 - Resend v4+ devuelve `{data, error}` en vez de lanzar: inspeccionar `error`, no solo try/catch.
 - Env con preprocess para `""`: vacía = ausente (clave) sin romper fail-fast del destinatario.
@@ -35,5 +40,5 @@ Memoria del proyecto entre sesiones. Máximo ~50 líneas: resume o elimina lo qu
 - No fabricar mediciones en audit: solo valores medidos o "pendiente".
 
 ## Próximos pasos
-- C2 atajos de reclutador (evitar la puerta sin romperla).
-- Push a GitHub de 003 si el usuario lo pide; RF-6 con clave real queda pendiente del dueño.
+- C3 feedback honesto de sugerencias.
+- Push a GitHub de 004 si el usuario lo pide; matriz visual pendiente en pasada con navegador.

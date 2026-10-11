@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
 
 import { dict, type Language } from '../i18n/dict'
+import { resolveEntryMode } from '../lib/entryMode'
 
 type LanguageContextValue = {
   lang: Language
@@ -21,6 +22,16 @@ const STORAGE_KEY = 'pixel-interrogatorio-lang'
  */
 export function LanguageProvider({ children }: { children: ReactNode }) {
   const [lang, setLangState] = useState<Language>(() => {
+    // Spec 004 T2: the silent recruiter deep-link (?go=interview) starts the
+    // interview in ES, so the query param wins over the stored language on
+    // every load (a reload with the param re-applies ES). Without it,
+    // the stored choice (or EN by default) is kept and the normal flow runs.
+    if (
+      typeof window !== 'undefined' &&
+      resolveEntryMode(window.location.search) === 'deeplink'
+    ) {
+      return 'es'
+    }
     if (typeof window === 'undefined') {
       return 'en'
     }

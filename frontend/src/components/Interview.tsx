@@ -23,6 +23,7 @@ import { AchievementToasts, type Toast } from './interview/AchievementToasts'
 import { ConversationPanel } from './interview/ConversationPanel'
 import { HudBar } from './interview/HudBar'
 import { InterviewNav } from './interview/InterviewNav'
+import { RecruiterQuickBar } from './interview/RecruiterQuickBar'
 import { SuggestionPrompt } from './SuggestionPrompt'
 import { dict, type AchievementKey, type QuestionGroupKey, type QuestionKey } from '../i18n/dict'
 
@@ -56,8 +57,13 @@ const DEFAULT_ACCENT = '#9b5cff'
  * Achievements:
  *   Toasts + confetti for the first question, each cleared world, halfway, 100%,
  *   infinite mode and the Konami code.
+ *
+ * Recruiter deep-link (spec 004, RF-5):
+ *   When `isDeepLink` is true, a persistent quick-access bar (CV, GitHub,
+ *   contact) is mounted above the conversation. It is never mounted otherwise,
+ *   so the normal flow has no trace of it.
  */
-export function Interview() {
+export function Interview({ isDeepLink = false }: { isDeepLink?: boolean }) {
   const { t, lang } = useT()
   const { sfx } = useSound()
   const fx = useFx()
@@ -86,6 +92,7 @@ export function Interview() {
     free: string
   }>('interview.coins')
   const hudCopy = t<{ player: string; progress: string; level: string; escHint: string }>('interview.hud')
+  const quickBarLabel = t<string>('interview.quickBarLabel')
 
   const groupEntries = useMemo(
     () =>
@@ -539,6 +546,18 @@ export function Interview() {
         coinsCopy={coinsCopy}
         hudCopy={hudCopy}
       />
+
+      {/* Spec 004 T3 (RF-5): persistent CV/GitHub/contact bar, mounted only in
+          an interview reached via the silent deep-link. Never mounted in the
+          normal flow, so it does not exist there. */}
+      {isDeepLink ? (
+        <RecruiterQuickBar
+          label={quickBarLabel}
+          cvUrl={resolvedCv.url}
+          cvDownloadName={resolvedCv.downloadName}
+          copy={conversationForPanel}
+        />
+      ) : null}
 
       <div ref={stageRef} className="scroll-mt-20">
         <h1 className="sr-only">{t('interview.title')}</h1>

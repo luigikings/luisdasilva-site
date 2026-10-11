@@ -14,12 +14,28 @@ import { dict } from '../i18n/dict'
 import { useSound } from '../hooks/useSound'
 import { useT } from '../hooks/useT'
 import { notifyDoorEntry } from '../lib/api'
+import { resolveEntryMode } from '../lib/entryMode'
+
+/**
+ * Reads the silent recruiter deep-link once at startup (spec 004, RF-1/RF-2).
+ * Pure query check only — the UI renders the initial state from its result.
+ */
+function readDeepLinkEntry(): boolean {
+  if (typeof window === 'undefined') {
+    return false
+  }
+  return resolveEntryMode(window.location.search) === 'deeplink'
+}
 
 /**
  * Top-level view controller for the entire interview experience.
  *
  * View state machine:
  *   language → loading → door → interview
+ *
+ * Bounded spec-004 exception: a silent recruiter deep-link (`?go=interview`)
+ * starts directly in the interview in ES, skipping language/loading/door
+ * with no prior interaction. Any other address runs the normal flow intact.
  *
  * Each view fills the full viewport and transitions via AnimatePresence (mode="wait"),
  * so only one view is mounted at a time. Every view change is revealed by a
@@ -63,13 +79,22 @@ function PixelWipe() {
 
 export function InterviewExperience() {
   const prefersReducedMotion = useReducedMotion()
-  const { lang, t } = useT()
+  const { lang, setLang, t } = useT()
   const { sfx } = useSound()
   const fx = useFx()
-  const [view, setView] = useState<ViewKey>('language')
+  // Spec 004 (RF-1/RF-2/RF-3): the query is read once at startup; every
+  // deep-link decision (initial view, tutorial, HUD) renders from this value.
+  const [isDeepLinkEntry] = useState(readDeepLinkEntry)
+  // Spec 004 T2 (RF-1/RF-2/RF-3): with the deep-link the interview in ES is
+  // the initial state — no language/loading/door views are ever mounted, so
+  // there is no flash of them. Without it the normal flow starts at language.
+  const [view, setView] = useState<ViewKey>(() => (isDeepLinkEntry ? 'interview' : 'language'))
   const [loadingTitleIndex, setLoadingTitleIndex] = useState(0)
-  const [showTutorial, setShowTutorial] = useState(false)
+  // Same tutorial as the normal flow (RF-6); only its trigger differs.
+  const [showTutorial, setShowTutorial] = useState(isDeepLinkEntry)
   const tutorialButtonRef = useRef<HTMLButtonElement>(null)
+  // Guards the one-shot deep-link entry notice against StrictMode remounts.
+  const deepLinkNotifiedRef = useRef(false)
 
   const loadingTitles = useMemo(() => dict[lang].meta.loadingTitles, [lang])
   const tutorial = t<{
@@ -119,6 +144,29 @@ export function InterviewExperience() {
   useEffect(() => {
     window.scrollTo({ top: 0 })
   }, [view])
+
+  // Spec 004 T2 (RF-6/RF-3): on a deep-link entry, keep ES as the starting
+  // language (the query param wins on every load) and fire the same entry
+  // notice as the normal flow. Switching to EN inside stays available via
+  // the language switcher, which is rendered in the interview view.
+  useEffect(() => {
+    if (!isDeepLinkEntry) {
+      return
+    }
+    if (lang !== 'es') {
+      setLang('es')
+    }
+    if (deepLinkNotifiedRef.current) {
+      return
+    }
+    deepLinkNotifiedRef.current = true
+    // Fire-and-forget: a failed notification should never block the interview
+    void notifyDoorEntry({ lang: 'es' }).catch((error) => {
+      console.warn('Failed to notify door entry.', error)
+    })
+    // Runs once at startup: the query string is read, not watched.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const handleConfirmLanguage = () => setView('loading')
   const handleStart = () => setView('door')
@@ -200,7 +248,7 @@ export function InterviewExperience() {
           ) : null}
           {view === 'loading' ? <LoadingScreen onStart={handleStart} /> : null}
           {view === 'door' ? <DoorScene onEnter={handleEnter} /> : null}
-          {view === 'interview' ? <Interview /> : null}
+          {view === 'interview' ? <Interview isDeepLink={isDeepLinkEntry} /> : null}
           {!prefersReducedMotion && view !== 'language' ? <PixelWipe /> : null}
         </motion.main>
       </AnimatePresence>
