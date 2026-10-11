@@ -112,8 +112,15 @@ type DoorEntryPayload = {
   lang?: string
 }
 
+/** 201 shape of POST /api/suggestions and POST /api/door-entry (spec 002) */
+export type SuggestionResult = {
+  ok: boolean
+  emailSent: boolean
+  error: string | null
+}
+
 export async function submitSuggestion(payload: SuggestionPayload) {
-  return apiFetch<{ ok: boolean }>('/suggestions', {
+  return apiFetch<SuggestionResult>('/suggestions', {
     method: 'POST',
     body: JSON.stringify(payload),
   })

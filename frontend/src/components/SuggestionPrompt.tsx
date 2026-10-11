@@ -5,7 +5,9 @@ import type { FormEvent } from 'react'
 
 import { useSound } from '../hooks/useSound'
 import { useT } from '../hooks/useT'
-import { ApiError, submitSuggestion } from '../lib/api'
+import { dict, type Language } from '../i18n/dict'
+import { submitSuggestion } from '../lib/api'
+import { resolveSuggestionOutcome } from '../lib/suggestionOutcome'
 import { centerOf, useFx } from './fx/FxProvider'
 
 /**
@@ -27,6 +29,7 @@ export function SuggestionPrompt() {
     submit: string
     successTitle: string
     successMessage: string
+    degradedMessage: string
     errorMessage: string
     validationMessage: string
   }>('suggestions')
@@ -42,8 +45,13 @@ export function SuggestionPrompt() {
   const [isOpen, setIsOpen] = useState(false)
   const [question, setQuestion] = useState('')
   const [category, setCategory] = useState('')
-  const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle')
+  const [status, setStatus] = useState<
+    'idle' | 'loading' | 'success' | 'degraded' | 'error'
+  >('idle')
   const [message, setMessage] = useState<string | null>(null)
+  // Language frozen at submit time (EN fallback): the visible notice never
+  // changes on a later language switch (spec 005 RF-7).
+  const [noticeLang, setNoticeLang] = useState<Language>('en')
 
   // Reset all form state on close so re-opening always starts fresh
   useEffect(() => {
@@ -52,6 +60,7 @@ export function SuggestionPrompt() {
       setCategory('')
       setStatus('idle')
       setMessage(null)
+      setNoticeLang('en')
     }
   }, [isOpen])
 
@@ -101,11 +110,14 @@ export function SuggestionPrompt() {
     event.preventDefault()
     const trimmedQuestion = question.trim()
     const trimmedCategory = category.trim()
+    // Freeze the active language at submit time; anything indeterminate
+    // falls back to EN so every notice is generated in a single language.
+    const submitLang: Language = lang === 'es' ? 'es' : 'en'
 
     // Client-side guard mirrors the 8-char minimum enforced by the backend schema
     if (trimmedQuestion.length < 8) {
       sfx.error()
-      setMessage(copy.validationMessage)
+      setMessage(dict[submitLang].suggestions.validationMessage)
       return
     }
 
@@ -113,27 +125,49 @@ export function SuggestionPrompt() {
     setMessage(null)
 
     try {
-      await submitSuggestion({
+      const result = await submitSuggestion({
         text: trimmedQuestion,
         category: trimmedCategory ? trimmedCategory : undefined,
         lang,
       })
-      setStatus('success')
-      setMessage(copy.successMessage)
+      // Describe the raw payload shape for the pure outcome resolver:
+      // only a JSON object with a boolean `emailSent` can be success or
+      // degraded — anything else (empty, text or missing flag) is an error.
+      // The technical `error` detail is never passed on to the view (RF-4).
+      const raw: unknown = result
+      const outcome = resolveSuggestionOutcome({
+        emailSent:
+          typeof raw === 'object' && raw !== null
+            ? (raw as { emailSent?: unknown }).emailSent as boolean | undefined
+            : undefined,
+        hasBody: raw !== undefined && raw !== null,
+        isJson: typeof raw === 'object' && raw !== null,
+      })
+      if (outcome === 'error') {
+        setStatus('error')
+        setNoticeLang(submitLang)
+        setMessage(dict[submitLang].suggestions.errorMessage)
+        sfx.error()
+        return
+      }
+      if (outcome === 'degraded') {
+        setStatus('degraded')
+        setNoticeLang(submitLang)
+        setMessage(dict[submitLang].suggestions.degradedMessage)
+      } else {
+        setStatus('success')
+        setNoticeLang(submitLang)
+        setMessage(dict[submitLang].suggestions.successMessage)
+      }
       sfx.achievement()
       fx.burst(centerOf(submitRef.current), { count: 70, speed: 11, size: 8 })
     } catch (error) {
       console.error(error)
-      // Prefer the server's error message when available for better user feedback
-      const apiMessage =
-        error instanceof ApiError &&
-        typeof error.body === 'object' &&
-        error.body &&
-        'error' in error.body
-          ? String((error.body as { error?: string }).error)
-          : null
+      // Any rejection (400/500/network): the current error notice in the
+      // frozen language. Server details never reach the visible message.
       setStatus('error')
-      setMessage(apiMessage ?? copy.errorMessage)
+      setNoticeLang(submitLang)
+      setMessage(dict[submitLang].suggestions.errorMessage)
       sfx.error()
     }
   }
@@ -220,7 +254,7 @@ export function SuggestionPrompt() {
                   </button>
                 </div>
 
-                {status === 'success' ? (
+                {status === 'success' || status === 'degraded' ? (
                   <motion.div
                     initial={
                       prefersReducedMotion ? undefined : { scale: 0.8, opacity: 0 }
@@ -230,7 +264,7 @@ export function SuggestionPrompt() {
                   >
                     <p className="text-4xl">🎉</p>
                     <p className="mt-2 font-pixel text-[10px] uppercase text-neonLime">
-                      {copy.successTitle}
+                      {dict[noticeLang].suggestions.successTitle}
                     </p>
                     <p className="mt-2 text-sm text-ink/80">{message}</p>
                     <button

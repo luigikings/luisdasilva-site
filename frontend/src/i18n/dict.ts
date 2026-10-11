@@ -128,6 +128,7 @@ type DictSection = {
     submit: string
     successTitle: string
     successMessage: string
+    degradedMessage: string
     errorMessage: string
     validationMessage: string
   }
@@ -396,6 +397,7 @@ export const dict: Dict = {
       submit: 'Enviar sugerencia',
       successTitle: '¡Gracias!',
       successMessage: 'Tu propuesta fue enviada. La revisaré pronto.',
+      degradedMessage: 'Recibida, pero el aviso no se envió',
       errorMessage: 'No se pudo enviar la sugerencia. Intenta nuevamente.',
       validationMessage: 'Por favor escribe una pregunta con al menos 8 caracteres.',
     },
@@ -660,6 +662,7 @@ export const dict: Dict = {
       submit: 'Send suggestion',
       successTitle: 'Thank you!',
       successMessage: 'Your suggestion was sent. I will review it soon.',
+      degradedMessage: 'Received, but the notification was not sent',
       errorMessage: 'Could not send the suggestion. Please try again.',
       validationMessage: 'Please write a question with at least 8 characters.',
     },
