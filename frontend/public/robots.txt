@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://luisdasilva-site.vercel.app/sitemap.xml
+Sitemap: https://www.luisdasilvadev.com/sitemap.xml

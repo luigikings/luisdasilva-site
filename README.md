@@ -113,11 +113,11 @@ Este documento documenta cuatro temas clave afectantes al uso del portfolio:
 
 1. **Salto al contenido**: El visitante puede saltar al contenido principal de cualquier vista usando Tab y Enter, sin saltar vistas. El foco se mueve al contenido principal de la vista activa.
 
-2. **Deep-link silencioso**: La URL `?go=interview` permite a los reclutadores saltar directamente a la entrevista en español, sin pasar por el idioma y las vistas de carga y puerta. La dirección canónica es `https://luisdasilva-site.vercel.app/`.
+2. **Deep-link silencioso**: La URL `?go=interview` permite a los reclutadores saltar directamente a la entrevista en español, sin pasar por el idioma y las vistas de carga y puerta. La dirección canónica es `https://www.luisdasilvadev.com/`.
 
 3. **Idioma declarado inicial**: La página declara español (`lang="es"`) como idioma desde la primera carga. El atributo de idioma se propaga cuando el visitante cambia entre español e inglés.
 
-4. **Vista previa del enlace**: Al compartir la dirección `https://luisdasilva-site.vercel.app/`, la tarjeta de vista previa muestra título, descripción e imagen fijos en español con la dirección canónica. Las metas og: y twitter: son únicas en español y no conmutan por idioma (los rastreadores no ejecutan guiones).
+4. **Vista previa del enlace**: Al compartir la dirección `https://www.luisdasilvadev.com/`, la tarjeta de vista previa muestra título, descripción e imagen fijos en español con la dirección canónica. Las metas og: y twitter: son únicas en español y no conmutan por idioma (los rastreadores no ejecutan guiones).
 
 The interview answers the questions recruiters actually ask, in Spanish and English: who Luis is (recent DAW graduate, full stack profile — React, TypeScript and TailwindCSS on the frontend, Node.js on the backend, MySQL/MariaDB/MongoDB for data, Git/Docker/Linux as tools), three projects with verifiable links that open in a new tab ([AgencyMac](https://github.com/luigikings/AgencyMac) — marketing agency site in TypeScript, .NET and Tailwind; [MetalRenova](https://github.com/luigikings/ChatarreroMetalRenova) — scrapyard site in Astro; [Magnar WarGames](https://www.magnarwargames.com/) — live demo only, no code link), what he is learning lately (interface animation and applied accessibility, both applied in this portfolio), and how to reach him: [luigidasilv@gmail.com](mailto:luigidasilv@gmail.com) as a `mailto:` link with the address always visible and copyable, plus a button opening [github.com/luigikings](https://github.com/luigikings) in a new tab. The CV downloads per language (`cv-luis-dasilva-en.pdf` / `cv-luis-dasilva-es.pdf`): while the Spanish file does not exist yet, Spanish visitors get the English file with a non-blocking notice instead of an error.
 
@@ -156,7 +156,7 @@ SUGGESTION_EMAIL_TO=your@email.com
 
 # Backend — server
 PORT=3000
-CORS_ORIGINS=http://localhost:5173,https://luisdasilva-site.vercel.app
+CORS_ORIGINS=http://localhost:5173,https://www.luisdasilvadev.com,https://luisdasilvadev.com
 
 # Frontend (Vite reads this at build time)
 VITE_API_URL=http://localhost:3000
@@ -226,7 +226,7 @@ npm run start
 | `RESEND_API_KEY` | Optional* | Resend API key. Without it, emails are skipped but the server still starts. |
 | `EMAIL_FROM` | Optional* | Sender address shown in outgoing emails. Bare address only (e.g. `noreply@yourdomain.com`); `Name <mail>` or multiple addresses are invalid and fail startup. Defaults to `LuisDaSilvaDev <noreply@luisdasilvadev.com>` when absent or blank. |
 | `SUGGESTION_EMAIL_TO` | **Required** | Recipient address for suggestion and door-entry notifications. |
-| `CORS_ORIGINS` | Optional | Comma-separated list of allowed browser origins. Defaults to `http://localhost:5173` and `https://luisdasilva-site.vercel.app` when absent or empty. |
+| `CORS_ORIGINS` | Optional | Comma-separated list of allowed browser origins. Defaults to `http://localhost:5173`, `https://www.luisdasilvadev.com` and `https://luisdasilvadev.com` when absent or empty. |
 | `PORT` | Optional | Backend port. Defaults to `3000`. |
 | `VITE_API_URL` | **Required** | Base URL of the backend, read by the frontend at build time. |
 

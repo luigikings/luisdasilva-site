@@ -7,7 +7,8 @@ config();
 /** Defaults used when CORS_ORIGINS is absent or yields no usable entry (spec 006 RF-11). */
 export const DEFAULT_CORS_ORIGINS = [
   'http://localhost:5173',
-  'https://luisdasilva-site.vercel.app',
+  'https://www.luisdasilvadev.com',
+  'https://luisdasilvadev.com',
 ];
 
 /**
@@ -15,7 +16,7 @@ export const DEFAULT_CORS_ORIGINS = [
  * Each entry is trimmed, lowercased and stripped of trailing slashes;
  * the port is respected. Empty or invalid entries are ignored and the
  * subdomain must match exactly (no wildcards). Absent/empty input — or a
- * list with no usable entry — falls back to the two defaults.
+ * list with no usable entry — falls back to the defaults.
  */
 export function normalizeOrigins(raw: string | undefined): string[] {
   if (raw === undefined) {
