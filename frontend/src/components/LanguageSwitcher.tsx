@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion'
+import { motion, useReducedMotion } from 'framer-motion'
 
 import { dict, type Language } from '../i18n/dict'
 import { useSound } from '../hooks/useSound'
@@ -8,13 +8,14 @@ const languages: Language[] = ['es', 'en']
 
 /** Fixed top-right HUD: language flags + 8-bit sound toggle, available on every view after the first */
 export function LanguageSwitcher({ showLanguages = true }: { showLanguages?: boolean }) {
+  const prefersReducedMotion = useReducedMotion()
   const { lang, setLang, t } = useT()
   const { muted, toggleMuted, sfx } = useSound()
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: -12 }}
-      animate={{ opacity: 1, y: 0 }}
+      initial={prefersReducedMotion ? undefined : { opacity: 0, y: -12 }}
+      animate={prefersReducedMotion ? undefined : { opacity: 1, y: 0 }}
       transition={{ duration: 0.5, ease: 'easeOut' }}
       className="fixed right-3 top-3 z-50 flex items-center gap-2 sm:right-4 sm:top-4"
     >
@@ -36,16 +37,20 @@ export function LanguageSwitcher({ showLanguages = true }: { showLanguages?: boo
                 }}
                 aria-pressed={active}
                 aria-label={dict[code].common.languageName}
-                className={`relative flex h-9 w-9 items-center justify-center rounded-full transition-all duration-300 ${
-                  active ? '' : 'opacity-60 hover:scale-110 hover:opacity-100'
+                className={`relative flex h-9 w-9 items-center justify-center rounded-full transition-all duration-300 motion-reduce:transition-none ${
+                  active ? '' : 'opacity-60 hover:scale-110 hover:opacity-100 motion-reduce:hover:scale-100'
                 }`}
               >
                 {active ? (
-                  <motion.span
-                    layoutId="lang-pill"
-                    className="absolute inset-0 rounded-full bg-gradient-to-br from-neonCyan to-neonPurple shadow-neon"
-                    transition={{ type: 'spring', stiffness: 420, damping: 30 }}
-                  />
+                  prefersReducedMotion ? (
+                    <span className="absolute inset-0 rounded-full bg-gradient-to-br from-neonCyan to-neonPurple shadow-neon" />
+                  ) : (
+                    <motion.span
+                      layoutId="lang-pill"
+                      className="absolute inset-0 rounded-full bg-gradient-to-br from-neonCyan to-neonPurple shadow-neon"
+                      transition={{ type: 'spring', stiffness: 420, damping: 30 }}
+                    />
+                  )
                 ) : null}
                 <img
                   src={`/imgs/languages/lang_${code}.png`}
@@ -68,7 +73,7 @@ export function LanguageSwitcher({ showLanguages = true }: { showLanguages?: boo
         aria-pressed={!muted}
         aria-label={muted ? t('common.soundOn') : t('common.soundOff')}
         title={muted ? t('common.soundOn') : t('common.soundOff')}
-        className="flex h-11 w-11 items-center justify-center rounded-full border-2 border-line bg-abyss/80 text-lg backdrop-blur-md transition-colors hover:border-neonCyan"
+        className="flex h-11 w-11 items-center justify-center rounded-full border-2 border-line bg-abyss/80 text-lg backdrop-blur-md transition-colors hover:border-neonCyan motion-reduce:transition-none"
       >
         <SpeakerIcon muted={muted} />
       </button>

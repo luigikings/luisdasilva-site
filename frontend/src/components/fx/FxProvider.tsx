@@ -59,6 +59,23 @@ type FxApi = {
 export const NEON_COLORS = ['#22e4ff', '#ff3ea5', '#ffd23f', '#7cff6b', '#9b5cff', '#ff8a3d']
 const COIN_COLORS = ['#ffd23f', '#ffb800', '#fff1a8']
 
+/**
+ * RF-9 budget: at most 1 full-screen flash per view change, <= 300 ms total,
+ * veil opacity <= 35 %, never looped. The clamp below is the single
+ * enforcement point so no call site can exceed the veil limit.
+ */
+const MAX_FLASH_ALPHA = 0.35
+const FLASH_VISIBLE_MS = 120
+const FLASH_FADE_S = 0.18
+const FLASH_MIN_GAP_MS = 500
+
+function clampFlashColor(color: string): string {
+  const match = color.match(/rgba\(\s*([\d.]+)\s*,\s*([\d.]+)\s*,\s*([\d.]+)\s*,\s*([\d.]+)\s*\)/)
+  if (!match) return color
+  const alpha = Math.min(Number(match[4]), MAX_FLASH_ALPHA)
+  return `rgba(${match[1]},${match[2]},${match[3]},${alpha})`
+}
+
 const noop = () => undefined
 const FxContext = createContext<FxApi>({
   burst: noop,
@@ -145,6 +162,7 @@ export function FxProvider({ children }: { children: ReactNode }) {
   const textId = useRef(0)
   const [texts, setTexts] = useState<FloatingText[]>([])
   const [flashColor, setFlashColor] = useState<string | null>(null)
+  const lastFlash = useRef(0)
   const reducedRef = useRef(prefersReducedMotion)
   reducedRef.current = prefersReducedMotion
 
@@ -220,6 +238,21 @@ export function FxProvider({ children }: { children: ReactNode }) {
     }
   }, [])
 
+  // RF-8: enabling reduced motion mid-celebration clears everything in
+  // flight (particles, floating labels, veil) so the screen reaches its
+  // final still state on the next paint, well within the 0.5 s budget.
+  useEffect(() => {
+    if (!prefersReducedMotion) return
+    particles.current = []
+    if (frame.current !== null) {
+      cancelAnimationFrame(frame.current)
+      frame.current = null
+    }
+    canvasRef.current?.getContext('2d')?.clearRect(0, 0, window.innerWidth, window.innerHeight)
+    setTexts([])
+    setFlashColor(null)
+  }, [prefersReducedMotion])
+
   const api = useMemo<FxApi>(() => {
     const add = (list: Particle[]) => {
       if (reducedRef.current) return
@@ -266,6 +299,8 @@ export function FxProvider({ children }: { children: ReactNode }) {
 
     const confetti: FxApi['confetti'] = () => {
       const width = window.innerWidth
+      // RF-18: single shot, <= 2.5 s on screen (~150 frames at 60 fps), no repeat
+      const CELEBRATION_LIFE = 150
       const list: Particle[] = []
       for (let i = 0; i < 160; i += 1) {
         list.push({
@@ -275,8 +310,8 @@ export function FxProvider({ children }: { children: ReactNode }) {
           vy: rand(2, 6),
           size: rand(5, 10),
           color: pick(NEON_COLORS),
-          life: 260,
-          maxLife: 260,
+          life: CELEBRATION_LIFE,
+          maxLife: CELEBRATION_LIFE,
           gravity: 0.06,
           drag: 0.995,
           rotation: rand(0, Math.PI),
@@ -297,8 +332,8 @@ export function FxProvider({ children }: { children: ReactNode }) {
             vy: rand(-16, -8),
             size: rand(5, 9),
             color: pick(NEON_COLORS),
-            life: 200,
-            maxLife: 200,
+            life: 140,
+            maxLife: 140,
             gravity: 0.3,
             drag: 0.985,
             rotation: rand(0, Math.PI),
@@ -311,6 +346,8 @@ export function FxProvider({ children }: { children: ReactNode }) {
     }
 
     const coinRain: FxApi['coinRain'] = (count = 60) => {
+      // RF-18: single shot, <= 2.5 s on screen (~150 frames at 60 fps), no repeat
+      const CELEBRATION_LIFE = 150
       const list: Particle[] = []
       for (let i = 0; i < count; i += 1) {
         list.push({
@@ -320,8 +357,8 @@ export function FxProvider({ children }: { children: ReactNode }) {
           vy: rand(3, 7),
           size: rand(7, 12),
           color: pick(COIN_COLORS),
-          life: 320,
-          maxLife: 320,
+          life: CELEBRATION_LIFE,
+          maxLife: CELEBRATION_LIFE,
           gravity: 0.12,
           drag: 0.995,
           rotation: rand(0, Math.PI),
@@ -362,6 +399,9 @@ export function FxProvider({ children }: { children: ReactNode }) {
     }
 
     const floatText: FxApi['floatText'] = (point, text, color = '#ffd23f') => {
+      // RF-7: no floating labels while reduced motion is on (the HUD
+      // counters already carry the same information as static text).
+      if (reducedRef.current) return
       const id = (textId.current += 1)
       setTexts((prev) => [...prev, { id, x: point.x, y: point.y, text, color }])
       window.setTimeout(() => {
@@ -383,8 +423,13 @@ export function FxProvider({ children }: { children: ReactNode }) {
 
     const flash: FxApi['flash'] = (color = 'rgba(255,255,255,0.6)') => {
       if (reducedRef.current) return
-      setFlashColor(color)
-      window.setTimeout(() => setFlashColor(null), 120)
+      // RF-9: ignore repeats within the gap so a double click can only
+      // ever produce a single flash per view change (never looped).
+      const now = Date.now()
+      if (now - lastFlash.current < FLASH_MIN_GAP_MS) return
+      lastFlash.current = now
+      setFlashColor(clampFlashColor(color))
+      window.setTimeout(() => setFlashColor(null), FLASH_VISIBLE_MS)
     }
 
     return { burst, confetti, coinRain, flyCoin, floatText, shake, flash }
@@ -423,7 +468,7 @@ export function FxProvider({ children }: { children: ReactNode }) {
             style={{ background: flashColor }}
             initial={{ opacity: 1 }}
             animate={{ opacity: 1 }}
-            exit={{ opacity: 0, transition: { duration: 0.35 } }}
+            exit={{ opacity: 0, transition: { duration: FLASH_FADE_S } }}
           />
         ) : null}
       </AnimatePresence>

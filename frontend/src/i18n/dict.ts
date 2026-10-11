@@ -184,7 +184,7 @@ export const dict: Dict = {
       ready: '¡Listo!',
     },
     door: {
-      intro: 'Holaaa ¿se puede entrar??!!',
+      intro: '¡Hola! ¿Puedo pasar?',
       button: 'Abrir la puerta',
       knock: 'TOC TOC',
     },
@@ -445,7 +445,7 @@ export const dict: Dict = {
       ready: 'Ready!',
     },
     door: {
-      intro: 'Heeey! May I come in??!!',
+      intro: 'Hello! May I come in?',
       button: 'Open the door',
       knock: 'KNOCK KNOCK',
     },

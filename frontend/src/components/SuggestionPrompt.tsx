@@ -35,6 +35,10 @@ export function SuggestionPrompt() {
   const fx = useFx()
   const prefersReducedMotion = useReducedMotion()
   const submitRef = useRef<HTMLButtonElement>(null)
+  const openButtonRef = useRef<HTMLButtonElement>(null)
+  const dialogRef = useRef<HTMLDivElement>(null)
+  const questionRef = useRef<HTMLTextAreaElement>(null)
+  const previousFocusRef = useRef<HTMLElement | null>(null)
   const [isOpen, setIsOpen] = useState(false)
   const [question, setQuestion] = useState('')
   const [category, setCategory] = useState('')
@@ -55,16 +59,41 @@ export function SuggestionPrompt() {
     if (!isOpen) {
       return
     }
+    // RF-21: move focus into the dialog on open and return it to the
+    // opener on close, so keyboard visitors never lose their place.
+    previousFocusRef.current =
+      document.activeElement instanceof HTMLElement ? document.activeElement : null
+    questionRef.current?.focus()
 
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
         setIsOpen(false)
+        return
+      }
+      if (event.key === 'Tab') {
+        // Keep Tab cycling inside the dialog while it is open.
+        const focusable = dialogRef.current?.querySelectorAll<HTMLElement>(
+          'button, [href], input, textarea, select, [tabindex]:not([tabindex="-1"])',
+        )
+        if (!focusable || focusable.length === 0) return
+        const first = focusable[0]
+        const last = focusable[focusable.length - 1]
+        if (event.shiftKey) {
+          if (document.activeElement === first) {
+            event.preventDefault()
+            last.focus()
+          }
+        } else if (document.activeElement === last) {
+          event.preventDefault()
+          first.focus()
+        }
       }
     }
 
     window.addEventListener('keydown', handleKeyDown)
     return () => {
       window.removeEventListener('keydown', handleKeyDown)
+      previousFocusRef.current?.focus({ preventScroll: true })
     }
   }, [isOpen])
 
@@ -115,6 +144,7 @@ export function SuggestionPrompt() {
   return (
     <div className="mt-6 flex justify-center">
       <motion.button
+        ref={openButtonRef}
         type="button"
         onClick={() => {
           sfx.select()
@@ -138,13 +168,14 @@ export function SuggestionPrompt() {
             <motion.div
               key="modal"
               className="fixed inset-0 z-[80] flex items-center justify-center bg-abyss/80 px-4 backdrop-blur-md"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
+              initial={prefersReducedMotion ? undefined : { opacity: 0 }}
+              animate={prefersReducedMotion ? undefined : { opacity: 1 }}
+              exit={prefersReducedMotion ? undefined : { opacity: 0 }}
               transition={{ duration: 0.25, ease: 'easeOut' }}
               onClick={() => setIsOpen(false)}
             >
               <motion.div
+                ref={dialogRef}
                 role="dialog"
                 aria-modal="true"
                 aria-labelledby="suggestion-title"
@@ -194,7 +225,7 @@ export function SuggestionPrompt() {
                     initial={
                       prefersReducedMotion ? undefined : { scale: 0.8, opacity: 0 }
                     }
-                    animate={{ scale: 1, opacity: 1 }}
+                    animate={prefersReducedMotion ? undefined : { scale: 1, opacity: 1 }}
                     className="rounded-2xl border-2 border-neonLime bg-neonLime/10 p-5 text-center"
                   >
                     <p className="text-4xl">🎉</p>
@@ -220,6 +251,7 @@ export function SuggestionPrompt() {
                         {copy.questionLabel}
                       </label>
                       <textarea
+                        ref={questionRef}
                         id="suggestion-question"
                         className={`${inputClasses} min-h-[120px] resize-none`}
                         placeholder={copy.questionPlaceholder}
@@ -264,7 +296,7 @@ export function SuggestionPrompt() {
                               ? undefined
                               : { opacity: 1, x: [0, -6, 6, 0] }
                           }
-                          exit={{ opacity: 0 }}
+                          exit={prefersReducedMotion ? undefined : { opacity: 0 }}
                           className={`text-sm ${status === 'error' || status === 'idle' ? 'text-danger' : 'text-neonCyan'}`}
                         >
                           {message}

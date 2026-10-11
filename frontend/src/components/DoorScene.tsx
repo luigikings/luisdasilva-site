@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { doorDialogs } from '../data/dialogs'
 import { useSound } from '../hooks/useSound'
 import { useT } from '../hooks/useT'
+import { instantText } from '../lib/reducedMotion'
 import { centerOf, useFx } from './fx/FxProvider'
 
 type DoorSceneProps = {
@@ -40,6 +41,7 @@ export function DoorScene({ onEnter }: DoorSceneProps) {
   const typeInterval = useRef<number | null>(null)
   const popId = useRef(0)
   const doorRef = useRef<HTMLDivElement>(null)
+  const enterButtonRef = useRef<HTMLButtonElement>(null)
 
   const dialogs = useMemo<string[]>(
     () => doorDialogs.map((item) => (lang === 'es' ? item.es : item.en)),
@@ -89,8 +91,10 @@ export function DoorScene({ onEnter }: DoorSceneProps) {
     clearTimers()
     setStage(prefersReducedMotion ? 'dialog' : 'idle')
     setMessageIndex(prefersReducedMotion ? 0 : -1)
-    setTypedMessage(prefersReducedMotion ? sequence[0] ?? '' : '')
+    setTypedMessage(prefersReducedMotion ? instantText(sequence[0] ?? '') : '')
     setShowEnterButton(Boolean(prefersReducedMotion))
+    // RF-7/RF-8: no knock pops survive the switch to still mode
+    setPops([])
 
     if (prefersReducedMotion) {
       return
@@ -113,7 +117,8 @@ export function DoorScene({ onEnter }: DoorSceneProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [stage])
 
-  // Type out each message character by character at 35 ms/char, then queue the next
+  // Type out each message character by character (base rhythm 35 ms/char,
+  // capped so every message completes in <= 3 s per RF-4), then queue the next
   useEffect(() => {
     if (stage === 'opening') return
     if (messageIndex < 0 || messageIndex >= sequence.length) {
@@ -124,7 +129,7 @@ export function DoorScene({ onEnter }: DoorSceneProps) {
     const message = sequence[messageIndex]
 
     if (prefersReducedMotion) {
-      setTypedMessage(message)
+      setTypedMessage(instantText(message))
       if (messageIndex < sequence.length - 1) {
         later(() => setMessageIndex((prev) => Math.min(prev + 1, sequence.length - 1)), 5000)
       }
@@ -145,6 +150,12 @@ export function DoorScene({ onEnter }: DoorSceneProps) {
     setTypedMessage('')
     let index = 0
 
+    // RF-4 budget: the whole message must be typed in <= 3 s whatever its
+    // length. Base rhythm stays 35 ms/char; only longer texts tick faster.
+    // Button budget (RF-3): 1.4 s pause + 1.1 s knocks + <= 3 s first message
+    // + 0.6 s margin stays under the 8 s limit.
+    const charInterval = Math.min(35, 3000 / Math.max(message.length, 1))
+
     typeInterval.current = window.setInterval(() => {
       index += 1
       setTypedMessage(message.slice(0, index))
@@ -155,6 +166,7 @@ export function DoorScene({ onEnter }: DoorSceneProps) {
         typeInterval.current = null
 
         // Show the open button 0.6 s after the first message finishes typing
+        // (RF-4: on first-message completion; it stays visible afterwards)
         if (messageIndex === 0) {
           later(() => setShowEnterButton(true), 600)
         }
@@ -164,7 +176,7 @@ export function DoorScene({ onEnter }: DoorSceneProps) {
           later(() => setMessageIndex((prev) => Math.min(prev + 1, sequence.length - 1)), 5000)
         }
       }
-    }, 35)
+    }, charInterval)
 
     return () => {
       if (typeInterval.current !== null) {
@@ -175,6 +187,9 @@ export function DoorScene({ onEnter }: DoorSceneProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [messageIndex, prefersReducedMotion, sequence])
 
+  // RF-6 opening budget: click -> interview in 1.4 s (<= 2 s). The early
+  // return on stage === 'opening' makes a double click a single opening
+  // (and a single notifyDoorEntry, fired once via onEnter).
   const handleOpen = () => {
     if (stage === 'opening') return
     clearTimers()
@@ -189,11 +204,19 @@ export function DoorScene({ onEnter }: DoorSceneProps) {
       fx.burst(centerOf(doorRef.current), { count: 90, speed: 12, size: 8, colors: ['#ffffff', '#fff6c2', '#22e4ff', '#ffd23f'] })
       sfx.powerUp()
     }, 450)
-    later(() => fx.flash('rgba(255,255,255,0.85)'), 1250)
+    later(() => fx.flash('rgba(255,255,255,0.35)'), 1250)
     later(onEnter, 1400)
   }
 
   const isOpening = stage === 'opening'
+
+  // RF-21: when the enter button appears, move focus to it (same pattern
+  // as the loading "start" button) so keyboard visitors can press Enter.
+  useEffect(() => {
+    if (showEnterButton) {
+      enterButtonRef.current?.focus({ preventScroll: true })
+    }
+  }, [showEnterButton])
 
   return (
     <div className="relative z-10 flex min-h-screen flex-col items-center justify-center gap-8 px-4 py-16 text-center">
@@ -236,9 +259,9 @@ export function DoorScene({ onEnter }: DoorSceneProps) {
                 src="/imgs/main_caracter/LK_hablando1.png"
                 alt=""
                 className="pixelated absolute bottom-0 left-1/2 h-[85%] w-auto -translate-x-1/2"
-                initial={{ opacity: 0 }}
-                animate={isOpening ? { opacity: 1 } : { opacity: 0 }}
-                transition={{ delay: 0.35, duration: 0.3 }}
+                initial={prefersReducedMotion ? undefined : { opacity: 0 }}
+                animate={prefersReducedMotion ? { opacity: isOpening ? 1 : 0 } : isOpening ? { opacity: 1 } : { opacity: 0 }}
+                transition={{ delay: prefersReducedMotion ? 0 : 0.35, duration: 0.3 }}
               />
             </div>
 
@@ -286,21 +309,23 @@ export function DoorScene({ onEnter }: DoorSceneProps) {
               transition={{ duration: 2, repeat: Infinity }}
             />
 
-            {/* Comic knock pops */}
+            {/* Comic knock pops (motion only — never rendered still per RF-7) */}
             <AnimatePresence>
-              {pops.map((pop) => (
-                <motion.span
-                  key={pop.id}
-                  aria-hidden
-                  className="pointer-events-none absolute left-1/2 top-1/3 whitespace-nowrap font-pixel text-base text-coin [-webkit-text-stroke:1px_#0b0620] [text-shadow:3px_3px_0_#ff3ea5]"
-                  initial={{ opacity: 0, scale: 0.3, x: pop.x * 0.3, y: 0, rotate: pop.rotate }}
-                  animate={{ opacity: 1, scale: 1.3, x: pop.x, y: pop.y, rotate: pop.rotate }}
-                  exit={{ opacity: 0, scale: 0.8 }}
-                  transition={{ type: 'spring', stiffness: 400, damping: 15 }}
-                >
-                  {knockLabel.split(' ')[0]}!
-                </motion.span>
-              ))}
+              {!prefersReducedMotion
+                ? pops.map((pop) => (
+                    <motion.span
+                      key={pop.id}
+                      aria-hidden
+                      className="pointer-events-none absolute left-1/2 top-1/3 whitespace-nowrap font-pixel text-base text-coin [-webkit-text-stroke:1px_#0b0620] [text-shadow:3px_3px_0_#ff3ea5]"
+                      initial={{ opacity: 0, scale: 0.3, x: pop.x * 0.3, y: 0, rotate: pop.rotate }}
+                      animate={{ opacity: 1, scale: 1.3, x: pop.x, y: pop.y, rotate: pop.rotate }}
+                      exit={{ opacity: 0, scale: 0.8 }}
+                      transition={{ type: 'spring', stiffness: 400, damping: 15 }}
+                    >
+                      {knockLabel.split(' ')[0]}!
+                    </motion.span>
+                  ))
+                : null}
             </AnimatePresence>
           </div>
         </div>
@@ -308,11 +333,11 @@ export function DoorScene({ onEnter }: DoorSceneProps) {
         <div className="h-3 rounded-b-md bg-gradient-to-b from-line to-abyss" />
       </motion.div>
 
-      {/* RPG dialog box */}
+      {/* RPG dialog box (still under reduced motion: same box, same text) */}
       <motion.div
         className="relative w-full max-w-xl"
         initial={prefersReducedMotion ? undefined : { opacity: 0, y: 20 }}
-        animate={stage === 'dialog' ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
+        animate={prefersReducedMotion ? undefined : stage === 'dialog' ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
         transition={{ duration: 0.4, ease: 'easeOut' }}
         aria-live="polite"
       >
@@ -335,6 +360,7 @@ export function DoorScene({ onEnter }: DoorSceneProps) {
           {showEnterButton ? (
             <motion.button
               key="enter-door-button"
+              ref={enterButtonRef}
               type="button"
               onClick={handleOpen}
               onPointerEnter={() => sfx.hover()}

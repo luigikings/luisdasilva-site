@@ -13,6 +13,8 @@ import {
   questionEmojis,
 } from '../data/interview'
 import { track } from '../lib/analytics'
+import { resolveAsk } from '../lib/interviewAccess'
+import { instantText } from '../lib/reducedMotion'
 import { useKonami } from '../hooks/useKonami'
 import { useSound } from '../hooks/useSound'
 import { useT } from '../hooks/useT'
@@ -41,8 +43,9 @@ const DEFAULT_ACCENT = '#9b5cff'
  * Coin system:
  *   Each world starts with a fixed coin budget. Selecting an unanswered question
  *   that costs > 0 deducts one coin from that world's pool (a coin flies from the
- *   HUD into the card). Already-answered questions and the `github` question
- *   (cost 0) are always re-askable for free. The "infinite coins" switch — or the
+ *   HUD into the card). Already-answered questions and the essential questions
+ *   (cv, projects, github, contact — see `lib/interviewAccess.ts`, RF-13) are
+ *   always askable for free. The "infinite coins" switch — or the
  *   Konami code — bypasses the system entirely.
  *
  * Typing animation:
@@ -134,7 +137,13 @@ export function Interview() {
     const id = (toastId.current += 1)
     // Replace an identical toast instead of stacking duplicates (e.g. spamming a locked question)
     setToasts((prev) => [...prev.filter((item) => item.title !== toast.title).slice(-2), { ...toast, id }])
+    // RF-17: every milestone notice dismisses itself in <= 4 s (or with 1 click)
     window.setTimeout(() => setToasts((prev) => prev.filter((item) => item.id !== id)), 3400)
+  }, [])
+
+  /** RF-17: 1 interaction dismisses the notice; toasts never capture focus. */
+  const dismissToast = useCallback((id: number) => {
+    setToasts((prev) => prev.filter((item) => item.id !== id))
   }, [])
 
   /** Unlocks an achievement once; `instance` lets per-world achievements repeat per world */
@@ -222,11 +231,18 @@ export function Interview() {
     const baseCost = questionCosts[key] ?? 1
     const isRepeat = answeredQuestions.includes(key)
     const currentCoins = groupKey ? groupCoins[groupKey] ?? 0 : 0
-    // Only charge coins for first-time non-free questions when infinite mode is off
-    const shouldCharge = !infiniteCoins && !isRepeat && baseCost > 0
+    // RF-13: essentials (cv, projects, github, contact) never charge and
+    // never block — the infinite-mode hint below only fires for the rest.
+    const decision = resolveAsk({
+      key,
+      cost: baseCost,
+      coinsInGroup: currentCoins,
+      answered: isRepeat,
+      infinite: infiniteCoins,
+    })
     const originPoint = centerOf(origin)
 
-    if (shouldCharge && currentCoins < baseCost) {
+    if (decision.blocked) {
       // Loud "no coins" feedback instead of silently ignoring the click
       sfx.error()
       fx.shake()
@@ -245,7 +261,7 @@ export function Interview() {
       return
     }
 
-    if (shouldCharge && groupKey) {
+    if (decision.charge && groupKey) {
       sfx.coin()
       const hudPoint = centerOf(hudCoinRef.current)
       fx.floatText(hudPoint, `-${baseCost}`, '#ffd23f')
@@ -268,7 +284,7 @@ export function Interview() {
       pendingSelect.current = false
       setSelected(key)
       stageRef.current?.scrollIntoView({ behavior: prefersReducedMotion ? 'auto' : 'smooth', block: 'start' })
-    }, shouldCharge && !prefersReducedMotion ? 380 : 0)
+    }, decision.charge && !prefersReducedMotion ? 380 : 0)
     track('interview_question_selected', { key, lang })
   }
 
@@ -301,8 +317,8 @@ export function Interview() {
     setShowOk(false)
 
     if (prefersReducedMotion) {
-      setPlayerLine(playerMessageWithEmoji)
-      setAnswerLine(answerMessage)
+      setPlayerLine(instantText(playerMessageWithEmoji))
+      setAnswerLine(instantText(answerMessage))
       setStage('complete')
       setShowOk(true)
       return
@@ -338,6 +354,15 @@ export function Interview() {
     if (stage !== 'answerTyping' || !selected) return
 
     const answerMessage = answers[selected]
+
+    // RF-8: flipping the setting mid-answer completes it on the next paint
+    if (prefersReducedMotion) {
+      setAnswerLine(instantText(answerMessage))
+      setStage('complete')
+      setShowOk(true)
+      return
+    }
+
     const chars = Array.from(answerMessage)
     let answerIndex = 0
 
@@ -361,7 +386,7 @@ export function Interview() {
       clearTimers()
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [answers, clearTimers, selected, stage])
+  }, [answers, clearTimers, prefersReducedMotion, selected, stage])
 
   // Flips the character sprite between still/talking at 160 ms while answer is typing
   useEffect(() => {
@@ -482,7 +507,7 @@ export function Interview() {
 
   return (
     <section className="relative z-10 mx-auto flex min-h-screen w-full max-w-6xl flex-col gap-6 px-4 pb-10 pt-20 md:px-8">
-      <AchievementToasts toasts={toasts} />
+      <AchievementToasts toasts={toasts} dismissLabel={t('common.close')} onDismiss={dismissToast} />
 
       <HudBar
         answered={answeredQuestions.length}

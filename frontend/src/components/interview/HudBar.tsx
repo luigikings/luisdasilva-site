@@ -53,7 +53,7 @@ export function HudBar({
               <motion.span
                 key={level}
                 initial={prefersReducedMotion ? undefined : { scale: 2, opacity: 0, rotate: -20 }}
-                animate={{ scale: 1, opacity: 1, rotate: 0 }}
+                animate={prefersReducedMotion ? undefined : { scale: 1, opacity: 1, rotate: 0 }}
                 transition={{ type: 'spring', stiffness: 400, damping: 14 }}
                 className="shrink-0 rounded bg-neonPink px-1.5 py-0.5 font-pixel text-[8px] text-ink"
               >
@@ -67,7 +67,7 @@ export function HudBar({
                 className="h-full rounded-full bg-[linear-gradient(90deg,#22e4ff,#9b5cff,#ff3ea5)] shadow-[0_0_10px_rgba(255,62,165,0.7)]"
                 initial={false}
                 animate={{ width: `${pct}%` }}
-                transition={{ type: 'spring', stiffness: 120, damping: 20 }}
+                transition={prefersReducedMotion ? { duration: 0 } : { type: 'spring', stiffness: 120, damping: 20 }}
               />
               {/* Moving shine on the XP bar */}
               <div className="absolute inset-0 animate-shimmer bg-[linear-gradient(90deg,transparent,rgba(255,255,255,0.35),transparent)] bg-[length:50%_100%] bg-no-repeat motion-reduce:animate-none" />
@@ -121,7 +121,7 @@ export function HudBar({
             <motion.span
               className={`absolute h-3 w-3 rounded-full ${infiniteCoins ? 'bg-neonLime shadow-[0_0_8px_#7cff6b]' : 'bg-muted'}`}
               animate={{ x: infiniteCoins ? 18 : 2 }}
-              transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+              transition={prefersReducedMotion ? { duration: 0 } : { type: 'spring', stiffness: 500, damping: 30 }}
             />
           </span>
         </motion.button>

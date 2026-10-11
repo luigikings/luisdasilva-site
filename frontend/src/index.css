@@ -28,7 +28,9 @@ a:focus-visible {
 button:focus-visible,
 a:focus-visible,
 input:focus-visible,
-textarea:focus-visible {
+textarea:focus-visible,
+[tabindex]:focus-visible,
+[role='button']:focus-visible {
   @apply outline-none ring-2 ring-neonCyan ring-offset-2 ring-offset-night;
 }
 
@@ -91,7 +93,9 @@ textarea:focus-visible {
   }
 }
 
-/* Glitch effect: two colored copies of the text jitter behind the original */
+/* Glitch effect (RF-10): two colored copies of the text jitter behind the
+   original, exactly once on mount (<= 1 s) when entering the language view,
+   never looped. The base text stays fully visible the whole time (RF-11). */
 .glitch {
   position: relative;
 }
@@ -106,14 +110,14 @@ textarea:focus-visible {
   color: #22e4ff;
   transform: translate(-2px, 0);
   clip-path: inset(0 0 55% 0);
-  animation: glitch-a 2.6s infinite steps(1);
+  animation: glitch-a 0.9s steps(1) 1;
   mix-blend-mode: screen;
 }
 .glitch::after {
   color: #ff3ea5;
   transform: translate(2px, 0);
   clip-path: inset(50% 0 0 0);
-  animation: glitch-b 3.1s infinite steps(1);
+  animation: glitch-b 0.9s steps(1) 1;
   mix-blend-mode: screen;
 }
 @keyframes glitch-a {

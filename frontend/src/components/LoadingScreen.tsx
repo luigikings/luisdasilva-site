@@ -4,10 +4,15 @@ import type { MouseEvent } from 'react'
 
 import { useSound } from '../hooks/useSound'
 import { useT } from '../hooks/useT'
+import { INSTANT_PROGRESS } from '../lib/reducedMotion'
 import { centerOf, useFx } from './fx/FxProvider'
 
-// Base duration of the fake loading run, in milliseconds
-const PROGRESS_DURATION = 4200
+// Base duration of the fake loading run, in milliseconds.
+// Kept with margin under the RF-1 3 s budget (the per-frame wobble
+// averages ~0.8x speed, so the real completion lands around ~2.5 s).
+const PROGRESS_DURATION = 2000
+// Points added to the visible percentage per interaction (RF-2: >= 5).
+const BOOST_POINTS = 6
 const SEGMENTS = 20
 const SEGMENT_COLORS = ['#22e4ff', '#9b5cff', '#ff3ea5', '#ff8a3d', '#ffd23f', '#7cff6b']
 
@@ -34,6 +39,17 @@ export function LoadingScreen({ onStart }: { onStart: () => void }) {
   const tips = t<string[]>('loading.tips')
 
   useEffect(() => {
+    // RF-7: with reduced motion there is no run to watch — the view shows
+    // its final state directly (full bar, every boot line, start enabled
+    // and focused via the `done` effect below). Re-running on toggle covers
+    // RF-8: a mid-load flip completes on the next paint (<= 0.5 s).
+    if (prefersReducedMotion) {
+      progressRef.current = INSTANT_PROGRESS
+      setProgress(INSTANT_PROGRESS)
+      setDone(true)
+      return
+    }
+
     let frame: number
     let last = performance.now()
 
@@ -54,7 +70,7 @@ export function LoadingScreen({ onStart }: { onStart: () => void }) {
 
     frame = requestAnimationFrame(step)
     return () => cancelAnimationFrame(frame)
-  }, [])
+  }, [prefersReducedMotion])
 
   useEffect(() => {
     if (!done) return
@@ -64,9 +80,12 @@ export function LoadingScreen({ onStart }: { onStart: () => void }) {
   }, [done, fx, sfx])
 
   useEffect(() => {
+    // RF-7: tips stay still while reduced motion is on (the `done` branch
+    // renders the first tip as static text, same wording as usual).
+    if (prefersReducedMotion) return
     const id = window.setInterval(() => setTipIndex((prev) => (prev + 1) % tips.length), 2200)
     return () => window.clearInterval(id)
-  }, [tips.length])
+  }, [prefersReducedMotion, tips.length])
 
   const handleStart = useCallback(() => {
     if (!done) return
@@ -75,8 +94,32 @@ export function LoadingScreen({ onStart }: { onStart: () => void }) {
     onStart()
   }, [done, fx, onStart, sfx])
 
+  // Every interaction while loading gives the bar an immediate, visible kick:
+  // state is set synchronously so number + bar reflect it at once (< 0.2 s),
+  // and reaching 100 this way finishes right away (before the 3 s budget).
+  const applyBoost = useCallback(
+    (point?: { x: number; y: number }) => {
+      if (done) return
+      progressRef.current = Math.min(100, progressRef.current + BOOST_POINTS)
+      setProgress(progressRef.current)
+      if (progressRef.current >= 100) {
+        setDone(true)
+      }
+      sfx.blip(1 + progressRef.current / 60)
+      if (point) {
+        fx.floatText({ x: point.x, y: point.y - 10 }, `+${BOOST_POINTS}%`, '#7cff6b')
+      }
+    },
+    [done, fx, sfx],
+  )
+
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
+      // Any key boosts the bar while loading (RF-2: click, touch or key).
+      if (!done) {
+        applyBoost()
+        return
+      }
       if ((event.key === 'Enter' || event.key === ' ') && document.activeElement !== startRef.current) {
         event.preventDefault()
         handleStart()
@@ -84,14 +127,11 @@ export function LoadingScreen({ onStart }: { onStart: () => void }) {
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [handleStart])
+  }, [applyBoost, done, handleStart])
 
-  // Every click while loading gives the bar a kick
+  // Every click while loading gives the bar a kick (covers mouse + touch taps)
   const handleBoost = (event: MouseEvent<HTMLDivElement>) => {
-    if (done) return
-    progressRef.current = Math.min(100, progressRef.current + 6)
-    sfx.blip(1 + progressRef.current / 60)
-    fx.floatText({ x: event.clientX, y: event.clientY - 10 }, '+6%', '#7cff6b')
+    applyBoost({ x: event.clientX, y: event.clientY })
   }
 
   const visibleLines = bootLines.filter((_, index) => progress >= (index / bootLines.length) * 100)

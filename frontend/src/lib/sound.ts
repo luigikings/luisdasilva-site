@@ -22,7 +22,8 @@ type ToneOptions = {
 }
 
 const STORAGE_KEY = 'lk-arcade-muted'
-const MASTER_VOLUME = 0.16
+// RF-16 (T7): moderate overall gain so no single effect stands out annoyingly.
+const MASTER_VOLUME = 0.1
 
 let ctx: AudioContext | null = null
 let master: GainNode | null = null
@@ -127,11 +128,12 @@ export const sfx = {
     tone({ freq: 220, to: 110, duration: 0.25, type: 'sawtooth', volume: 0.5 })
     tone({ freq: 160, to: 80, duration: 0.3, type: 'square', volume: 0.35, delay: 0.08 })
   },
-  /** Very short tick played while text is being typed */
-  blip: (pitch = 1) => tone({ freq: 420 * pitch, duration: 0.03, type: 'square', volume: 0.12 }),
+  /** Very short soft tick played while text is being typed (RF-16: smoothed) */
+  blip: (pitch = 1) => tone({ freq: 420 * pitch, duration: 0.025, type: 'triangle', volume: 0.08 }),
+  /** Softened knock: lower noise burst + gentle low thump (RF-16) */
   knock: () => {
-    noise(0.09, 0.9, 0, 500)
-    tone({ freq: 110, to: 60, duration: 0.1, type: 'sine', volume: 0.9 })
+    noise(0.07, 0.45, 0, 400)
+    tone({ freq: 110, to: 60, duration: 0.09, type: 'sine', volume: 0.45 })
   },
   door: () => {
     noise(0.5, 0.35, 0, 1400)

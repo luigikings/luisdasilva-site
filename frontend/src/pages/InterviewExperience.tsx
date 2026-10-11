@@ -42,7 +42,8 @@ const WIPE_COLORS = [
   '#ff8a3d',
 ]
 
-/** Vertical neon bars that retract one after another to reveal the new view */
+/** Vertical neon bars that retract one after another to reveal the new view.
+ * RF-5 budget: 0.32 s + 9 * 0.022 s stagger ~= 0.52 s total (<= 0.6 s). */
 function PixelWipe() {
   return (
     <div aria-hidden className="pointer-events-none fixed inset-0 z-[75] flex">
@@ -53,7 +54,7 @@ function PixelWipe() {
           style={{ background: color }}
           initial={{ scaleY: 1 }}
           animate={{ scaleY: 0 }}
-          transition={{ duration: 0.45, ease: [0.7, 0, 0.3, 1], delay: index * 0.035 }}
+          transition={{ duration: 0.32, ease: [0.7, 0, 0.3, 1], delay: index * 0.022 }}
         />
       ))}
     </div>
@@ -134,15 +135,50 @@ export function InterviewExperience() {
     sfx.start()
     fx.burst(centerOf(tutorialButtonRef.current), { count: 50, speed: 9 })
     setShowTutorial(false)
+    // RF-19: return focus to the interview so keyboard visitors keep going
+    window.setTimeout(() => {
+      document.getElementById('interview-main')?.focus({ preventScroll: true })
+    }, 0)
   }
 
+  // RF-19: evident close — labeled button + Escape, 1 interaction.
+  // Opening moves focus to the close button; closing returns it above.
+  useEffect(() => {
+    if (view !== 'interview' || !showTutorial) return
+    tutorialButtonRef.current?.focus()
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        event.stopPropagation()
+        closeTutorial()
+      }
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [view, showTutorial])
+
+  // RF-5 budget: AnimatePresence mode="wait" runs exit THEN enter in
+  // sequence, so exit (0.2 s) + enter (0.3 s) = 0.5 s total (<= 0.6 s).
+  // The PixelWipe (~0.52 s) mounts with the entering view and overlaps it,
+  // and every overlay is pointer-events-none, so the new view takes
+  // interaction on the first attempt once mounted.
   const viewMotion = {
     initial: prefersReducedMotion ? undefined : { opacity: 0, scale: 1.04 },
-    animate: prefersReducedMotion ? undefined : { opacity: 1, scale: 1 },
+    animate: prefersReducedMotion
+      ? undefined
+      : {
+          opacity: 1,
+          scale: 1,
+          transition: { duration: 0.3, ease: 'easeOut' as const },
+        },
     exit: prefersReducedMotion
       ? undefined
-      : { opacity: 0, scale: 0.96, filter: 'blur(6px)' },
-    transition: { duration: 0.4, ease: 'easeOut' as const },
+      : {
+          opacity: 0,
+          scale: 0.96,
+          filter: 'blur(6px)',
+          transition: { duration: 0.2, ease: 'easeIn' as const },
+        },
   }
 
   return (
@@ -152,7 +188,13 @@ export function InterviewExperience() {
       <LanguageSwitcher showLanguages={view !== 'language'} />
 
       <AnimatePresence mode="wait">
-        <motion.main key={view} className="relative min-h-screen" {...viewMotion}>
+        <motion.main
+          key={view}
+          id={view === 'interview' ? 'interview-main' : undefined}
+          tabIndex={view === 'interview' ? -1 : undefined}
+          className="relative min-h-screen"
+          {...viewMotion}
+        >
           {view === 'language' ? (
             <LanguageIntroScreen onConfirm={handleConfirmLanguage} />
           ) : null}

@@ -1,6 +1,8 @@
 import { AnimatePresence, motion } from 'framer-motion'
 
 import { groupTheme, initialCoinsByGroup, questionCosts, questionEmojis } from '../../data/interview'
+import { isEssentialQuestion } from '../../lib/interviewAccess'
+import { useT } from '../../hooks/useT'
 import type { QuestionGroupKey, QuestionKey } from '../../i18n/dict'
 import { PixelCoin } from '../fx/PixelCoin'
 import { TiltCard } from '../fx/TiltCard'
@@ -45,7 +47,7 @@ function CoinPips({ remaining, max, infinite }: { remaining: number; max: number
   return (
     <span className="flex items-center gap-0.5">
       {Array.from({ length: max }, (_, i) => (
-        <span key={i} className={`transition-all duration-300 ${i < remaining ? '' : 'scale-75 opacity-20 grayscale'}`}>
+        <span key={i} className={`transition-all duration-300 motion-reduce:transition-none ${i < remaining ? '' : 'scale-75 opacity-20 grayscale'}`}>
           <PixelCoin size={12} />
         </span>
       ))}
@@ -80,6 +82,10 @@ export function InterviewNav({
   const enter = prefersReducedMotion ? undefined : { opacity: 0, y: 24 }
   const shown = prefersReducedMotion ? undefined : { opacity: 1, y: 0 }
   const leave = prefersReducedMotion ? undefined : { opacity: 0, y: -16, transition: { duration: 0.2 } }
+  // RF-14: world-cleared badge keeps the same meaning in both languages
+  // (no dict key exists for it, so it switches on the active language).
+  const { lang } = useT()
+  const clearLabel = lang === 'es' ? 'COMPLETADO' : 'CLEAR'
 
   return (
     <div className="w-full">
@@ -138,6 +144,7 @@ export function InterviewNav({
                             style={{ background: theme.color, boxShadow: `0 0 8px ${theme.glow}` }}
                             initial={false}
                             animate={{ width: `${(answeredCount / total) * 100}%` }}
+                            transition={prefersReducedMotion ? { duration: 0 } : undefined}
                           />
                         </span>
                         <span className="flex items-center justify-between gap-2">
@@ -157,10 +164,10 @@ export function InterviewNav({
                           className="absolute right-3 top-3 rotate-12 rounded-md border-2 px-2 py-1 font-pixel text-[8px]"
                           style={{ borderColor: theme.color, color: theme.color, textShadow: `0 0 8px ${theme.color}` }}
                           initial={prefersReducedMotion ? undefined : { scale: 3, opacity: 0 }}
-                          animate={{ scale: 1, opacity: 1 }}
+                          animate={prefersReducedMotion ? undefined : { scale: 1, opacity: 1 }}
                           transition={{ type: 'spring', stiffness: 400, damping: 12 }}
                         >
-                          CLEAR <span className="font-sans text-xs">★</span>
+                          {clearLabel} <span className="font-sans text-xs">★</span>
                         </motion.span>
                       ) : null}
                     </TiltCard>
@@ -220,6 +227,8 @@ export function InterviewNav({
                       const isAnswered = answeredQuestions.includes(key)
                       const isActive = selected === key
                       const baseCost = questionCosts[key] ?? 1
+                      // RF-13: essentials never cost coins — badge them as free
+                      const isFree = baseCost <= 0 || isEssentialQuestion(key)
 
                       return (
                         <motion.button
@@ -256,14 +265,14 @@ export function InterviewNav({
                                   ↻
                                 </span>
                               </span>
-                            ) : baseCost > 0 ? (
+                            ) : isFree ? (
+                              <span className="rounded-lg border border-neonLime/60 bg-abyss/80 px-2 py-1 font-pixel text-[7px] uppercase text-neonLime">
+                                {coinsCopy.free}
+                              </span>
+                            ) : (
                               <span className="flex items-center gap-1 rounded-lg border border-coin/50 bg-abyss/80 px-2 py-1" title={`${coinsCopy.cost}: ${baseCost}`}>
                                 <PixelCoin size={14} />
                                 <span className="font-pixel text-[8px] text-coin">{baseCost}</span>
-                              </span>
-                            ) : (
-                              <span className="rounded-lg border border-neonLime/60 bg-abyss/80 px-2 py-1 font-pixel text-[7px] uppercase text-neonLime">
-                                {coinsCopy.free}
                               </span>
                             )}
                           </span>

@@ -8,17 +8,17 @@ export type DoorDialog = {
 export const doorDialogs: DoorDialog[] = [
   {
     id: 'follow-1',
-    es: '¡Holaaa! ¿Hay alguien ahí dentro?',
-    en: 'Hellooo! Is anyone in there?',
+    es: '¡Hola! ¿Hay alguien ahí?',
+    en: 'Hello! Is anyone there?',
   },
   {
     id: 'follow-2',
-    es: 'Me estoy congelando aquí afuera, ¡por favor!',
-    en: 'I am freezing out here, pretty please!',
+    es: 'Hace frío aquí fuera, ¿me dejas entrar?',
+    en: "It's cold out here, may I come in?",
   },
   {
     id: 'follow-3',
-    es: 'Si golpeo tres veces es la señal secreta, ¿cierto?',
-    en: 'If I knock three times that is the secret signal, right?',
+    es: 'Llamo tres veces: esa es la señal, ¿verdad?',
+    en: "I'll knock three times: that's the signal, right?",
   },
 ]

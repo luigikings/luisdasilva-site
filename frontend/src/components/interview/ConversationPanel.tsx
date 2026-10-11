@@ -31,7 +31,8 @@ type ConversationPanelProps = {
 /**
  * The interview "stage": Luis inside an arcade monitor under a colored spotlight,
  * with the visitor's question bubble and an RPG-style answer box next to him.
- * Clicking the answer box while text is typing skips straight to the end.
+ * Clicking either bubble while text is typing skips straight to the end
+ * (RF-12; Enter works too via the interview keyboard handler).
  */
 export function ConversationPanel({
   stage,
@@ -53,6 +54,16 @@ export function ConversationPanel({
   const isTalking = stage === 'answerTyping'
   const isTyping = stage === 'playerTyping' || stage === 'answerTyping'
   const hasAnswer = Boolean(answerLine) || stage === 'answerTyping' || stage === 'complete'
+
+  // RF-12/RF-21: while text is typing, the bubbles act as buttons so
+  // keyboard visitors can jump to the full text with Enter or Space.
+  const handleSkipKey = (event: React.KeyboardEvent) => {
+    if (!isTyping) return
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault()
+      onSkip()
+    }
+  }
 
   return (
     <div className="grid w-full items-center gap-6 md:grid-cols-[auto_1fr] md:gap-10">
@@ -149,7 +160,12 @@ export function ConversationPanel({
               animate={prefersReducedMotion ? undefined : { opacity: 1, x: 0, scale: 1 }}
               exit={prefersReducedMotion ? undefined : { opacity: 0, x: 40 }}
               transition={{ type: 'spring', stiffness: 300, damping: 24 }}
-              className="max-w-md self-end rounded-2xl rounded-br-sm border-2 border-neonCyan bg-neonCyan/10 px-5 py-3 text-right shadow-neon"
+              onClick={isTyping ? onSkip : undefined}
+              onKeyDown={isTyping ? handleSkipKey : undefined}
+              role={isTyping ? 'button' : undefined}
+              tabIndex={isTyping ? 0 : undefined}
+              aria-label={isTyping ? conversation.skipHint : undefined}
+              className={`max-w-md self-end rounded-2xl rounded-br-sm border-2 border-neonCyan bg-neonCyan/10 px-5 py-3 text-right shadow-neon ${isTyping ? 'cursor-pointer' : ''}`}
             >
               <p className="mb-1 font-pixel text-[8px] uppercase text-neonCyan">{conversation.youLabel}</p>
               <p className="text-base font-medium text-ink">{playerLine}</p>
@@ -167,6 +183,10 @@ export function ConversationPanel({
               exit={prefersReducedMotion ? undefined : { opacity: 0, y: 20 }}
               transition={{ type: 'spring', stiffness: 260, damping: 24 }}
               onClick={isTyping ? onSkip : undefined}
+              onKeyDown={isTyping ? handleSkipKey : undefined}
+              role={isTyping ? 'button' : undefined}
+              tabIndex={isTyping ? 0 : undefined}
+              aria-label={isTyping ? conversation.skipHint : undefined}
               className={`relative rounded-2xl border-4 border-ink bg-abyss/95 p-5 text-left ${isTyping ? 'cursor-pointer' : ''}`}
               style={{ boxShadow: `0 0 0 4px #0b0620, 0 0 34px ${accent}77` }}
             >

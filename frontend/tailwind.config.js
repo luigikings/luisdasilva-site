@@ -41,8 +41,10 @@ export default {
       },
       keyframes: {
         blink: {
+          // RF-11: pulsing text must never disappear — floor at 0.35
+          // so every word stays visible and distinguishable all cycle.
           '0%, 49%': { opacity: '1' },
-          '50%, 100%': { opacity: '0' },
+          '50%, 100%': { opacity: '0.35' },
         },
         floaty: {
           '0%, 100%': { transform: 'translateY(0)' },
